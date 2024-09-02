@@ -1,0 +1,26 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "removeComments": true,
+    "sourceMap": false,
+    "declarationMap": false
+  },
+  "references": [
+    {"path": "../components/cqrs/tsconfig.build.json"},
+    {"path": "../components/bitcoin-blocks-queue/tsconfig.build.json"},
+    {"path": "../components/eventstore/tsconfig.build.json"},
+    {"path": "../components/cqrs-transport/tsconfig.build.json"},
+    {"path": "../components/network-transport/tsconfig.build.json"},
+    {"path": "../components/views-rdbms-db/tsconfig.build.json"},
+    {"path": "../components/logger/tsconfig.build.json"},
+    {"path": "../common/domain-cqrs-components/tsconfig.build.json"},
+    {"path": "../common/arithmetic/tsconfig.build.json"}
+  ],
+  "include": ["src"],
+  "exclude": [
+    "dist",
+    "node_modules",
+    "**/*.test.ts",
+    "**/__tests__"
+  ]
+}

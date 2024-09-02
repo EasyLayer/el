@@ -1,0 +1,12 @@
+{
+  "packages": [
+    "examples/*",
+    "examples/*/*",
+    "packages/*",
+    "packages/*/*",
+    "e2e-tests/*",
+    "e2e-tests/*/*"
+  ],
+  "version": "0.0.1-experimental.0",
+  "npmClient": "yarn"
+}

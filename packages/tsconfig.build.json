@@ -1,0 +1,26 @@
+/* 
+  documentation tags: 8b6c4e42-715d-41e3-8683-c02e4acf2e61
+*/
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./common/tsconfig.build.json"
+    },
+    {
+      "path": "./components/tsconfig.build.json"
+    },
+    {
+      "path": "./bitcoin-indexer/tsconfig.build.json"
+    },
+    {
+      "path": "./bitcoin-loader/tsconfig.build.json"
+    },
+    {
+      "path": "./bitcoin-listener/tsconfig.build.json"
+    },
+    {
+      "path": "./bitcoin-wallet/tsconfig.build.json"
+    }
+  ]
+}
