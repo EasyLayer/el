@@ -47,10 +47,6 @@ export class NetworkProviderModule {
 
     const providersToConnect: ProviderOptions[] = [...quickNodeProviders, ...selfNodeProviders, ...(providers || [])];
 
-    if (providersToConnect.length === 0) {
-      throw new Error('Any Network Provider is not found.');
-    }
-
     const providersInstance = providersToConnect.map(async (providerOptions) => {
       if (providerOptions.useFactory) {
         return await providerOptions.useFactory();

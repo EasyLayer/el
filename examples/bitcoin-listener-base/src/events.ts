@@ -1,6 +1,6 @@
-import { BlockchainEvent } from '@el/bitcoin-listener';
+import { BaseViewModel } from '@el/bitcoin-listener';
 
-export class BlockEvent implements BlockchainEvent {
+export class BlockEvent implements BaseViewModel {
   type: string = 'newblock';
   data: any;
 
@@ -9,7 +9,7 @@ export class BlockEvent implements BlockchainEvent {
   }
 }
 
-export class TransactionEvent implements BlockchainEvent {
+export class TransactionEvent implements BaseViewModel {
     type: string = 'newtx';
     data: any;
   

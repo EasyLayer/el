@@ -1,11 +1,11 @@
-import { IListenerMapper, BlockchainEvent } from '@el/bitcoin-listener';
+import { IListenerMapper, BaseViewModel } from '@el/bitcoin-listener';
 import { BlockEvent, TransactionEvent } from './events';
 
 export class EventsMapper implements IListenerMapper {
     public async handle(block: any) {
         const { hash, tx } = block;
 
-        const events: BlockchainEvent[] = [];
+        const events: BaseViewModel[] = [];
         
         events.push(new BlockEvent({ ...block }));
 

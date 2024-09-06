@@ -29,7 +29,6 @@ import {
   ProvidersConfig,
 } from './config';
 import { MapperType } from './protocol';
-import { BitcoinListenerGateway } from './infrastructure-layer/listener.gateway';
 import { EventSchema, LastBlockSchema } from './infrastructure-layer/view-models';
 import {
   ViewsReadRepositoryService,
@@ -144,7 +143,6 @@ export class BitcoinListenerModule {
         ViewsReadRepositoryService,
         ViewsWriteRepositoryService,
         WsMessagesService,
-        BitcoinListenerGateway,
         ArithmeticService,
         ListenerService,
         ListenerSaga,

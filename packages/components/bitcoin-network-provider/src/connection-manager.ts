@@ -8,7 +8,7 @@ export class ConnectionManager implements OnModuleInit {
   private activeProviderName!: string;
 
   constructor(
-    providers: BaseNodeProvider[],
+    providers: BaseNodeProvider[] = [],
     private readonly log: AppLogger
   ) {
     providers.forEach((provider: BaseNodeProvider) => {
@@ -32,7 +32,7 @@ export class ConnectionManager implements OnModuleInit {
         return;
       }
     }
-    throw new Error('Unable to connect to any providers.');
+    this.log.error('Unable to connect to any providers.', null, this.constructor.name);
   }
 
   // Get all connections options for all providers

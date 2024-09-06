@@ -7,6 +7,7 @@ import { NestLogger, logger } from '@el/components/logger';
 import { BitcoinIndexerModule } from './indexer.module';
 import { AppConfig } from './config';
 import { MapperType, Schema } from './protocol';
+import { setupSwaggerServer } from './scripts/setup-swagger';
 
 interface BootstrapOptions {
   appName?: string;
@@ -36,7 +37,7 @@ export const bootstrap = async ({
     });
 
     if (isServer) {
-      await startHttpServer(rootModule, nestLogger);
+      await startHttpServer(appName, rootModule, nestLogger);
     } else {
       await initializeApplicationContext(rootModule, nestLogger);
     }
@@ -46,10 +47,17 @@ export const bootstrap = async ({
   }
 };
 
-const startHttpServer = async (rootModule: DynamicModule, nestLogger: NestLogger) => {
+const startHttpServer = async (appName: string, rootModule: DynamicModule, nestLogger: NestLogger) => {
   const app = await NestFactory.create(rootModule, { logger: nestLogger });
   const appConfig = app.get(AppConfig);
   const port = appConfig.PORT;
+
+  if (appConfig.isDEVELOPMENT()) {
+    setupSwaggerServer(app, {
+      title: appName,
+      description: 'Description',
+    });
+  }
 
   await app.listen(port);
   nestLogger.log(`HTTP server is listening on port ${port}`, 'NestApplication');
