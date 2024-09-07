@@ -8,11 +8,7 @@ version=$VERSION
 
 # Update package versions (e.g., 0.0.1)
 echo "Setting package versions to: $version"
-./node_modules/.bin/lerna version $version --exact --yes --no-git-tag-version --no-push --force-publish=*
-
-# Install dependencies to update Yarn.lock
-echo "Updating yarn.lock file"
-yarn install
+./node_modules/.bin/lerna version $version --exact --yes --no-git-tag-version --no-push --force-publish=\*
 
 # Add changes to Git
 echo "Committing version changes"
