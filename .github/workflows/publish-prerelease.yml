@@ -41,5 +41,5 @@ jobs:
           SUFFIX: ${{ github.event.inputs.suffix }}
           INCREMENT: ${{ github.event.inputs.increment }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.PRERELEASE_WORKFLOW_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HUSKY: '0' # By default do not run HUSKY install
