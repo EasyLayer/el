@@ -1,7 +1,7 @@
 {
   "name": "bitcoin-loader-utxo",
   "private": true,
-  "version": "0.0.1-experimental.0",
+  "version": "0.0.1-beta",
   "description": "This is an example app for development",
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
@@ -9,9 +9,9 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@el/bitcoin-loader": "0.0.1-experimental.0",
-    "@el/common": "0.0.1-experimental.0",
-    "@el/components": "0.0.1-experimental.0"
+    "@el/bitcoin-loader": "0.0.1-beta",
+    "@el/common": "0.0.1-beta",
+    "@el/components": "0.0.1-beta"
   },
   "devDependencies": {
     "@types/node": "20.10.4",

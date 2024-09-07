@@ -1,7 +1,7 @@
 {
   "name": "bitcoin-listener-base",
   "private": true,
-  "version": "0.0.1-experimental.0",
+  "version": "0.0.1-beta",
   "description": "This is an example app for development",
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
@@ -9,7 +9,7 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@el/bitcoin-listener": "0.0.1-experimental.0",
+    "@el/bitcoin-listener": "0.0.1-beta",
     "socket.io-client": "4.7.5"
   },
   "devDependencies": {

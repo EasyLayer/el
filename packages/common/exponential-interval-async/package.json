@@ -1,6 +1,6 @@
 {
   "name": "@el/exponential-interval-async",
-  "version": "0.0.1-experimental.0",
+  "version": "0.0.1-beta",
   "description": "",
   "private": true,
   "scripts": {
