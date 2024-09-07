@@ -21,10 +21,6 @@ tagName="v$publishVersion"
 echo "Setting package versions to: $publishVersion"
 ./node_modules/.bin/lerna version $publishVersion --exact --yes --no-git-tag-version --no-push --force-publish=\*
 
-# Install dependencies to update Yarn.lock
-echo "Updating yarn.lock file"
-yarn install
-
 # Add changes to Git
 echo "Committing version changes"
 git config user.name "github-actions"
@@ -35,7 +31,7 @@ git commit -m "Prerelease: $tagName"
 
 # Publish packages with the suffix as a tag
 echo "Publishing packages with tag: $suffix"
-./node_modules/.bin/lerna publish from-package --no-private --dist-tag $suffix --yes --no-git-tag-version --force-publish
+./node_modules/.bin/lerna publish from-package --no-private --dist-tag $suffix --loglevel verbose --yes --no-git-tag-version --force-publish
 
 # Push to the Git branch
 echo "Pushing to head branch"
