@@ -12,7 +12,7 @@ on:
         default: 'experimental'
       increment:
         description: 'Prerelease increment (e.g., 0, 1, 2. Note: without v)'
-        required: true
+        required: false
 
 jobs:
   publish:

@@ -7,7 +7,14 @@ set -e
 baseVersion=$BASE_VERSION
 suffix=$SUFFIX
 increment=$INCREMENT
-publishVersion="$baseVersion-$suffix.$increment"
+
+# Check if increment is empty or not set
+if [ -z "$increment" ]; then
+  publishVersion="$baseVersion-$suffix"
+else
+  publishVersion="$baseVersion-$suffix.$increment"
+fi
+
 tagName="v$publishVersion"
 
 # Update package versions (e.g., 0.0.1-beta.0)
