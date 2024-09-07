@@ -1,6 +1,6 @@
-import { EventsHandler, IEventHandler } from '@el/components/cqrs';
-import { RuntimeTracker } from '@el/components/logger';
-import { BitcoinListenerReorganisationProcessedEvent } from '@el/common/domain-cqrs-components/bitcoin-listener';
+import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
+import { RuntimeTracker } from '@easylayer/components/logger';
+import { BitcoinListenerReorganisationProcessedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-listener';
 
 @EventsHandler(BitcoinListenerReorganisationProcessedEvent)
 export class BitcoinListenerReorganisationProcessedEventHandler

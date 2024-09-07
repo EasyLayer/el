@@ -1,7 +1,7 @@
 import { PostgresError } from 'pg-error-enum';
 import { Injectable, Inject } from '@nestjs/common';
 import { Repository, QueryFailedError, In } from 'typeorm';
-import { AggregateRoot, IEvent } from '@el/components/cqrs';
+import { AggregateRoot, IEvent } from '@easylayer/components/cqrs';
 import { EventDataModel, BasicEvent } from './event-data.model';
 // import { SnapshotsModel } from './snapshots.model';
 

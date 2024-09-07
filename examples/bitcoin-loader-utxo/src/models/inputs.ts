@@ -1,4 +1,4 @@
-import { EntitySchema, generateModelFromSchema } from '@el/bitcoin-loader';
+import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
 import { IOutput } from './outputs';
 
 export interface IInput {

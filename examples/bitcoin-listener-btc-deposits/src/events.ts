@@ -1,4 +1,4 @@
-import { BlockchainEvent } from '@el/bitcoin-listener';
+import { BlockchainEvent } from '@easylayer/bitcoin-listener';
 
 export class DepositEvent implements BlockchainEvent {
   type: string = 'deposit';

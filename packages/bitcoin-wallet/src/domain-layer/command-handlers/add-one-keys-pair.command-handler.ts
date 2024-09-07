@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@el/components/cqrs';
-import { Transactional, EventStoreRepository } from '@el/components/eventstore';
-import { AddKeysPairCommand } from '@el/common/domain-cqrs-components/bitcoin-wallet';
-import { WalletService } from '@el/components/bitcoin-network-provider';
-import { AppLogger, RuntimeTracker } from '@el/components/logger';
+import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
+import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
+import { AddKeysPairCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-wallet';
+import { WalletService } from '@easylayer/components/bitcoin-network-provider';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Wallet } from '../models/wallet.model';
 import { WalletModelFactoryService } from '../services';
 import { KeysStorageRepositoryService } from '../../infrastructure-layer/services';

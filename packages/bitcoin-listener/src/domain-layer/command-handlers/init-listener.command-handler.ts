@@ -1,7 +1,7 @@
-import { CommandHandler, ICommandHandler } from '@el/components/cqrs';
-import { Transactional, EventStoreRepository } from '@el/components/eventstore';
-import { InitListenerCommand } from '@el/common/domain-cqrs-components/bitcoin-listener';
-import { AppLogger, RuntimeTracker } from '@el/components/logger';
+import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
+import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
+import { InitListenerCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-listener';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Listener } from '../models/listener.model';
 import { ListenerModelFactoryService } from '../services';
 

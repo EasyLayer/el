@@ -9,7 +9,7 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@el/bitcoin-wallet": "0.0.1-beta"
+    "@easylayer/bitcoin-wallet": "0.0.1-beta"
   },
   "devDependencies": {
     "@types/node": "20.10.4",

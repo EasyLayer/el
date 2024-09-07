@@ -1,1 +1,1 @@
-export { Schema } from '@el/components/views-keyvalue-db';
+export { Schema } from '@easylayer/components/views-keyvalue-db';

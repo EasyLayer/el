@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { EventPublisher } from '@el/components/cqrs';
-import { EventStoreRepository } from '@el/components/eventstore';
+import { EventPublisher } from '@easylayer/components/cqrs';
+import { EventStoreRepository } from '@easylayer/components/eventstore';
 import { Listener } from '../models/listener.model';
 
 @Injectable()

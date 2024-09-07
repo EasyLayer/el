@@ -1,8 +1,8 @@
-import { CommandHandler, ICommandHandler } from '@el/components/cqrs';
-import { Transactional, EventStoreRepository } from '@el/components/eventstore';
-import { NetworkProviderService } from '@el/components/bitcoin-network-provider';
-import { IndexBatchCommand } from '@el/common/domain-cqrs-components/bitcoin-indexer';
-import { AppLogger, RuntimeTracker } from '@el/components/logger';
+import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
+import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
+import { IndexBatchCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-indexer';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Indexer } from '../models/indexer.model';
 import { IndexerModelFactoryService } from '../services';
 

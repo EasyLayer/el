@@ -1,12 +1,12 @@
-import { AggregateRoot } from '@el/components/cqrs';
-import { NetworkProviderService, Blockchain } from '@el/components/bitcoin-network-provider';
+import { AggregateRoot } from '@easylayer/components/cqrs';
+import { NetworkProviderService, Blockchain } from '@easylayer/components/bitcoin-network-provider';
 import {
   BitcoinLoaderInitializedEvent,
   BitcoinLoaderBlocksIndexedEvent,
   BitcoinLoaderReorganisationStartedEvent,
   BitcoinLoaderReorganisationFinishedEvent,
   BitcoinLoaderReorganisationProcessedEvent,
-} from '@el/common/domain-cqrs-components/bitcoin-loader';
+} from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 
 enum LoaderStatuses {
   AWAITING = 'awaiting',

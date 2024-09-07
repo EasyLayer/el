@@ -1,6 +1,6 @@
-import { IIndexerMapper } from '@el/bitcoin-indexer';
-import { ScriptUtilService } from '@el/components/bitcoin-network-provider';
-import { Currency, Money } from '@el/common/arithmetic';
+import { IIndexerMapper } from '@easylayer/bitcoin-indexer';
+import { ScriptUtilService } from '@easylayer/components/bitcoin-network-provider';
+import { Currency, Money } from '@easylayer/common/arithmetic';
 import { OutputModel, BalanceModel } from './models';
 
 export class Mapper implements IIndexerMapper {

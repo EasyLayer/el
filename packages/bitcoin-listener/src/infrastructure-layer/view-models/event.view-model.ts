@@ -1,4 +1,4 @@
-import { Schema, generateModelFromSchema } from '@el/components/views-keyvalue-db';
+import { Schema, generateModelFromSchema } from '@easylayer/components/views-keyvalue-db';
 
 export const EventSchema = new Schema({
   prefix: 'event',

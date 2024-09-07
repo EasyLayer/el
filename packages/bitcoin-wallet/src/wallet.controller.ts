@@ -1,5 +1,5 @@
 import { Controller, Body, Post } from '@nestjs/common';
-import { WalletService } from '@el/components/bitcoin-network-provider';
+import { WalletService } from '@easylayer/components/bitcoin-network-provider';
 import { IsEnum, IsOptional, IsString, IsNumber } from 'class-validator';
 import { WalletCommandFactoryService } from './application-layer/services';
 import { ViewsEventsResponseService } from './infrastructure-layer/services';

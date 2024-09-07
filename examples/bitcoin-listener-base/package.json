@@ -9,7 +9,7 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@el/bitcoin-listener": "0.0.1-beta",
+    "@easylayer/bitcoin-listener": "0.0.1-beta",
     "socket.io-client": "4.7.5"
   },
   "devDependencies": {

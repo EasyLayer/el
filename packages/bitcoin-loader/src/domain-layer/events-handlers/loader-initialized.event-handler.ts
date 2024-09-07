@@ -1,10 +1,10 @@
 import { Inject } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@el/components/cqrs';
-import { RuntimeTracker } from '@el/components/logger';
-import { Transactional, QueryFailedError } from '@el/components/views-rdbms-db';
-import { BlocksQueueService } from '@el/components/bitcoin-blocks-queue';
-import { NetworkProviderService } from '@el/components/bitcoin-network-provider';
-import { BitcoinLoaderInitializedEvent } from '@el/common/domain-cqrs-components/bitcoin-loader';
+import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
+import { RuntimeTracker } from '@easylayer/components/logger';
+import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
+import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
+import { BitcoinLoaderInitializedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 // import { BlocksReadService, TransactionsReadService } from '../services';
 
 @EventsHandler(BitcoinLoaderInitializedEvent)

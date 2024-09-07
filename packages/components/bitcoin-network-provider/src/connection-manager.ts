@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { AppLogger } from '@el/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { BaseNodeProvider, ProviderNodeOptions } from './node-providers';
 
 @Injectable()

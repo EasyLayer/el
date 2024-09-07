@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { Injectable } from '@nestjs/common';
-import { AppLogger } from '@el/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { Block } from '../interfaces';
 import { BlocksQueue } from '../blocks-queue';
 import { BaseCollector, TransactionsBatchesCollector, TransactionsPagesCollector } from './collectors-templates';

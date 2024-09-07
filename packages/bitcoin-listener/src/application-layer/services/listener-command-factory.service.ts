@@ -1,7 +1,10 @@
 // import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { CommandBus } from '@el/components/cqrs';
-import { InitListenerCommand, ProcessReorganisationCommand } from '@el/common/domain-cqrs-components/bitcoin-listener';
+import { CommandBus } from '@easylayer/components/cqrs';
+import {
+  InitListenerCommand,
+  ProcessReorganisationCommand,
+} from '@easylayer/common/domain-cqrs-components/bitcoin-listener';
 
 @Injectable()
 export class ListenerCommandFactoryService {

@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Module, DynamicModule } from '@nestjs/common';
-import { LoggerModule, AppLogger } from '@el/components/logger';
+import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { NetworkProviderService } from './network-provider.service';
 import { ConnectionManager } from './connection-manager';
 import { KeyManagementService, ScriptUtilService, WalletService, TransactionService } from './utils';

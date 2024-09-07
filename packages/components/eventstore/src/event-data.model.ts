@@ -1,5 +1,5 @@
 import { Entity, Column, Unique, Index, PrimaryGeneratedColumn } from 'typeorm';
-import { IEvent } from '@el/components/cqrs';
+import { IEvent } from '@easylayer/components/cqrs';
 
 export interface BasicEvent<T> {
   payload: BasicEventPayload & T;

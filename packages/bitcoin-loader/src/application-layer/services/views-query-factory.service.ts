@@ -1,7 +1,7 @@
 // import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { QueryBus } from '@el/components/cqrs';
-import { GetManyQuery, GetOneQuery } from '@el/common/domain-cqrs-components/bitcoin-loader';
+import { QueryBus } from '@easylayer/components/cqrs';
+import { GetManyQuery, GetOneQuery } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 
 @Injectable()
 export class ViewsQueryFactoryService {

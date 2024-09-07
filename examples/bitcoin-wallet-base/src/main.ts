@@ -1,4 +1,4 @@
-import { bootstrap } from '@el/bitcoin-wallet';
+import { bootstrap } from '@easylayer/bitcoin-wallet';
 
 bootstrap({
   appName: 'easylayer',

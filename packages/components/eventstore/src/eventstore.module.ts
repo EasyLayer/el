@@ -3,7 +3,7 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, getDataSourceToken, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 import { DataSource, DataSourceOptions } from 'typeorm';
-import { LoggerModule, AppLogger } from '@el/components/logger';
+import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { EventDataModel } from './event-data.model';
 import { SnapshotsModel } from './snapshots.model';
 import { EventStoreRepository } from './eventstore.repository';

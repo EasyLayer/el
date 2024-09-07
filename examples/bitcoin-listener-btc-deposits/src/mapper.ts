@@ -1,6 +1,6 @@
-import { IListenerMapper, BlockchainEvent } from '@el/bitcoin-listener';
-import { ScriptUtilService } from '@el/components/bitcoin-network-provider';
-import { Currency, Money } from '@el/common/arithmetic';
+import { IListenerMapper, BlockchainEvent } from '@easylayer/bitcoin-listener';
+import { ScriptUtilService } from '@easylayer/components/bitcoin-network-provider';
+import { Currency, Money } from '@easylayer/common/arithmetic';
 import { DepositEvent } from './events';
 import { addresses } from './addreses';
 

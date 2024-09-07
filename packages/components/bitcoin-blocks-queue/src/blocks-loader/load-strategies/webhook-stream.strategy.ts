@@ -1,4 +1,4 @@
-import { WebhookStreamService } from '@el/components/bitcoin-network-provider';
+import { WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
 import { BlocksLoadingStrategy, StrategyNames } from './load-strategy.interface';
 import { Block } from '../../interfaces';
 import { BlocksQueue } from '../../blocks-queue';

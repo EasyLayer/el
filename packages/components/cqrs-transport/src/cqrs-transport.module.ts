@@ -1,5 +1,5 @@
 import { Module, OnModuleInit, Inject, DynamicModule } from '@nestjs/common';
-import { EventBus, CustomEventBus } from '@el/components/cqrs';
+import { EventBus, CustomEventBus } from '@easylayer/components/cqrs';
 import { Publisher } from './publisher';
 import { Subscriber } from './subscriber';
 

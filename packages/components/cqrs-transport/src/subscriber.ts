@@ -1,7 +1,7 @@
 import PQueue from 'p-queue';
 import { Subject, Subscription } from 'rxjs';
 import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
-import { IEvent, IMessageSource, EventBus, CustomEventBus } from '@el/components/cqrs';
+import { IEvent, IMessageSource, EventBus, CustomEventBus } from '@easylayer/components/cqrs';
 import { Publisher } from './publisher';
 
 @Injectable()

@@ -9,9 +9,9 @@ import {
   SubscribeMessage,
   MessageBody,
 } from '@nestjs/websockets';
-import { BasicMessage } from '@el/common/domain-cqrs-components';
-import { WebsocketMessage } from '@el/common/domain-cqrs-components/websocket-messages';
-import { EventBus, CustomEventBus } from '@el/components/cqrs';
+import { BasicMessage } from '@easylayer/common/domain-cqrs-components';
+import { WebsocketMessage } from '@easylayer/common/domain-cqrs-components/websocket-messages';
+import { EventBus, CustomEventBus } from '@easylayer/components/cqrs';
 
 @WebSocketGateway({
   cors: { credentials: false, origin: '*' },

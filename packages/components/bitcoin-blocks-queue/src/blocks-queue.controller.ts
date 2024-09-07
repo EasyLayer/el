@@ -1,6 +1,6 @@
 import { Controller, Post, Req, Res } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { WebhookStreamService } from '@el/components/bitcoin-network-provider';
+import { WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
 import { BlocksQueueLoaderService } from './blocks-loader/blocks-loader.service';
 import { Block } from './interfaces';
 

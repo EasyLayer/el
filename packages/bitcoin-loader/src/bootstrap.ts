@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { DynamicModule, INestApplication, INestApplicationContext } from '@nestjs/common';
-import { NestLogger, logger } from '@el/components/logger';
+import { NestLogger, logger } from '@easylayer/components/logger';
 import { BitcoinLoaderModule } from './loader.module';
 import { AppConfig } from './config';
 import { MapperType, EntitySchema } from './protocol';

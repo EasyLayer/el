@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppLogger } from '@el/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueueIteratorService } from '../blocks-iterator.service';
 import { BlocksQueue } from '../../blocks-queue';
 import { Block, BlocksCommandExecutor } from '../../interfaces';

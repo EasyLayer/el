@@ -1,5 +1,5 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { NETWORK_TRANSPORT_SERVICE } from '@el/common/shared-interfaces';
+import { NETWORK_TRANSPORT_SERVICE } from '@easylayer/common/shared-interfaces';
 import { NetworkTransportService } from './network-transport.service';
 
 @Module({})

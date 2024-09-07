@@ -1,4 +1,4 @@
-import { ILoaderMapper } from '@el/bitcoin-loader';
+import { ILoaderMapper } from '@easylayer/bitcoin-loader';
 import { BlockModel, TransactionModel } from './models';
 
 export class Mapper implements ILoaderMapper {

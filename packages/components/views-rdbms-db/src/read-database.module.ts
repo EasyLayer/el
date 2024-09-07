@@ -3,7 +3,7 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions, getDataSourceToken } from '@nestjs/typeorm';
 import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 import { DataSource, DataSourceOptions, EntitySchema } from 'typeorm';
-import { LoggerModule, AppLogger } from '@el/components/logger';
+import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseService } from './read-database.service';
 
 type ReadDatabaseModuleConfig = TypeOrmModuleOptions & {

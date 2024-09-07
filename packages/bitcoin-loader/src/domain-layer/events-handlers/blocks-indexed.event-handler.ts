@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
-import { EventsHandler, IEventHandler } from '@el/components/cqrs';
-import { RuntimeTracker } from '@el/components/logger';
-import { BlocksQueueService } from '@el/components/bitcoin-blocks-queue';
-import { Transactional, QueryFailedError } from '@el/components/views-rdbms-db';
-import { BitcoinLoaderBlocksIndexedEvent } from '@el/common/domain-cqrs-components/bitcoin-loader';
+import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
+import { RuntimeTracker } from '@easylayer/components/logger';
+import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
+import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
+import { BitcoinLoaderBlocksIndexedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
 import { System } from '../../infrastructure-layer/view-models';

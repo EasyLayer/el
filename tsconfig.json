@@ -15,21 +15,21 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@el/common/*": ["packages/common/*/src"],
-      "@el/components/*": ["packages/components/*/src"],
-      "@el/*": ["packages/*/src"],
-      "@el/common/domain-cqrs-components": ["packages/common/domain-cqrs-components/dist/index"],
-      "@el/common/domain-cqrs-components/*": ["packages/common/domain-cqrs-components/dist/*"],
-      "@el/common/domain-cqrs-components/websocket-messages": ["packages/common/domain-cqrs-components/dist/websocket-messages/index"],
-      "@el/common/domain-cqrs-components/websocket-messages/*": ["packages/common/domain-cqrs-components/dist/websocket-messages/*"],
-      "@el/common/domain-cqrs-components/bitcoin-indexer": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-indexer/index"],
-      "@el/common/domain-cqrs-components/bitcoin-indexer/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-indexer/*"],
-      "@el/common/domain-cqrs-components/bitcoin-loader": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-loader/index"],
-      "@el/common/domain-cqrs-components/bitcoin-loader/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-loader/*"],
-      "@el/common/domain-cqrs-components/bitcoin-listener": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-listener/index"],
-      "@el/common/domain-cqrs-components/bitcoin-listener/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-listener/*"],
-      "@el/common/domain-cqrs-components/bitcoin-wallet": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-wallet/index"],
-      "@el/common/domain-cqrs-components/bitcoin-wallet/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-wallet/*"]
+      "@easylayer/common/*": ["packages/common/*/src"],
+      "@easylayer/components/*": ["packages/components/*/src"],
+      "@easylayer/*": ["packages/*/src"],
+      "@easylayer/common/domain-cqrs-components": ["packages/common/domain-cqrs-components/dist/index"],
+      "@easylayer/common/domain-cqrs-components/*": ["packages/common/domain-cqrs-components/dist/*"],
+      "@easylayer/common/domain-cqrs-components/websocket-messages": ["packages/common/domain-cqrs-components/dist/websocket-messages/index"],
+      "@easylayer/common/domain-cqrs-components/websocket-messages/*": ["packages/common/domain-cqrs-components/dist/websocket-messages/*"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-indexer": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-indexer/index"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-indexer/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-indexer/*"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-loader": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-loader/index"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-loader/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-loader/*"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-listener": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-listener/index"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-listener/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-listener/*"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-wallet": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-wallet/index"],
+      "@easylayer/common/domain-cqrs-components/bitcoin-wallet/*": ["packages/common/domain-cqrs-components/dist/bitcoin/bitcoin-wallet/*"]
     }
   }
 }

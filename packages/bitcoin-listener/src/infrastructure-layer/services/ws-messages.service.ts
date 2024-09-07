@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { WebsocketMessagesGateway } from '@el/components/websocket-messages';
+import { WebsocketMessagesGateway } from '@easylayer/components/websocket-messages';
 
 @Injectable()
 export class WsMessagesService {

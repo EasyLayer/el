@@ -1,4 +1,4 @@
-import { bootstrap } from '@el/bitcoin-listener';
+import { bootstrap } from '@easylayer/bitcoin-listener';
 import { EventsMapper } from './mapper';
 import { initializeWebSocket } from './ws';
 

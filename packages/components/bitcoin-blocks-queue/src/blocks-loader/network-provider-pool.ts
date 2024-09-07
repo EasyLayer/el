@@ -6,7 +6,7 @@ import {
   NetworkProviderService,
   ProviderNodeOptions,
   ProviderOptions,
-} from '@el/components/bitcoin-network-provider';
+} from '@easylayer/components/bitcoin-network-provider';
 
 class ApplicationContextProvider {
   private static appContext: INestApplicationContext | null;

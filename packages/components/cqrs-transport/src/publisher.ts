@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { IEvent, IEventPublisher } from '@el/components/cqrs';
+import { IEvent, IEventPublisher } from '@easylayer/components/cqrs';
 import { Subject } from 'rxjs';
 import PQueue from 'p-queue';
 

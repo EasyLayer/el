@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, OneToMany, JoinColumn, Index } from '@el/components/secure-storage';
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  ManyToOne,
+  OneToMany,
+  JoinColumn,
+  Index,
+} from '@easylayer/components/secure-storage';
 
 @Entity('keys')
 export class KeysViewModel {

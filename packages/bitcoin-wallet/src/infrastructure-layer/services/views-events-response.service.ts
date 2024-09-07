@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CustomEventBus, EventBus } from '@el/components/cqrs';
+import { CustomEventBus, EventBus } from '@easylayer/components/cqrs';
 import { filter, firstValueFrom } from 'rxjs';
 
 @Injectable()

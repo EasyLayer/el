@@ -1,9 +1,9 @@
 // import { v4 as uuidv4 } from 'uuid';
-import { CommandHandler, ICommandHandler } from '@el/components/cqrs';
-import { Transactional, EventStoreRepository } from '@el/components/eventstore';
-import { HandleBatchCommand } from '@el/common/domain-cqrs-components/bitcoin-listener';
-import { AppLogger, RuntimeTracker } from '@el/components/logger';
-import { NetworkProviderService } from '@el/components/bitcoin-network-provider';
+import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
+import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
+import { HandleBatchCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-listener';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
 import { Listener } from '../models/listener.model';
 import { ListenerModelFactoryService } from '../services';
 

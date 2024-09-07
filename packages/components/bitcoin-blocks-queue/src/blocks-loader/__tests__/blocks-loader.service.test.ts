@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NetworkProviderService, WebhookStreamService } from '@el/components/bitcoin-network-provider';
-import { AppLogger } from '@el/components/logger';
+import { NetworkProviderService, WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueueLoaderService } from '../blocks-loader.service';
 import { BlocksQueue } from '../../blocks-queue';
 import { Block } from '../../interfaces';

@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { INetworkTransportService } from '@el/common/shared-interfaces';
-import { QueryBus, IQuery } from '@el/components/cqrs';
+import { INetworkTransportService } from '@easylayer/common/shared-interfaces';
+import { QueryBus, IQuery } from '@easylayer/components/cqrs';
 
 @Injectable()
 export class NetworkTransportService implements INetworkTransportService {

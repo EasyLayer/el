@@ -674,9 +674,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@el/arithmetic@workspace:packages/common/arithmetic":
+"@easylayer/arithmetic@workspace:packages/common/arithmetic":
   version: 0.0.0-use.local
-  resolution: "@el/arithmetic@workspace:packages/common/arithmetic"
+  resolution: "@easylayer/arithmetic@workspace:packages/common/arithmetic"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -696,11 +696,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-blocks-queue@workspace:packages/components/bitcoin-blocks-queue":
+"@easylayer/bitcoin-blocks-queue@workspace:packages/components/bitcoin-blocks-queue":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-blocks-queue@workspace:packages/components/bitcoin-blocks-queue"
+  resolution: "@easylayer/bitcoin-blocks-queue@workspace:packages/components/bitcoin-blocks-queue"
   dependencies:
-    "@el/common": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/swagger": 7.1.17
@@ -722,12 +722,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-indexer@0.0.1-beta, @el/bitcoin-indexer@workspace:packages/bitcoin-indexer":
+"@easylayer/bitcoin-indexer@0.0.1-beta, @easylayer/bitcoin-indexer@workspace:packages/bitcoin-indexer":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-indexer@workspace:packages/bitcoin-indexer"
+  resolution: "@easylayer/bitcoin-indexer@workspace:packages/bitcoin-indexer"
   dependencies:
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/platform-express": 10.2.10
@@ -754,12 +754,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-listener@0.0.1-beta, @el/bitcoin-listener@workspace:packages/bitcoin-listener":
+"@easylayer/bitcoin-listener@0.0.1-beta, @easylayer/bitcoin-listener@workspace:packages/bitcoin-listener":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-listener@workspace:packages/bitcoin-listener"
+  resolution: "@easylayer/bitcoin-listener@workspace:packages/bitcoin-listener"
   dependencies:
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/testing": 10.2.10
@@ -783,12 +783,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-loader@0.0.1-beta, @el/bitcoin-loader@workspace:packages/bitcoin-loader":
+"@easylayer/bitcoin-loader@0.0.1-beta, @easylayer/bitcoin-loader@workspace:packages/bitcoin-loader":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-loader@workspace:packages/bitcoin-loader"
+  resolution: "@easylayer/bitcoin-loader@workspace:packages/bitcoin-loader"
   dependencies:
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@nestjs-query/core": 0.30.0
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -817,9 +817,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-network-provider@workspace:packages/components/bitcoin-network-provider":
+"@easylayer/bitcoin-network-provider@workspace:packages/components/bitcoin-network-provider":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-network-provider@workspace:packages/components/bitcoin-network-provider"
+  resolution: "@easylayer/bitcoin-network-provider@workspace:packages/components/bitcoin-network-provider"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -855,12 +855,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/bitcoin-wallet@0.0.1-beta, @el/bitcoin-wallet@workspace:packages/bitcoin-wallet":
+"@easylayer/bitcoin-wallet@0.0.1-beta, @easylayer/bitcoin-wallet@workspace:packages/bitcoin-wallet":
   version: 0.0.0-use.local
-  resolution: "@el/bitcoin-wallet@workspace:packages/bitcoin-wallet"
+  resolution: "@easylayer/bitcoin-wallet@workspace:packages/bitcoin-wallet"
   dependencies:
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@nestjs-query/core": 0.30.0
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -885,9 +885,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/common@0.0.1-beta, @el/common@workspace:packages/common":
+"@easylayer/common@0.0.1-beta, @easylayer/common@workspace:packages/common":
   version: 0.0.0-use.local
-  resolution: "@el/common@workspace:packages/common"
+  resolution: "@easylayer/common@workspace:packages/common"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -904,11 +904,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/components@0.0.1-beta, @el/components@workspace:packages/components":
+"@easylayer/components@0.0.1-beta, @easylayer/components@workspace:packages/components":
   version: 0.0.0-use.local
-  resolution: "@el/components@workspace:packages/components"
+  resolution: "@easylayer/components@workspace:packages/components"
   dependencies:
-    "@el/common": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/cqrs": 10.2.6
@@ -943,9 +943,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/cqrs-transport@workspace:packages/components/cqrs-transport":
+"@easylayer/cqrs-transport@workspace:packages/components/cqrs-transport":
   version: 0.0.0-use.local
-  resolution: "@el/cqrs-transport@workspace:packages/components/cqrs-transport"
+  resolution: "@easylayer/cqrs-transport@workspace:packages/components/cqrs-transport"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -965,9 +965,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/cqrs@workspace:packages/components/cqrs":
+"@easylayer/cqrs@workspace:packages/components/cqrs":
   version: 0.0.0-use.local
-  resolution: "@el/cqrs@workspace:packages/components/cqrs"
+  resolution: "@easylayer/cqrs@workspace:packages/components/cqrs"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -986,9 +986,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/domain-cqrs-components@workspace:packages/common/domain-cqrs-components":
+"@easylayer/domain-cqrs-components@workspace:packages/common/domain-cqrs-components":
   version: 0.0.0-use.local
-  resolution: "@el/domain-cqrs-components@workspace:packages/common/domain-cqrs-components"
+  resolution: "@easylayer/domain-cqrs-components@workspace:packages/common/domain-cqrs-components"
   dependencies:
     "@types/node": 20.10.4
     ts-node: 10.9.2
@@ -996,9 +996,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/eventstore@workspace:packages/components/eventstore":
+"@easylayer/eventstore@workspace:packages/components/eventstore":
   version: 0.0.0-use.local
-  resolution: "@el/eventstore@workspace:packages/components/eventstore"
+  resolution: "@easylayer/eventstore@workspace:packages/components/eventstore"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -1021,9 +1021,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/exponential-interval-async@workspace:packages/common/exponential-interval-async":
+"@easylayer/exponential-interval-async@workspace:packages/common/exponential-interval-async":
   version: 0.0.0-use.local
-  resolution: "@el/exponential-interval-async@workspace:packages/common/exponential-interval-async"
+  resolution: "@easylayer/exponential-interval-async@workspace:packages/common/exponential-interval-async"
   dependencies:
     "@types/jest": 29.5.11
     "@types/node": 20.10.4
@@ -1034,9 +1034,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/logger@workspace:packages/components/logger":
+"@easylayer/logger@workspace:packages/components/logger":
   version: 0.0.0-use.local
-  resolution: "@el/logger@workspace:packages/components/logger"
+  resolution: "@easylayer/logger@workspace:packages/components/logger"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -1055,11 +1055,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/network-transport@workspace:packages/components/network-transport":
+"@easylayer/network-transport@workspace:packages/components/network-transport":
   version: 0.0.0-use.local
-  resolution: "@el/network-transport@workspace:packages/components/network-transport"
+  resolution: "@easylayer/network-transport@workspace:packages/components/network-transport"
   dependencies:
-    "@el/components": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/testing": 10.2.10
@@ -1078,9 +1078,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/secure-storage@workspace:packages/components/secure-storage":
+"@easylayer/secure-storage@workspace:packages/components/secure-storage":
   version: 0.0.0-use.local
-  resolution: "@el/secure-storage@workspace:packages/components/secure-storage"
+  resolution: "@easylayer/secure-storage@workspace:packages/components/secure-storage"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -1100,18 +1100,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/shared-interfaces@workspace:packages/common/shared-interfaces":
+"@easylayer/shared-interfaces@workspace:packages/common/shared-interfaces":
   version: 0.0.0-use.local
-  resolution: "@el/shared-interfaces@workspace:packages/common/shared-interfaces"
+  resolution: "@easylayer/shared-interfaces@workspace:packages/common/shared-interfaces"
   dependencies:
     "@types/node": 20.10.4
     typescript: 5.3.3
   languageName: unknown
   linkType: soft
 
-"@el/views-keyvalue-db@workspace:packages/components/views-keyvalue-db":
+"@easylayer/views-keyvalue-db@workspace:packages/components/views-keyvalue-db":
   version: 0.0.0-use.local
-  resolution: "@el/views-keyvalue-db@workspace:packages/components/views-keyvalue-db"
+  resolution: "@easylayer/views-keyvalue-db@workspace:packages/components/views-keyvalue-db"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -1130,9 +1130,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/views-rdbms-db@workspace:packages/components/views-rdbms-db":
+"@easylayer/views-rdbms-db@workspace:packages/components/views-rdbms-db":
   version: 0.0.0-use.local
-  resolution: "@el/views-rdbms-db@workspace:packages/components/views-rdbms-db"
+  resolution: "@easylayer/views-rdbms-db@workspace:packages/components/views-rdbms-db"
   dependencies:
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -1154,11 +1154,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@el/websocket-messages@workspace:packages/components/websocket-messages":
+"@easylayer/websocket-messages@workspace:packages/components/websocket-messages":
   version: 0.0.0-use.local
-  resolution: "@el/websocket-messages@workspace:packages/components/websocket-messages"
+  resolution: "@easylayer/websocket-messages@workspace:packages/components/websocket-messages"
   dependencies:
-    "@el/common": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/platform-socket.io": 10.2.10
@@ -3715,9 +3715,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-indexer-btc-balances@workspace:examples/bitcoin-indexer-btc-balances"
   dependencies:
-    "@el/bitcoin-indexer": 0.0.1-beta
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/bitcoin-indexer": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3729,7 +3729,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-listener-base@workspace:examples/bitcoin-listener-base"
   dependencies:
-    "@el/bitcoin-listener": 0.0.1-beta
+    "@easylayer/bitcoin-listener": 0.0.1-beta
     "@types/node": 20.10.4
     "@types/socket.io-client": 3.0.0
     rimraf: 5.0.5
@@ -3743,9 +3743,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-listener-btc-deposits@workspace:examples/bitcoin-listener-btc-deposits"
   dependencies:
-    "@el/bitcoin-listener": 0.0.1-beta
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/bitcoin-listener": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@types/node": 20.10.4
     "@types/socket.io-client": 3.0.0
     rimraf: 5.0.5
@@ -3759,7 +3759,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-base@workspace:examples/bitcoin-loader-base"
   dependencies:
-    "@el/bitcoin-loader": 0.0.1-beta
+    "@easylayer/bitcoin-loader": 0.0.1-beta
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3771,9 +3771,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-utxo@workspace:examples/bitcoin-loader-utxo"
   dependencies:
-    "@el/bitcoin-loader": 0.0.1-beta
-    "@el/common": 0.0.1-beta
-    "@el/components": 0.0.1-beta
+    "@easylayer/bitcoin-loader": 0.0.1-beta
+    "@easylayer/common": 0.0.1-beta
+    "@easylayer/components": 0.0.1-beta
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3785,7 +3785,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-with-relation@workspace:examples/bitcoin-loader-with-relation"
   dependencies:
-    "@el/bitcoin-loader": 0.0.1-beta
+    "@easylayer/bitcoin-loader": 0.0.1-beta
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3797,7 +3797,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-wallet@workspace:examples/bitcoin-wallet-base"
   dependencies:
-    "@el/bitcoin-wallet": 0.0.1-beta
+    "@easylayer/bitcoin-wallet": 0.0.1-beta
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -5258,6 +5258,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"easylayer@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "easylayer@workspace:."
+  dependencies:
+    "@commitlint/cli": 18.4.3
+    "@commitlint/config-conventional": 18.4.3
+    "@typescript-eslint/eslint-plugin": 6.13.2
+    "@typescript-eslint/parser": 6.13.2
+    commitizen: 4.3.0
+    cz-conventional-changelog: 3.3.0
+    eslint: 8.55.0
+    eslint-config-prettier: 9.1.0
+    eslint-plugin-prettier: 5.0.1
+    husky: 8.0.3
+    lerna: 8.0.0
+    prettier: 3.1.1
+    rimraf: 5.0.5
+    ts-patch: 3.2.1
+    typedoc: 0.25.6
+    typescript: 5.3.3
+    typescript-transform-paths: 3.4.7
+  languageName: unknown
+  linkType: soft
+
 "ecc-jsbn@npm:~0.1.1":
   version: 0.1.2
   resolution: "ecc-jsbn@npm:0.1.2"
@@ -5296,30 +5320,6 @@ __metadata:
   checksum: ce90637e9c7538663ae023b8a7a380b2ef7cc4096de70be85abf5a3b9641912dde65353211d05e24d56b1f242d71185c6d00e02cb8860701d571786d92c71f05
   languageName: node
   linkType: hard
-
-"el@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "el@workspace:."
-  dependencies:
-    "@commitlint/cli": 18.4.3
-    "@commitlint/config-conventional": 18.4.3
-    "@typescript-eslint/eslint-plugin": 6.13.2
-    "@typescript-eslint/parser": 6.13.2
-    commitizen: 4.3.0
-    cz-conventional-changelog: 3.3.0
-    eslint: 8.55.0
-    eslint-config-prettier: 9.1.0
-    eslint-plugin-prettier: 5.0.1
-    husky: 8.0.3
-    lerna: 8.0.0
-    prettier: 3.1.1
-    rimraf: 5.0.5
-    ts-patch: 3.2.1
-    typedoc: 0.25.6
-    typescript: 5.3.3
-    typescript-transform-paths: 3.4.7
-  languageName: unknown
-  linkType: soft
 
 "electron-to-chromium@npm:^1.5.4":
   version: 1.5.18

@@ -9,9 +9,9 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@el/bitcoin-loader": "0.0.1-beta",
-    "@el/common": "0.0.1-beta",
-    "@el/components": "0.0.1-beta"
+    "@easylayer/bitcoin-loader": "0.0.1-beta",
+    "@easylayer/common": "0.0.1-beta",
+    "@easylayer/components": "0.0.1-beta"
   },
   "devDependencies": {
     "@types/node": "20.10.4",

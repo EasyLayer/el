@@ -1,7 +1,7 @@
 // import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { CommandBus } from '@el/components/cqrs';
-import { LoadBatchCommand } from '@el/common/domain-cqrs-components/bitcoin-loader';
+import { CommandBus } from '@easylayer/components/cqrs';
+import { LoadBatchCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 
 @Injectable()
 export class BlocksCommandFactoryService {

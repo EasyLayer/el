@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { AppLogger } from '@el/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { LoaderCommandFactoryService } from './application-layer/services';
 import { ViewsReadRepositoryService } from './infrastructure-layer/services';
 import { BusinessConfig } from './config';

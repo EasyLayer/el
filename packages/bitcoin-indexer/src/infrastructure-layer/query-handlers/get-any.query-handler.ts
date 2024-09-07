@@ -1,5 +1,5 @@
-import { IQueryHandler, QueryHandler } from '@el/components/cqrs';
-import { GetAnyQuery } from '@el/common/domain-cqrs-components/bitcoin-indexer';
+import { IQueryHandler, QueryHandler } from '@easylayer/components/cqrs';
+import { GetAnyQuery } from '@easylayer/common/domain-cqrs-components/bitcoin-indexer';
 import { ViewsReadRepositoryService } from '../services/views-read-repository.service';
 
 @QueryHandler(GetAnyQuery)

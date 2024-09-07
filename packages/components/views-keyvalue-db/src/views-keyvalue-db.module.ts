@@ -1,6 +1,6 @@
 import { resolve } from 'node:path';
 import { Module, DynamicModule } from '@nestjs/common';
-import { LoggerModule } from '@el/components/logger';
+import { LoggerModule } from '@easylayer/components/logger';
 import { OKMModule, Schema } from './okm';
 import { ViewsKeyValueDatabaseService } from './views-keyvalue-db.service';
 

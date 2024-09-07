@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { AppLogger } from '@el/components/logger';
-import { NetworkProviderService, WebhookStreamService } from '@el/components/bitcoin-network-provider';
-import { exponentialIntervalAsync } from '@el/common/exponential-interval-async';
+import { AppLogger } from '@easylayer/components/logger';
+import { NetworkProviderService, WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
+import { exponentialIntervalAsync } from '@easylayer/common/exponential-interval-async';
 import { BlocksQueue } from '../blocks-queue';
 import { Block } from '../interfaces';
 import {

@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import Piscina from 'piscina';
-import { NetworkProviderService } from '@el/components/bitcoin-network-provider';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
 import { BlocksLoadingStrategy, StrategyNames } from './load-strategy.interface';
 import { Block } from '../../interfaces';
 import { BlocksQueue } from '../../blocks-queue';

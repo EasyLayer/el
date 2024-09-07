@@ -1,7 +1,7 @@
-import { EventsHandler, IEventHandler } from '@el/components/cqrs';
-import { RuntimeTracker } from '@el/components/logger';
-import { Transactional, QueryFailedError } from '@el/components/views-rdbms-db';
-import { BitcoinLoaderReorganisationProcessedEvent } from '@el/common/domain-cqrs-components/bitcoin-loader';
+import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
+import { RuntimeTracker } from '@easylayer/components/logger';
+import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
+import { BitcoinLoaderReorganisationProcessedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 // import { BlocksReadService } from '../services';
 
 @EventsHandler(BitcoinLoaderReorganisationProcessedEvent)

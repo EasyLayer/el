@@ -1,6 +1,6 @@
-import { ILoaderMapper } from '@el/bitcoin-loader';
-import { ScriptUtilService } from '@el/components/bitcoin-network-provider';
-import { Currency, Money } from '@el/common/arithmetic';
+import { ILoaderMapper } from '@easylayer/bitcoin-loader';
+import { ScriptUtilService } from '@easylayer/components/bitcoin-network-provider';
+import { Currency, Money } from '@easylayer/common/arithmetic';
 import { OutputModel, InputModel } from './models';
 
 export class Mapper implements ILoaderMapper {

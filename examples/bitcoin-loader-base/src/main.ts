@@ -1,4 +1,4 @@
-import { bootstrap } from '@el/bitcoin-loader';
+import { bootstrap } from '@easylayer/bitcoin-loader';
 import { BlockSchema } from './blocks';
 import { BlocksMapper } from './mapper';
 

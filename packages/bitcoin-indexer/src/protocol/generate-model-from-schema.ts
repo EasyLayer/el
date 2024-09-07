@@ -1,1 +1,1 @@
-export { generateModelFromSchema } from '@el/components/views-keyvalue-db';
+export { generateModelFromSchema } from '@easylayer/components/views-keyvalue-db';

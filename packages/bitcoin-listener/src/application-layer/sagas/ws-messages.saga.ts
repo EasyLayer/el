@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Saga, ICommand, executeWithRetry } from '@el/components/cqrs';
-import { WebsocketMessage } from '@el/common/domain-cqrs-components/websocket-messages';
+import { Saga, ICommand, executeWithRetry } from '@easylayer/components/cqrs';
+import { WebsocketMessage } from '@easylayer/common/domain-cqrs-components/websocket-messages';
 import { WsMessagesService } from '../../infrastructure-layer/services';
 
 @Injectable()

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { CqrsModule } from '@el/components/cqrs';
+import { CqrsModule } from '@easylayer/components/cqrs';
 import { CqrsTransportModule } from '../cqrs-transport.module';
 
 describe('CqrsTransportModule', () => {

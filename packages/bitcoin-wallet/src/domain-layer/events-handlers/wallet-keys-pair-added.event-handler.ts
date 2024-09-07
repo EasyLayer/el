@@ -1,5 +1,5 @@
-import { EventsHandler, IEventHandler } from '@el/components/cqrs';
-import { BitcoinWalletKeysPairAddedEvent } from '@el/common/domain-cqrs-components/bitcoin-wallet';
+import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
+import { BitcoinWalletKeysPairAddedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-wallet';
 
 @EventsHandler(BitcoinWalletKeysPairAddedEvent)
 export class BitcoinWalletKeysPairAddedEventHandler implements IEventHandler<BitcoinWalletKeysPairAddedEvent> {

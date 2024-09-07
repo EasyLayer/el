@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, DataSource, Repository } from '@el/components/views-rdbms-db';
-import { AppLogger } from '@el/components/logger';
+import { InjectDataSource, DataSource, Repository } from '@easylayer/components/views-rdbms-db';
+import { AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseConfig } from '../../config';
 import { System } from '../view-models';
 

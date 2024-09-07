@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn } from '@el/components/views-rdbms-db';
+import { Entity, Column, PrimaryColumn } from '@easylayer/components/views-rdbms-db';
 
 @Entity('system')
 export class System {

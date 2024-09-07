@@ -1,10 +1,10 @@
-import { AggregateRoot } from '@el/components/cqrs';
-import { WalletService } from '@el/components/bitcoin-network-provider';
-import { AppLogger } from '@el/components/logger';
+import { AggregateRoot } from '@easylayer/components/cqrs';
+import { WalletService } from '@easylayer/components/bitcoin-network-provider';
+import { AppLogger } from '@easylayer/components/logger';
 import {
   BitcoinWalletInitializedEvent,
   BitcoinWalletKeysPairAddedEvent,
-} from '@el/common/domain-cqrs-components/bitcoin-wallet';
+} from '@easylayer/common/domain-cqrs-components/bitcoin-wallet';
 import { KeysStorageRepositoryService } from '../../infrastructure-layer/services';
 
 export class Wallet extends AggregateRoot {

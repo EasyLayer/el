@@ -1,4 +1,4 @@
-import { bootstrap } from '@el/bitcoin-indexer';
+import { bootstrap } from '@easylayer/bitcoin-indexer';
 import { OutputSchema, BalanceSchema } from './models';
 import { Mapper } from './mapper';
 

@@ -1,7 +1,7 @@
 // import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import { CommandBus } from '@el/components/cqrs';
-import { InitWalletCommand, AddKeysPairCommand } from '@el/common/domain-cqrs-components/bitcoin-wallet';
+import { CommandBus } from '@easylayer/components/cqrs';
+import { InitWalletCommand, AddKeysPairCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-wallet';
 
 @Injectable()
 export class WalletCommandFactoryService {

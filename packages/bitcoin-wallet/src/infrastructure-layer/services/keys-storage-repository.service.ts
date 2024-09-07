@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository, InjectRepository } from '@el/components/secure-storage';
+import { Repository, InjectRepository } from '@easylayer/components/secure-storage';
 import { KeysViewModel } from '../view-models';
 
 @Injectable()

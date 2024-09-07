@@ -1,4 +1,4 @@
-import { Schema, generateModelFromSchema } from '@el/bitcoin-indexer';
+import { Schema, generateModelFromSchema } from '@easylayer/bitcoin-indexer';
 
   //balance:<address>:<txid_vout>
 export const BalanceSchema = new Schema({

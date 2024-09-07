@@ -1,7 +1,7 @@
-import { CommandHandler, ICommandHandler } from '@el/components/cqrs';
-import { Transactional, EventStoreRepository } from '@el/components/eventstore';
-import { InitWalletCommand } from '@el/common/domain-cqrs-components/bitcoin-wallet';
-import { AppLogger, RuntimeTracker } from '@el/components/logger';
+import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
+import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
+import { InitWalletCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-wallet';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Wallet } from '../models/wallet.model';
 import { WalletModelFactoryService } from '../services';
 

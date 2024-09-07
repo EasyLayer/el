@@ -1,4 +1,4 @@
-import { BaseViewModel } from '@el/bitcoin-listener';
+import { BaseViewModel } from '@easylayer/bitcoin-listener';
 
 export class BlockEvent implements BaseViewModel {
   type: string = 'newblock';

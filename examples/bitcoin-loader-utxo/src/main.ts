@@ -1,4 +1,4 @@
-import { bootstrap } from '@el/bitcoin-loader';
+import { bootstrap } from '@easylayer/bitcoin-loader';
 import { OutputSchema, InputSchema } from './models';
 import { Mapper } from './mapper';
 

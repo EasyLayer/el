@@ -1,4 +1,4 @@
-import { IListenerMapper, BaseViewModel } from '@el/bitcoin-listener';
+import { IListenerMapper, BaseViewModel } from '@easylayer/bitcoin-listener';
 import { BlockEvent, TransactionEvent } from './events';
 
 export class EventsMapper implements IListenerMapper {

@@ -1,3 +1,3 @@
-// export { BaseModel } from '@el/components/views-keyvalue-db';
+// export { BaseModel } from '@easylayer/components/views-keyvalue-db';
 
 export class BaseViewModel {}

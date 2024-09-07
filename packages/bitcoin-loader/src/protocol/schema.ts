@@ -1,1 +1,1 @@
-export { EntitySchema } from '@el/components/views-rdbms-db';
+export { EntitySchema } from '@easylayer/components/views-rdbms-db';

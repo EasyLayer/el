@@ -1,4 +1,4 @@
-import { Schema, generateModelFromSchema } from '@el/bitcoin-indexer';
+import { Schema, generateModelFromSchema } from '@easylayer/bitcoin-indexer';
 
 // utxo:<txid_vout>
 export const OutputSchema = new Schema({

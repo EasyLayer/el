@@ -3,7 +3,7 @@ import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions, getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntitySchema } from 'typeorm';
 import BetterSqlite3 from 'better-sqlite3-multiple-ciphers';
-import { LoggerModule, AppLogger } from '@el/components/logger';
+import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseService } from './secure-storage.service';
 
 type SecureStorageModuleConfig = TypeOrmModuleOptions & {

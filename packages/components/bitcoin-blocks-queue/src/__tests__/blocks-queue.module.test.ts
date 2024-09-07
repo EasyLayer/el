@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Type } from '@nestjs/common';
-import { NetworkProviderModule } from '@el/components/bitcoin-network-provider';
-import { LoggerModule } from '@el/components/logger';
+import { NetworkProviderModule } from '@easylayer/components/bitcoin-network-provider';
+import { LoggerModule } from '@easylayer/components/logger';
 import { BlocksQueueModule, BlocksQueueModuleOptions } from '../blocks-queue.module';
 import { BlocksQueueController } from '../blocks-queue.controller';
 import { BlocksQueueService } from '../blocks-queue.service';

@@ -1,5 +1,5 @@
 {
-  "name": "@el/cqrs-transport",
+  "name": "@easylayer/cqrs-transport",
   "version": "0.0.1-beta",
   "description": "",
   "private": true,

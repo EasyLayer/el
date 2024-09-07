@@ -1,5 +1,5 @@
 import { Module, DynamicModule } from '@nestjs/common';
-import { CqrsModule } from '@el/components/cqrs';
+import { CqrsModule } from '@easylayer/components/cqrs';
 import { WebsocketMessagesGateway } from './websocket-messages.gateway';
 
 @Module({})

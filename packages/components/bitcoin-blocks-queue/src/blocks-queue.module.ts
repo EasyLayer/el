@@ -1,6 +1,6 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
-import { NetworkProviderService, WebhookStreamService } from '@el/components/bitcoin-network-provider';
-import { LoggerModule, AppLogger } from '@el/components/logger';
+import { NetworkProviderService, WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
+import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { BlocksQueueController } from './blocks-queue.controller';
 import { BlocksQueueService } from './blocks-queue.service';
 import { BlocksQueueIteratorService } from './blocks-iterator';

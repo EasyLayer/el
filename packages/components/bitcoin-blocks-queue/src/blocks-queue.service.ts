@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppLogger } from '@el/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueue } from './blocks-queue';
 import { Block } from './interfaces';
 import { BlocksQueueIteratorService } from './blocks-iterator';

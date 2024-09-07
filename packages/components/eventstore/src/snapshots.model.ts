@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryColumn } from 'typeorm';
-import { AggregateRoot } from '@el/components/cqrs';
+import { AggregateRoot } from '@easylayer/components/cqrs';
 
 export interface SnapshotParameters {
   aggregateId: string;

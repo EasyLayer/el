@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Repository } from '@el/components/views-keyvalue-db';
+import { Repository } from '@easylayer/components/views-keyvalue-db';
 
 type Bytes = string | Buffer;
 type Operations = Array<{ method: string; key: Bytes; value?: Bytes }>;
