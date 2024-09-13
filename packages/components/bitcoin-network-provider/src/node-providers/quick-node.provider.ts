@@ -156,7 +156,7 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
     return block;
   }
 
-  async getOneTransactionByHash(hash: Hash): Promise<any> {
+  public async getOneTransactionByHash(hash: Hash): Promise<any> {
     try {
       const data = {
         jsonrpc: '2.0',
@@ -184,7 +184,7 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
     }
   }
 
-  async getManyTransactionsByHashes(hashes: Hash[], verbosity?: number): Promise<any> {
+  public async getManyTransactionsByHashes(hashes: Hash[], verbosity?: number): Promise<any> {
     const transactions = [];
 
     for (const hash of hashes) {
@@ -193,33 +193,6 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
     }
 
     return transactions;
-  }
-
-  public async sendTransaction() {}
-
-  public async findOneTransaction() {}
-
-  public async findManyTransactions() {}
-
-  public async createWebhookStream(streamConfig: any): Promise<any> {
-    try {
-      const response = await this._httpClient.post('/streams', streamConfig);
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        if (error.response) {
-          throw new Error(
-            `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
-          );
-        } else if (error.request) {
-          throw new Error('No response received from server');
-        } else {
-          throw new Error(`Error during request setup: ${error.message}`);
-        }
-      }
-
-      throw error;
-    }
   }
 
   public async getManyBlocksByHashes(hashes: string[], verbosity: number = 1): Promise<any> {
@@ -233,7 +206,18 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
 
       const response = await this._httpClient.post('/', requests);
 
-      return response.data.map((item: any) => item.result);
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response structure: response data is missing or not an array');
+      }
+
+      const results = response.data.map((item: any) => {
+        if (!item || typeof item.result === 'undefined') {
+          throw new Error(`Invalid result for hash: ${JSON.stringify(item)}`);
+        }
+        return item.result;
+      });
+
+      return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
@@ -262,7 +246,18 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
 
       const response = await this._httpClient.post('/', requests);
 
-      return response.data.map((item: any) => item.result);
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response structure: response data is missing or not an array');
+      }
+
+      const results = response.data.map((item: any) => {
+        if (!item || typeof item.result === 'undefined') {
+          throw new Error(`Invalid result for height: ${JSON.stringify(item)}`);
+        }
+        return item.result;
+      });
+
+      return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
@@ -287,24 +282,26 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
     return blocks;
   }
 
-  // public async updateWebhookStream(streamId: string, streamConfig: any): Promise<any> {
-  //   try {
-  //     const response = await this._httpClient.put(`/streams/${streamId}`, streamConfig);
-  //     return response.data;
-  //   } catch (error) {
-  //     if (axios.isAxiosError(error)) {
-  //       if (error.response) {
-  //         throw new Error(`Error: ${error.response.data}`);
-  //       } else if (error.request) {
-  //         throw new Error('No response received from server');
-  //       } else {
-  //         throw new Error(error.message);
-  //       }
-  //     }
+  public async createWebhookStream(streamConfig: any): Promise<any> {
+    try {
+      const response = await this._httpClient.post('/streams', streamConfig);
+      return response.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(
+            `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
+          );
+        } else if (error.request) {
+          throw new Error('No response received from server');
+        } else {
+          throw new Error(`Error during request setup: ${error.message}`);
+        }
+      }
 
-  //     throw error;
-  //   }
-  // }
+      throw error;
+    }
+  }
 
   public async deleteWebhookStream(streamId: string): Promise<any> {
     try {
@@ -324,25 +321,6 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
       throw error;
     }
   }
-
-  // public async pauseWebhookStream(streamId: string): Promise<any> {
-  //   try {
-  //     const response = await this._httpClient.delete(`/streams/${streamId}`);
-  //     return response.data;
-  //   } catch (error) {
-  //     if (axios.isAxiosError(error)) {
-  //       if (error.response) {
-  //         throw new Error(`Error: ${error.response.data}`);
-  //       } else if (error.request) {
-  //         throw new Error('No response received from server');
-  //       } else {
-  //         throw new Error(error.message);
-  //       }
-  //     }
-
-  //     throw error;
-  //   }
-  // }
 
   public async handleWebhookStream({
     stream,

@@ -156,7 +156,18 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
 
       const response = await this._httpClient.post('/', requests);
 
-      return response.data.map((item: any) => item.result);
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response structure: response data is missing or not an array');
+      }
+
+      const results = response.data.map((item: any) => {
+        if (!item || typeof item.result === 'undefined') {
+          throw new Error(`Invalid result for hash: ${JSON.stringify(item)}`);
+        }
+        return item.result;
+      });
+
+      return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {
@@ -185,7 +196,18 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
 
       const response = await this._httpClient.post('/', requests);
 
-      return response.data.map((item: any) => item.result);
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response structure: response data is missing or not an array');
+      }
+
+      const results = response.data.map((item: any) => {
+        if (!item || typeof item.result === 'undefined') {
+          throw new Error(`Invalid result for height: ${JSON.stringify(item)}`);
+        }
+        return item.result;
+      });
+
+      return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {

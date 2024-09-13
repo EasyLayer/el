@@ -70,7 +70,7 @@ export class NetworkProviderModule {
     return {
       module: NetworkProviderModule,
       global: isGlobal || false,
-      imports: [LoggerModule.forRoot({ componentName: 'BitcoinNetworkProviderComponent' })],
+      imports: [LoggerModule.forRoot({ componentName: 'BitcoinNetworkProvider' })],
       providers: [
         NetworkProviderService,
         WebhookStreamService,
