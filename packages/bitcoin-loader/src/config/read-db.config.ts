@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsString, IsBoolean, IsNumber, IsOptional } from 'class-validator';
@@ -37,6 +38,10 @@ export class ReadDatabaseConfig {
   @Transform(({ value }) => (value ? Number(value) : 10000))
   @IsNumber()
   BITCOIN_LOADER_READ_DB_SQLITE_CHANKS_LIMIT: number = 10000;
+
+  @Transform(({ value }) => (value ? value : ''))
+  @IsString()
+  BITCOIN_LOADER_READ_DB_NAME: string = resolve(process.cwd(), `data/loader-views.db`);
 
   isLogging(): boolean {
     return process.env.DB_DEBUG === '1';

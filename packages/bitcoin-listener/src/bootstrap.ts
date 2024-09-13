@@ -16,7 +16,7 @@ interface BootstrapOptions {
 export const bootstrap = async ({ appName = 'bitcoin-listener', mapper }: BootstrapOptions) => {
   // IMPORTANT: we use dotenv here to load envs globally.
   // It has to be before importing all plugins.
-  config({ path: resolve(process.cwd(), `${appName}/.env`) });
+  config({ path: resolve(process.cwd(), '.env') });
 
   const nestLogger = new NestLogger();
   logger(appName);

@@ -15,7 +15,7 @@ import { WalletModelFactoryService } from './domain-layer/services';
 import { ViewsEventsResponseService, KeysStorageRepositoryService } from './infrastructure-layer/services';
 import { CommandHandlers } from './domain-layer/command-handlers';
 import { EventsHandlers } from './domain-layer/events-handlers';
-import { AppConfig, BusinessConfig, EventStoreConfig, ReadDatabaseConfig, ProvidersConfig } from './config';
+import { AppConfig, BusinessConfig, EventStoreConfig, KeyStorageConfig, ProvidersConfig } from './config';
 import { KeysViewModel } from './infrastructure-layer/view-models';
 
 interface WalletModuleOptions {
@@ -29,7 +29,7 @@ export class BitcoinWalletModule {
     const eventstoreConfig = await transformAndValidate(EventStoreConfig, process.env, {
       validator: { whitelist: true },
     });
-    const readdatabaseConfig = await transformAndValidate(ReadDatabaseConfig, process.env, {
+    const keystorageConfig = await transformAndValidate(KeyStorageConfig, process.env, {
       validator: { whitelist: true },
     });
     const appConfig = await transformAndValidate(AppConfig, process.env, {
@@ -49,18 +49,17 @@ export class BitcoinWalletModule {
         LoggerModule.forRoot({ componentName: appName }),
         CqrsTransportModule.forRoot({ isGlobal: true }),
         CqrsModule.forRoot({ isGlobal: true }),
-        // IMPORTANT: BitcoinNetworkProviderModule must be global inside one plugin
+        // IMPORTANT: NetworkProviderModule must be global inside one plugin
         NetworkProviderModule.forRootAsync({
           isGlobal: true,
           quickNodesUrls: providersConfig.BITCOIN_WALLET_NETWORK_PROVIDER_QUICK_NODE_URLS,
           selfNodesUrl: providersConfig.BITCOIN_WALLET_NETWORK_PROVIDER_SELF_NODE_URL,
         }),
-        EventStoreModule.forRoot({
-          path: `${appName}/data`,
-          type: eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_TYPE,
-          name: 'wallet-eventstore', //eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_NAME,
+        EventStoreModule.forRootAsync({
+          name: 'wallet-eventstore',
           logging: eventstoreConfig.isLogging(),
-          database: 'wallet-eventstore',
+          type: eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_TYPE,
+          database: eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_NAME,
           ...(eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_HOST && {
             host: eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_HOST,
           }),
@@ -74,26 +73,13 @@ export class BitcoinWalletModule {
             password: eventstoreConfig.BITCOIN_WALLET_EVENTSTORE_DB_PASSWORD,
           }),
         }),
-        SecureStorageModule.forRoot({
-          path: `${appName}/data`,
-          type: 'better-sqlite3',
+        SecureStorageModule.forRootAsync({
           name: 'keys-storage',
-          logging: readdatabaseConfig.isLogging(),
+          type: 'better-sqlite3',
+          logging: keystorageConfig.isLogging(),
           entities: [KeysViewModel],
-          database: 'keys-storage',
-          password: 'testpassword',
-          ...(readdatabaseConfig.BITCOIN_WALLET_READ_DB_HOST && {
-            host: readdatabaseConfig.BITCOIN_WALLET_READ_DB_HOST,
-          }),
-          ...(readdatabaseConfig.BITCOIN_WALLET_READ_DB_PORT && {
-            port: readdatabaseConfig.BITCOIN_WALLET_READ_DB_PORT,
-          }),
-          ...(readdatabaseConfig.BITCOIN_WALLET_READ_DB_USERNAME && {
-            username: readdatabaseConfig.BITCOIN_WALLET_READ_DB_USERNAME,
-          }),
-          ...(readdatabaseConfig.BITCOIN_WALLET_READ_DB_PASSWORD && {
-            password: readdatabaseConfig.BITCOIN_WALLET_READ_DB_PASSWORD,
-          }),
+          database: keystorageConfig.BITCOIN_WALLET_KEYSTORAGE_DB_NAME,
+          password: keystorageConfig.BITCOIN_WALLET_KEYSTORAGE_DB_PASSWORD,
         }),
       ],
       providers: [
@@ -110,8 +96,8 @@ export class BitcoinWalletModule {
           useValue: eventstoreConfig,
         },
         {
-          provide: ReadDatabaseConfig,
-          useValue: readdatabaseConfig,
+          provide: KeyStorageConfig,
+          useValue: keystorageConfig,
         },
         KeysStorageRepositoryService,
         WalletCommandFactoryService,

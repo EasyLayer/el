@@ -42,7 +42,7 @@ interface IndexerModuleOptions {
 
 @Module({})
 export class BitcoinIndexerModule {
-  static async register({ appName, schemas, mapper }: IndexerModuleOptions): Promise<DynamicModule> {
+  static async register({ schemas, mapper }: IndexerModuleOptions): Promise<DynamicModule> {
     const eventstoreConfig = await transformAndValidate(EventStoreConfig, process.env, {
       validator: { whitelist: true },
     });
@@ -75,13 +75,12 @@ export class BitcoinIndexerModule {
           quickNodesUrls: providersConfig.BITCOIN_INDEXER_NETWORK_PROVIDER_QUICK_NODE_URLS,
           selfNodesUrl: providersConfig.BITCOIN_INDEXER_NETWORK_PROVIDER_SELF_NODE_URL,
         }),
-        EventStoreModule.forRoot({
-          path: `${appName}/data`,
-          type: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_TYPE,
-          name: 'indexer-eventstore', //eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_NAME,
-          synchronize: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_SYNCHRONIZE,
+        EventStoreModule.forRootAsync({
+          name: 'indexer-eventstore',
           logging: eventstoreConfig.isLogging(),
-          database: 'indexer-eventstore',
+          type: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_TYPE,
+          synchronize: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_SYNCHRONIZE,
+          database: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_NAME,
           ...(eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_HOST && {
             host: eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_HOST,
           }),
@@ -110,10 +109,9 @@ export class BitcoinIndexerModule {
             blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER,
           queueIteratorBlocksBatchSize: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
         }),
-        ViewsKeyValueDatabaseModule.forRoot({
-          path: `${appName}/data`,
-          type: 'rocksdb',
-          name: 'indexer',
+        ViewsKeyValueDatabaseModule.forRootAsync({
+          database: readdatabaseConfig.BITCOIN_INDEXER_READ_DB_NAME,
+          type: readdatabaseConfig.BITCOIN_INDEXER_READ_DB_TYPE,
           schemas: [LastBlockSchema, ...schemas],
         }),
       ],

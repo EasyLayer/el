@@ -1,15 +1,14 @@
-import { resolve } from 'node:path';
+import BetterSqlite3 from 'better-sqlite3-multiple-ciphers';
 import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions, getDataSourceToken } from '@nestjs/typeorm';
 import { DataSource, DataSourceOptions, EntitySchema } from 'typeorm';
-import BetterSqlite3 from 'better-sqlite3-multiple-ciphers';
 import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseService } from './secure-storage.service';
 
 type SecureStorageModuleConfig = TypeOrmModuleOptions & {
-  path: string;
-  type: 'better-sqlite3';
+  database: string;
   name: string;
+  type: 'better-sqlite3';
   password: string;
   // eslint-disable-next-line @typescript-eslint/ban-types
   entities: (Function | EntitySchema<any>)[];
@@ -17,10 +16,12 @@ type SecureStorageModuleConfig = TypeOrmModuleOptions & {
 
 @Module({})
 export class SecureStorageModule {
-  static async forRoot(config: SecureStorageModuleConfig): Promise<DynamicModule> {
-    const { name, entities = [], path, password, ...restOptions } = config;
+  static async forRootAsync(config: SecureStorageModuleConfig): Promise<DynamicModule> {
+    const { name, entities = [], database, password, ...restOptions } = config;
 
-    const database = resolve(process.cwd(), path, `${name}.enc.db`);
+    if (!password) {
+      throw new Error();
+    }
 
     const dataSourceOptions = {
       ...restOptions,
@@ -54,7 +55,6 @@ export class SecureStorageModule {
 
       await tempDataSource.destroy();
     } catch (error) {
-      console.error('Error during tables checking - enable synchronize mode.');
       dataSourceOptions.synchronize = true;
     }
 
@@ -62,7 +62,7 @@ export class SecureStorageModule {
       module: SecureStorageModule,
       imports: [
         TypeOrmModule.forRootAsync({
-          imports: [LoggerModule.forRoot({ componentName: 'SecureStorageComponent' })],
+          imports: [LoggerModule.forRoot({ componentName: 'SecureStorage' })],
           name,
           useFactory: (log: AppLogger) => ({
             ...dataSourceOptions,
@@ -74,7 +74,7 @@ export class SecureStorageModule {
               throw new Error('Invalid options passed');
             }
 
-            options?.log?.info(`Connecting to read database...`, {}, this.constructor.name);
+            options.log?.info(`Connecting to read database...`, {}, this.constructor.name);
 
             const dataSource = new DataSource(options);
 
@@ -84,7 +84,7 @@ export class SecureStorageModule {
               options?.log?.error(`Unable to connect to the database ${name}`, error, this.constructor.name);
             }
 
-            options?.log?.info(`Successfully connected to read database.`, {}, this.constructor.name);
+            options.log?.info(`Successfully connected to read database.`, {}, this.constructor.name);
 
             return dataSource;
           },
