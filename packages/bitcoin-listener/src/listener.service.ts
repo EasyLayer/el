@@ -20,12 +20,12 @@ export class ListenerService implements OnModuleInit {
     this.log.info('Initialization all systems');
 
     try {
-      const lastReadStateHeight = 10000000; //await this.viewsReadRepository.getLastBlock();
+      const lastReadStateHeight = -1; //await this.viewsReadRepository.getLastBlock();
 
       await this.listenerCommandFactory.init({
         requestId: uuidv4(),
         startHeight: this.businessConfig.BITCOIN_LISTENER_START_BLOCK_HEIGHT,
-        ...(lastReadStateHeight > -1 ? { lastReadStateHeight } : {}),
+        lastReadStateHeight,
       });
     } catch (error) {
       this.log.error('initialization()', error, this.constructor.name);

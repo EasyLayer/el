@@ -27,7 +27,7 @@ export class LoaderService implements OnModuleInit {
       await this.loaderCommandFactory.init({
         requestId: uuidv4(),
         startHeight: this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT,
-        ...(lastReadStateHeight > -1 ? { lastReadStateHeight } : {}),
+        lastReadStateHeight,
       });
     } catch (error) {
       this.log.error('initialization()', error, this.constructor.name);

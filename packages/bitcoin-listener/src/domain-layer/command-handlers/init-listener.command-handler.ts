@@ -27,7 +27,7 @@ export class InitListenerCommandHandler implements ICommandHandler<InitListenerC
 
       this.log.info('Listener Aggregate successfully initialized.', null, this.constructor.name);
 
-      if (listenerModel.status === 'awaiting' && lastReadStateHeight !== undefined) {
+      if (listenerModel.status === 'awaiting' && listenerModel.chain.lastBlockHeight !== lastReadStateHeight) {
         const restoreBlocksCount = listenerModel.chain.lastBlockHeight - lastReadStateHeight;
 
         this.log.info(

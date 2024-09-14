@@ -35,13 +35,14 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
 
       // Update System entity
       const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1]?.height;
-      await this.viewsWriteRepository.update('System', {
+      await this.viewsWriteRepository.update('system', {
         values: new System({ last_block_height: lastBlockHeight }),
-        conditions: { id: 1 },
       });
 
       await this.viewsWriteRepository.commit();
     } catch (error) {
+      this.viewsWriteRepository.clearOperations();
+
       if (error instanceof QueryFailedError) {
         const driverError = error.driverError;
         if (driverError.code === 'SQLITE_CONSTRAINT') {

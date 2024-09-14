@@ -1,7 +1,7 @@
 export interface IInitListenerCommand {
   requestId: string;
   startHeight: string | number;
-  lastReadStateHeight?: number;
+  lastReadStateHeight: number;
 }
 
 export class InitListenerCommand {

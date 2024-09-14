@@ -27,7 +27,7 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
 
       this.log.info('Loader Aggregate successfully initialized.', null, this.constructor.name);
 
-      if (loaderModel.status === 'awaiting' && lastReadStateHeight !== undefined) {
+      if (loaderModel.status === 'awaiting' && loaderModel.chain.lastBlockHeight !== lastReadStateHeight) {
         const restoreBlocksCount = loaderModel.chain.lastBlockHeight - lastReadStateHeight;
 
         this.log.info(

@@ -110,18 +110,20 @@ export class ViewsWriteRepositoryService {
 
   public async update(
     entityName: string,
-    params: { values: Record<string, any>; conditions: Record<string, any> }
+    params: { values: Record<string, any>; conditions?: Record<string, any> }
   ): Promise<any> {
     const repo = this.getRepository(entityName);
     const queryBuilder = repo.createQueryBuilder().update().set(params.values);
 
-    Object.entries(params.conditions).forEach(([column, value]) => {
-      if (Array.isArray(value)) {
-        queryBuilder.andWhere(`${column} IN (:...${column})`, { [column]: value });
-      } else {
-        queryBuilder.andWhere(`${column} = :${column}`, { [column]: value });
-      }
-    });
+    if (params.conditions) {
+      Object.entries(params.conditions).forEach(([column, value]) => {
+        if (Array.isArray(value)) {
+          queryBuilder.andWhere(`${column} IN (:...${column})`, { [column]: value });
+        } else {
+          queryBuilder.andWhere(`${column} = :${column}`, { [column]: value });
+        }
+      });
+    }
 
     return await queryBuilder.execute();
   }
@@ -137,7 +139,7 @@ export class ViewsWriteRepositoryService {
     await queryBuilder.execute();
   }
 
-  private clearOperations(): void {
+  public clearOperations(): void {
     this.operations = [];
   }
 
