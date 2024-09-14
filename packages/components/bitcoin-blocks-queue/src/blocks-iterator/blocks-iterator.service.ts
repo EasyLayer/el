@@ -67,7 +67,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
         }
       }
     } catch (error) {
-      this.log.error('Erorr', error, this.constructor.name);
+      this.log.error('Error', error, this.constructor.name);
     }
   }
 
@@ -100,8 +100,14 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
       const { value: nextBlock, done } = blocksIterator.next();
 
       if (done) {
-        this.log.debug('Queue is empty', {}, this.constructor.name);
-        break; // Stop iteration if there are no more blocks
+        this.log.info('Queue is empty', {}, this.constructor.name);
+        // Stop iteration if there are no more blocks
+        break;
+      }
+
+      if (!nextBlock) {
+        this.log.error('Received undefined block from iterator', {}, this.constructor.name);
+        break;
       }
 
       const blockSize = this.calculateBlockSize(nextBlock);
@@ -112,7 +118,8 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
           this.log.error('Block size exceeds the minimum for adding to a batch', {}, this.constructor.name);
         }
 
-        break; // Stop adding blocks if the next one would exceed the limit
+        // Stop adding blocks if the next one would exceed the limit
+        break;
       }
 
       // Add block to the batch
@@ -131,11 +138,18 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     const { tx } = block;
 
     if (!tx || tx.length === 0) {
+      this.log.error('No transactions found in block or transactions are empty', {}, this.constructor.name);
       return 0;
     }
 
     // Sum up the sizes of all transactions in a block based on their hex representation
     for (const t of tx) {
+      // Check that hex exists and is a string
+      if (!t.hex || typeof t.hex !== 'string') {
+        this.log.error('Invalid hex in transaction', { transaction: t }, this.constructor.name);
+        continue; // Пропускаем транзакцию с некорректными данными
+      }
+
       // Divide by 2 since each byte is represented by two characters in hex
       totalSize += t.hex.length / 2;
     }

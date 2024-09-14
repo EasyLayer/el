@@ -1,9 +1,11 @@
 import 'reflect-metadata';
 import { resolve } from 'node:path';
 import { config } from 'dotenv';
+import { Observable } from 'rxjs';
 import { NestFactory } from '@nestjs/core';
 import { DynamicModule, INestApplication, INestApplicationContext } from '@nestjs/common';
 import { NestLogger, logger } from '@easylayer/components/logger';
+import { CqrsModule, CustomEventBus, ofType } from '@easylayer/components/cqrs';
 import { BitcoinLoaderModule } from './loader.module';
 import { AppConfig } from './config';
 import { MapperType, EntitySchema } from './protocol';
@@ -14,6 +16,17 @@ interface BootstrapOptions {
   schemas: EntitySchema[];
   mapper: MapperType;
   isServer?: boolean;
+  testing?: TestingOptions; // Grouped testing options into one interface
+}
+
+interface TestingOptions {
+  sagaEventsToWait?: EventWaiter[];
+  handlerEventsToWait?: EventWaiter[];
+}
+
+interface EventWaiter {
+  eventType: any;
+  count: number;
 }
 
 export const bootstrap = async ({
@@ -21,6 +34,7 @@ export const bootstrap = async ({
   schemas,
   mapper,
   isServer = false,
+  testing = {},
 }: BootstrapOptions) => {
   // IMPORTANT: we use dotenv here to load envs globally.
   // It has to be before importing all plugins.
@@ -36,10 +50,15 @@ export const bootstrap = async ({
       mapper,
     });
 
-    if (isServer) {
-      await startHttpServer(appName, rootModule, nestLogger);
-    } else {
-      await initializeApplicationContext(rootModule, nestLogger);
+    const app = isServer
+      ? await startHttpServer(appName, rootModule, nestLogger)
+      : await initializeApplicationContext(rootModule, nestLogger);
+
+    const appConfig = app.get(AppConfig);
+
+    // Handle event waiting logic in testing environments
+    if (appConfig.isTEST() && (!!testing.sagaEventsToWait || !!testing.handlerEventsToWait)) {
+      await handleTestEventProcessing(app, testing);
     }
   } catch (error) {
     nestLogger.error(`Bootstrap failed: ${error}`);
@@ -62,12 +81,18 @@ const startHttpServer = async (appName: string, rootModule: DynamicModule, nestL
   await app.listen(port);
   nestLogger.log(`HTTP server is listening on port ${port}`, 'NestApplication');
   setupGracefulShutdownHandlers(app, nestLogger);
+
+  // Return the app for further use
+  return app;
 };
 
 const initializeApplicationContext = async (rootModule: DynamicModule, nestLogger: NestLogger) => {
   const appContext = await NestFactory.createApplicationContext(rootModule, { logger: nestLogger });
   await appContext.init();
   setupGracefulShutdownHandlers(appContext, nestLogger);
+
+  // Return the app context for further use
+  return appContext;
 };
 
 const setupGracefulShutdownHandlers = (app: INestApplicationContext | INestApplication, nestLogger: NestLogger) => {
@@ -94,4 +119,79 @@ const gracefulShutdown = (app: INestApplication | INestApplicationContext, logge
       process.exit(0);
     }
   }, 0);
+};
+
+// Handle event waiting for tests (both saga and handler events)
+const handleTestEventProcessing = async (app: INestApplicationContext, testing: TestingOptions) => {
+  const cqrs: any = app.get<CqrsModule>(CqrsModule);
+  const eventBus = cqrs.eventBus;
+
+  const sagaPromises = createEventPromises(eventBus, testing.sagaEventsToWait, createSagaCompletionPromise);
+  const handlerPromises = createEventPromises(
+    eventBus,
+    testing.handlerEventsToWait,
+    createEventHandlerCompletionPromise
+  );
+
+  await Promise.all([...sagaPromises, ...handlerPromises]);
+
+  // Forcefully close the application after events complete
+  await app.close();
+};
+
+// Create promises for events (generic for saga and handler events)
+const createEventPromises = (
+  eventBus: CustomEventBus,
+  eventWaiters: EventWaiter[] | undefined,
+  promiseFactory: (eventBus: CustomEventBus, eventType: any, expectedCount: number) => Promise<void>
+): Promise<void>[] => {
+  return eventWaiters?.map(({ eventType, count }) => promiseFactory(eventBus, eventType, count)) || [];
+};
+
+// Promise factory for handling event handler completion
+const createEventHandlerCompletionPromise = (
+  eventBus: CustomEventBus,
+  eventType: any,
+  expectedCount: number
+): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    if (!(eventBus.eventHandlerCompletionSubject$ instanceof Observable)) {
+      return reject(new Error('eventBus.eventHandlerCompletionSubject$ is not Observable'));
+    }
+
+    let eventCount = 0;
+    eventBus.eventHandlerCompletionSubject$.pipe(ofType(eventType)).subscribe({
+      next: () => {
+        eventCount++;
+        if (eventCount >= expectedCount) {
+          resolve();
+        }
+      },
+      error: (err: any) => reject(err),
+    });
+  });
+};
+
+// Promise factory for handling saga completion
+const createSagaCompletionPromise = (
+  eventBus: CustomEventBus,
+  eventType: any,
+  expectedCount: number
+): Promise<void> => {
+  return new Promise<void>((resolve, reject) => {
+    if (!(eventBus.sagaCompletionSubject$ instanceof Observable)) {
+      return reject(new Error('eventBus.sagaCompletionSubject$ is not Observable'));
+    }
+
+    let eventCount = 0;
+    eventBus.sagaCompletionSubject$.pipe(ofType(eventType)).subscribe({
+      next: () => {
+        eventCount++;
+        if (eventCount >= expectedCount) {
+          resolve();
+        }
+      },
+      error: (err: any) => reject(err),
+    });
+  });
 };

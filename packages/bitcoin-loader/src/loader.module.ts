@@ -113,8 +113,8 @@ export class BitcoinLoaderModule {
           }),
         }),
         BlocksQueueModule.forRootAsync({
-          blocksCommandExecutor: BlocksCommandFactoryService,
           isTransportMode: false,
+          blocksCommandExecutor: BlocksCommandFactoryService,
           maxBlockHeight: businessConfig.BITCOIN_LOADER_MAX_BLOCK_HEIGHT,
           queueWorkersNum: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_WORKERS_NUM,
           maxQueueLength: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH,
