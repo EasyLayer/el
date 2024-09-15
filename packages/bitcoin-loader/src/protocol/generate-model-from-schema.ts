@@ -13,18 +13,18 @@ export const generateModelFromSchema = (entitySchema: EntitySchema) => {
         Object.assign(this, initialValues);
       }
 
-      this.insert = (value: Record<string, any>) => {
+      this.insert = (values: Record<string, any>) => {
         return new Promise((resolve) => {
-          operationsHistory.push({ method: 'insert', params: value });
-          Object.assign(this, value);
+          operationsHistory.push({ method: 'insert', params: values });
+          Object.assign(this, values);
           resolve();
         });
       };
 
-      this.update = (value: Record<string, any>, conditions: Record<string, any>) => {
+      this.update = (values: Record<string, any>, conditions: Record<string, any>) => {
         return new Promise((resolve) => {
-          operationsHistory.push({ method: 'update', params: { value, conditions } });
-          Object.assign(this, value);
+          operationsHistory.push({ method: 'update', params: { values, conditions } });
+          Object.assign(this, values);
           resolve();
         });
       };
@@ -46,9 +46,9 @@ export const generateModelFromSchema = (entitySchema: EntitySchema) => {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async insert(value: Record<string, any>) {}
+    async insert(values: Record<string, any>) {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async update(value: Record<string, any>, conditions: Record<string, any>) {}
+    async update(values: Record<string, any>, conditions: Record<string, any>) {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async delete(conditions: Record<string, any>) {}
     getOperationsHistory() {}
@@ -60,8 +60,8 @@ export const generateModelFromSchema = (entitySchema: EntitySchema) => {
       get() {
         return this[`_${fieldName}`];
       },
-      set(value) {
-        this[`_${fieldName}`] = value;
+      set(values) {
+        this[`_${fieldName}`] = values;
       },
       enumerable: true,
       configurable: true,

@@ -78,12 +78,11 @@ export class BitcoinListenerModule {
           quickNodesUrls: providersConfig.BITCOIN_LISTENER_NETWORK_PROVIDER_QUICK_NODE_URLS,
           selfNodesUrl: providersConfig.BITCOIN_LISTENER_NETWORK_PROVIDER_SELF_NODE_URL,
         }),
-        EventStoreModule.forRoot({
-          path: `${appName}/data`,
-          type: eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_TYPE,
-          name: 'listener-eventstore', //eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_NAME,
+        EventStoreModule.forRootAsync({
+          name: 'listener-eventstore',
           logging: eventstoreConfig.isLogging(),
-          database: 'listener-eventstore',
+          type: eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_TYPE,
+          database: eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_NAME,
           ...(eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_HOST && {
             host: eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_HOST,
           }),
@@ -97,10 +96,9 @@ export class BitcoinListenerModule {
             password: eventstoreConfig.BITCOIN_LISTENER_EVENTSTORE_DB_PASSWORD,
           }),
         }),
-        ViewsKeyValueDatabaseModule.forRoot({
-          path: `${appName}/data`,
-          type: 'rocksdb',
-          name: 'listener',
+        ViewsKeyValueDatabaseModule.forRootAsync({
+          database: readdatabaseConfig.BITCOIN_LISTENER_READ_DB_NAME,
+          type: readdatabaseConfig.BITCOIN_LISTENER_READ_DB_TYPE,
           schemas: [EventSchema, LastBlockSchema],
         }),
         BlocksQueueModule.forRootAsync({

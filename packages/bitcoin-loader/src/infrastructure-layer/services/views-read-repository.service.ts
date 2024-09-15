@@ -15,9 +15,7 @@ export class ViewsReadRepositoryService {
   public getRepository<T extends object>(entityName: string): Repository<T> {
     const entityMetadata = this.datasource.entityMetadatas.find(
       (metadata) =>
-        metadata.tableName === entityName || // проверка по имени таблицы
-        metadata.targetName === entityName || // проверка по имени цели (класса)
-        metadata.target === entityName // прямая проверка на соответствие классу
+        metadata.tableName === entityName || metadata.targetName === entityName || metadata.target === entityName
     );
 
     if (!entityMetadata) {
@@ -28,8 +26,15 @@ export class ViewsReadRepositoryService {
   }
 
   public async getLastBlock(): Promise<number> {
-    const repo = this.getRepository<System>('System');
-    const model = await repo.findOneBy({ id: 1 });
-    return model?.last_block_height || -1;
+    const repo = this.getRepository<System>('system');
+
+    let model = await repo.findOneBy({ id: 1 });
+
+    if (!model) {
+      model = new System({ last_block_height: -1 });
+      await repo.save(model);
+    }
+
+    return model.last_block_height;
   }
 }

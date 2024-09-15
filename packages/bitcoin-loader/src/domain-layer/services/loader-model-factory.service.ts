@@ -25,7 +25,7 @@ export class LoaderModelFactoryService {
     }
 
     const model = await this.loaderRepository.getOne(this.createNewModel());
-    // NOTE: If there is no such thing in the database, then we will return the base model.
+    // IMPORTANT: If there is no such thing in the database, then we will return the base model.
     return model;
   }
 

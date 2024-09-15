@@ -12,20 +12,15 @@ export class AppConfig {
 
   @Transform(({ value }) => value ?? '0.0.0.0')
   @IsString()
-  @JSONSchema({ description: 'Server host' })
+  @JSONSchema({ description: 'Server host', default: '0.0.0.0' })
   HOST: string = '0.0.0.0';
 
   @Transform(({ value }) => parseInt(value, 10) || 3000)
   @IsNumber()
-  // Using min max as a replacement for isPort
   @Min(0)
   @Max(65535)
-  @JSONSchema({ description: 'Server port' })
+  @JSONSchema({ description: 'Server port', default: 3000, minimum: 0, maximum: 65535 })
   PORT: number = 3000;
-
-  @Transform(({ value }) => (value !== undefined ? value : 'BitcoinLoader'))
-  @IsString()
-  BITCOIN_LOADER_MODULE_NAME: string = 'BitcoinLoader';
 
   isPRODUCTION(): boolean {
     return process.env.NODE_ENV === 'production';

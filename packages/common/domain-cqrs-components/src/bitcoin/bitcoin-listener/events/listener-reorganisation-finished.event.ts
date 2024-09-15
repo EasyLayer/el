@@ -5,6 +5,7 @@ interface BitcoinListenerReorganisationFinishedEventPayload {
   requestId: string;
   status: string;
   height: string;
+  blocks: any;
 }
 
 export class BitcoinListenerReorganisationFinishedEvent

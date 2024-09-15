@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsString, IsBoolean, IsOptional, IsNumber } from 'class-validator';
@@ -32,6 +33,10 @@ export class EventStoreConfig {
   @IsString()
   @IsOptional()
   BITCOIN_INDEXER_EVENTSTORE_DB_PASSWORD?: string;
+
+  @Transform(({ value }) => (value ? value : ''))
+  @IsString()
+  BITCOIN_INDEXER_EVENTSTORE_DB_NAME: string = resolve(process.cwd(), `data/indexer-eventstore.db`);
 
   isLogging(): boolean {
     return process.env.DB_DEBUG === '1';

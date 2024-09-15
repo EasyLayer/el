@@ -27,7 +27,7 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
       const confirmedBlocks = await this.blocksQueueService.confirmIndexBatch(blocks.map((block: any) => block.hash));
 
       for (const block of confirmedBlocks) {
-        const results = await this.loaderMapper.load(block);
+        const results = await this.loaderMapper.onLoad(block);
         const models = Array.isArray(results) ? results : [results];
 
         this.viewsWriteRepository.process(models);
@@ -35,13 +35,14 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
 
       // Update System entity
       const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1]?.height;
-      await this.viewsWriteRepository.update('System', {
+      await this.viewsWriteRepository.update('system', {
         values: new System({ last_block_height: lastBlockHeight }),
-        conditions: { id: 1 },
       });
 
       await this.viewsWriteRepository.commit();
     } catch (error) {
+      this.viewsWriteRepository.clearOperations();
+
       if (error instanceof QueryFailedError) {
         const driverError = error.driverError;
         if (driverError.code === 'SQLITE_CONSTRAINT') {

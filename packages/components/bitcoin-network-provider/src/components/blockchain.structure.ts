@@ -1,7 +1,7 @@
 type LightBlock = {
   height: number;
   hash: string;
-  prevHash: string;
+  previousblockhash: string;
   tx: string[];
 };
 
@@ -46,7 +46,7 @@ export class Blockchain {
    */
   get lastPrevBlockHash(): string {
     if (this.tail) {
-      return this.tail.block.prevHash;
+      return this.tail.block.previousblockhash;
     } else {
       return '';
     }
@@ -93,17 +93,17 @@ export class Blockchain {
    * Adds a block to the end of the chain.
    * @param {string | number} height - The height of the new block.
    * @param {string} hash - The hash of the new block.
-   * @param {string} prevHash - The hash of the previous block.
+   * @param {string} previousblockhash - The hash of the previous block.
    * @returns {boolean} True if the block was added successfully, false otherwise.
    * Complexity: O(1)
    */
-  public addBlock(height: number, hash: string, prevHash: string, tx: string[]): boolean {
+  public addBlock(height: number, hash: string, previousblockhash: string, tx: string[]): boolean {
     // Before adding a block, we validate it
-    if (!this.validateNextBlock(height, prevHash)) {
+    if (!this.validateNextBlock(height, previousblockhash)) {
       return false;
     }
 
-    const newBlock: LightBlock = { height, hash, prevHash, tx };
+    const newBlock: LightBlock = { height, hash, previousblockhash, tx };
     const newNode: Chain = { block: newBlock, next: null, prev: this.tail };
 
     if (this.tail) {
@@ -173,11 +173,11 @@ export class Blockchain {
   /**
    * Validates the next block to be added to the chain.
    * @param {string | number} height - The height of the new block.
-   * @param {string} prevHash - The hash of the previous block.
+   * @param {string} previousblockhash - The hash of the previous block.
    * @returns {boolean} True if the block is valid, false otherwise.
    * Complexity: O(1)
    */
-  public validateNextBlock(height: number, prevHash: string): boolean {
+  public validateNextBlock(height: number, previousblockhash: string): boolean {
     if (!this.tail) {
       // If there's no blocks in the chain, we assume this is the first block.
       return true;
@@ -189,7 +189,7 @@ export class Blockchain {
     }
 
     // Check if the given previous hash matches the last block's hash.
-    if (this.tail.block.hash !== prevHash) {
+    if (this.tail.block.hash !== previousblockhash) {
       return false;
     }
 
@@ -249,7 +249,7 @@ export class Blockchain {
         return false; // Height mismatch
       }
       // Then check if the hashes match
-      if (current.next.block.prevHash !== current.block.hash) {
+      if (current.next.block.previousblockhash !== current.block.hash) {
         return false; // Hash mismatch
       }
       current = current.next;
@@ -263,13 +263,13 @@ export class Blockchain {
    * Validates that the provided block data matches the last block in the chain.
    * @param {number} height - The expected height of the last block.
    * @param {string} hash - The expected hash of the last block.
-   * @param {string} prevHash - The expected previous hash of the last block.
+   * @param {string} previousblockhash - The expected previous hash of the last block.
    * @returns {boolean} True if the provided data matches the last block, false otherwise.
    * NOTE: This method is needed for the case when we confirm the indexing of a block
    * in another command to make sure that the block we are passing exactly matches the chain
    * Complexity: O(1)
    */
-  public validateLastBlock(height: number, hash: string, prevHash: string): boolean {
+  public validateLastBlock(height: number, hash: string, previousblockhash: string): boolean {
     if (!this.tail) {
       // If there's no blocks in the chain, we assume this is the first block.
       return true;
@@ -286,7 +286,7 @@ export class Blockchain {
     }
 
     // Check that the previous hash of the last block matches the previous hash passed in.
-    if (this.tail.block.prevHash !== prevHash) {
+    if (this.tail.block.previousblockhash !== previousblockhash) {
       return false;
     }
 

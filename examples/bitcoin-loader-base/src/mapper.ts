@@ -2,7 +2,7 @@ import { ILoaderMapper } from '@easylayer/bitcoin-loader';
 import { BlockModel } from './blocks';
 
 export class BlocksMapper implements ILoaderMapper {
-    public async load(block: any) {
+    public async onLoad(block: any) {
         const { height, hash, previousblockhash, tx } = block;
 
         const model = new BlockModel();
@@ -17,7 +17,16 @@ export class BlocksMapper implements ILoaderMapper {
         return model;
     }
 
-    public async reorganisation(blocksHashes: string[]) {
-        return {} as any;
+    public async onReorganisation(lightBlock: any) {
+        const { hash } = lightBlock;
+
+        const model = new BlockModel();
+
+        await model.update(
+            { is_suspended: true },
+            { hash }
+        );
+
+        return model;
     }
 }

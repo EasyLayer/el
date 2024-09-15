@@ -17,13 +17,13 @@ export class ProcessReorganisationCommandHandler implements ICommandHandler<Proc
   @RuntimeTracker({ showMemory: true })
   async execute({ payload }: ProcessReorganisationCommand) {
     try {
-      // NOTE: blocks - need to be reorganised (from IndexerModel),
+      // IMPORTANT: blocks - need to be reorganised (from LoaderModel),
       // height - is height of reorganisation(the last height where the blocks matched)
       const { blocks, height, requestId } = payload;
 
       const loaderModel: Loader = await this.loaderModelFactory.initModel();
 
-      // NOTE: We could not store transactions in the aggregator, but get them here from the provider,
+      // IMPORTANT: We could not store transactions in the aggregator, but get them here from the provider,
       // but this will increase the cost, so we store them for now
 
       await loaderModel.processReorganisation({

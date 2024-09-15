@@ -38,7 +38,7 @@
     "start:example:bitcoin-wallet-base": "cd ./examples/bitcoin-wallet-base && yarn start",
     "docs:generate:api-docs": "lerna run docs:generate:api-docs --stream --concurrency 1 --",
     "docs:generate:config-docs": "lerna run docs:generate:config-docs --stream --concurrency 1 --",
-    "docs:generate:docs": "typedoc",
+    "docs:generate:developer-docs": "typedoc",
     "test:unit": "lerna run test:unit --stream --",
     "test:e2e": "lerna run test:e2e --stream",
     "lint": "lerna run lint --stream",

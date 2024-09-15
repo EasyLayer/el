@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions, getDataSourceToken } from '@nestjs/typeorm';
 import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
@@ -7,22 +6,20 @@ import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseService } from './read-database.service';
 
 type ReadDatabaseModuleConfig = TypeOrmModuleOptions & {
-  path: string;
   type: 'sqlite' | 'postgres' | 'mysql' | 'mongodb';
   name: string;
   // eslint-disable-next-line @typescript-eslint/ban-types
   entities: (Function | EntitySchema<any>)[];
+  database: string;
 };
 
 @Module({})
 export class ReadDatabaseModule {
-  static async forRoot(config: ReadDatabaseModuleConfig): Promise<DynamicModule> {
-    const { name, entities = [], path, ...restOptions } = config;
+  static async forRootAsync(config: ReadDatabaseModuleConfig): Promise<DynamicModule> {
+    const { name, entities = [], database, ...restOptions } = config;
 
     // Initialize transactional context before setting up the database connections
     initializeTransactionalContext();
-
-    const database = restOptions.type === 'sqlite' ? resolve(process.cwd(), path, `${name}.db`) : name;
 
     const dataSourceOptions = {
       ...restOptions,
@@ -35,7 +32,8 @@ export class ReadDatabaseModule {
     const tempDataSource = new DataSource(dataSourceOptions);
 
     try {
-      // Checking presence of tables using Promise.all
+      await tempDataSource.initialize();
+
       const queryRunner = tempDataSource.createQueryRunner();
       const tableChecks = entities.map((entity) => queryRunner.hasTable(entity.constructor.name));
 
@@ -50,7 +48,6 @@ export class ReadDatabaseModule {
 
       await tempDataSource.destroy();
     } catch (error) {
-      console.error('Error during tables checking - enable synchronize mode.');
       dataSourceOptions.synchronize = true;
     }
 
@@ -58,7 +55,7 @@ export class ReadDatabaseModule {
       module: ReadDatabaseModule,
       imports: [
         TypeOrmModule.forRootAsync({
-          imports: [LoggerModule.forRoot({ componentName: 'RDBMSDatabaseComponent' })],
+          imports: [LoggerModule.forRoot({ componentName: 'ViewsDatabase' })],
           name,
           useFactory: (log: AppLogger) => ({
             ...dataSourceOptions,
@@ -70,18 +67,14 @@ export class ReadDatabaseModule {
               throw new Error('Invalid options passed');
             }
 
-            if (options.log) {
-              options.log.info(`Connecting to read database...`, {}, this.constructor.name);
-            }
+            options.log?.info(`Connecting to read database...`, {}, this.constructor.name);
 
             const dataSource = new DataSource(options);
 
             try {
               await dataSource.initialize();
             } catch (error) {
-              if (options.log) {
-                options.log.error(`Unable to connect to the database ${name}`, error, this.constructor.name);
-              }
+              options.log?.error(`Unable to connect to the database ${database}`, error, this.constructor.name);
             }
 
             if (restOptions.type === 'sqlite') {
@@ -99,9 +92,7 @@ export class ReadDatabaseModule {
               dataSource,
             });
 
-            if (options.log) {
-              options.log.info(`Successfully connected to read database.`, {}, this.constructor.name);
-            }
+            options.log?.info(`Successfully connected to views database.`, {}, this.constructor.name);
 
             return dataSource;
           },

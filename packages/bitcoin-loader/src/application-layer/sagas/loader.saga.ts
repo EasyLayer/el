@@ -4,9 +4,9 @@ import { Observable } from 'rxjs';
 import { Saga, ICommand, executeWithRetry } from '@easylayer/components/cqrs';
 import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
 import {
-  BitcoinIndexerReorganisationStartedEvent,
-  BitcoinIndexerReorganisationFinishedEvent,
-} from '@easylayer/common/domain-cqrs-components/bitcoin-indexer';
+  BitcoinLoaderReorganisationStartedEvent,
+  BitcoinLoaderReorganisationFinishedEvent,
+} from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { LoaderCommandFactoryService } from '../services';
 
 @Injectable()
@@ -17,11 +17,11 @@ export class LoaderSaga {
   ) {}
 
   @Saga()
-  onBitcoinIndexerReorganisationStartedEvent(events$: Observable<any>): Observable<ICommand> {
+  onBitcoinLoaderReorganisationStartedEvent(events$: Observable<any>): Observable<ICommand> {
     return events$.pipe(
       executeWithRetry({
-        event: BitcoinIndexerReorganisationStartedEvent,
-        command: ({ payload }: BitcoinIndexerReorganisationStartedEvent) =>
+        event: BitcoinLoaderReorganisationStartedEvent,
+        command: ({ payload }: BitcoinLoaderReorganisationStartedEvent) =>
           this.loaderCommandFactory.processReorganisation({
             blocks: payload.blocks,
             height: payload.height,
@@ -51,11 +51,11 @@ export class LoaderSaga {
   // }
 
   @Saga()
-  onBitcoinIndexerReorganisationFinishedEvent(events$: Observable<any>): Observable<ICommand> {
+  onBitcoinLoaderReorganisationFinishedEvent(events$: Observable<any>): Observable<ICommand> {
     return events$.pipe(
       executeWithRetry({
-        event: BitcoinIndexerReorganisationFinishedEvent,
-        command: ({ payload }: BitcoinIndexerReorganisationFinishedEvent) =>
+        event: BitcoinLoaderReorganisationFinishedEvent,
+        command: ({ payload }: BitcoinLoaderReorganisationFinishedEvent) =>
           this.blocksQueueService.reorganizeBlocks(payload.height),
       })
     );

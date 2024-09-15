@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, getDataSourceToken, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
@@ -10,38 +9,34 @@ import { EventStoreRepository } from './eventstore.repository';
 import { EventStoreService } from './eventstore.service';
 
 type EventStoreConfig = TypeOrmModuleOptions & {
-  path: string;
-  type: 'sqlite' | 'postgres' | 'mysql';
+  type: 'sqlite' | 'postgres';
   name: string;
+  database: string;
 };
 
 @Module({})
 export class EventStoreModule {
-  static async forRoot(config: EventStoreConfig): Promise<DynamicModule> {
-    const { name, path, ...restOptions } = config;
+  static async forRootAsync(config: EventStoreConfig): Promise<DynamicModule> {
+    const { name, database, ...restOptions } = config;
 
     // Initialize transactional context before setting up the database connections
     initializeTransactionalContext();
-
-    // TODO: remove from here
-    const database = restOptions.type === 'sqlite' ? resolve(process.cwd(), path, `${name}.db`) : name;
 
     const dataSourceOptions = {
       ...restOptions,
       name,
       database,
-      // custom entities,
       entities: [EventDataModel],
       synchronize: false, // Disable synchronization by default
     };
 
-    const dataSource = new DataSource(dataSourceOptions);
+    const tempDataSource = new DataSource(dataSourceOptions);
 
     try {
-      await dataSource.initialize();
+      await tempDataSource.initialize();
 
       // Checking for the presence of tables
-      const queryRunner = dataSource.createQueryRunner();
+      const queryRunner = tempDataSource.createQueryRunner();
       const hasTables = await queryRunner.hasTable(EventDataModel.constructor.name);
 
       if (!hasTables) {
@@ -49,9 +44,8 @@ export class EventStoreModule {
         dataSourceOptions.synchronize = true;
       }
 
-      await dataSource.destroy();
+      await tempDataSource.destroy();
     } catch (error) {
-      console.error('Error during tables checking', error);
       dataSourceOptions.synchronize = true;
     }
 
@@ -61,7 +55,7 @@ export class EventStoreModule {
         // IMPORTANT: 'name' - is required everywhere and for convenience we indicate it the same
         // so as not to get confused. It must be unique to the one module connection.
         TypeOrmModule.forRootAsync({
-          imports: [LoggerModule.forRoot({ componentName: 'EventStoreComponent' })],
+          imports: [LoggerModule.forRoot({ componentName: 'EventStore' })],
           name,
           useFactory: (log: AppLogger) => ({
             ...dataSourceOptions,
@@ -73,9 +67,7 @@ export class EventStoreModule {
               throw new Error('Invalid options passed');
             }
 
-            if (options && options.log) {
-              options.log.info(`Connecting to eventstore...`, {}, this.constructor.name);
-            }
+            options.log?.info(`Connecting to eventstore...`, {}, this.constructor.name);
 
             const dataSource = new DataSource(options);
             await dataSource.initialize();
@@ -102,9 +94,7 @@ export class EventStoreModule {
               dataSource,
             });
 
-            if (options && options.log) {
-              options.log.info(`Successfully connected to eventstore.`, {}, this.constructor.name);
-            }
+            options.log?.info(`Successfully connected to eventstore.`, {}, this.constructor.name);
 
             return dataSource;
           },

@@ -16,7 +16,7 @@ enum LoaderStatuses {
 type LightBlock = {
   height: number;
   hash: string;
-  prevHash: string;
+  previousblockhash: string;
   tx: string[];
 };
 
@@ -41,7 +41,7 @@ export class Loader extends AggregateRoot {
   }) {
     const status = this.status || LoaderStatuses.AWAITING;
     const lastBlockHeight = this.chain.lastBlockHeight;
-    // NOTE: lastBlockHeight - is the last already indexed block and
+    // IMPORTANT: lastBlockHeight - is the last already indexed block and
     // if it's start of blockchain where genesis block height is '0'
     // so we indicate the last indexed block adjusted by -1.
     // startHeight - is the height from which the user wants to index, it cannot be less than 0.
@@ -77,6 +77,7 @@ export class Loader extends AggregateRoot {
 
     if (!isValid) {
       return await this.startReorganisation({
+        height: this.chain.lastBlockHeight,
         requestId,
         service,
         logger,
@@ -126,30 +127,28 @@ export class Loader extends AggregateRoot {
       throw new Error('Wrong block height');
     }
 
-    // We check the block size and see if we will split it into several events
-    if (blocks.length > 100) {
-      // TODO: Add logic for creating several events here at once in case there are many blocks
+    // TODO: Task SH-15
+    // if (blocks.length > 100) {
+    //   const blocksToProcessed = blocks;
 
-      const blocksToProcessed = blocks;
+    //   logger.info(
+    //     `Blockchain continue reorganising by blocks count`,
+    //     {
+    //       blocksLength: blocksToProcessed.length,
+    //     },
+    //     this.constructor.name
+    //   );
 
-      logger.info(
-        `Blockchain continue reorganising by blocks count`,
-        {
-          blocksLength: blocksToProcessed.length,
-        },
-        this.constructor.name
-      );
-
-      return await this.apply(
-        new BitcoinLoaderReorganisationProcessedEvent({
-          aggregateId: this.aggregateId,
-          requestId,
-          // NOTE: height - height of reorganization (last correct block)
-          height: height.toString(),
-          blocks: blocksToProcessed,
-        })
-      );
-    }
+    //   return await this.apply(
+    //     new BitcoinLoaderReorganisationProcessedEvent({
+    //       aggregateId: this.aggregateId,
+    //       requestId,
+    //       // IMPORTANT: height - height of reorganization (last correct block)
+    //       height: height.toString(),
+    //       blocks: blocksToProcessed,
+    //     })
+    //   );
+    // }
 
     logger.info(
       `Blockchain successfull reorganised to height`,
@@ -164,8 +163,9 @@ export class Loader extends AggregateRoot {
         aggregateId: this.aggregateId,
         requestId,
         status: LoaderStatuses.AWAITING,
-        // NOTE: height - height of reorganization (last correct block)
+        // IMPORTANT: height - height of reorganization (last correct block)
         height: height.toString(),
+        blocks,
       })
     );
   }
@@ -177,7 +177,7 @@ export class Loader extends AggregateRoot {
     logger,
     blocks,
   }: {
-    height?: number;
+    height: number;
     requestId: string;
     service: NetworkProviderService;
     logger: any;
@@ -187,25 +187,16 @@ export class Loader extends AggregateRoot {
       throw new Error("reorganisation() Previous reorganisation hasn't finished yet");
     }
 
-    // NOTE: We move from the last block in the chain and look for the last match with the provider network
-    const prevHeight = height ? height : this.chain.lastBlockHeight;
-    const localBlock = this.chain.findBlockByHeight(prevHeight);
-    const oldBlock = await service.getOneBlockByHeight(prevHeight);
+    const localBlock = this.chain.findBlockByHeight(height)!;
+    const oldBlock = await service.getOneBlockByHeight(height);
 
-    if (!localBlock) {
-      // If we haven’t found a block by height in the chain by height,
-      // then this is an error,
-      // we must go back all the way to the loader and try with another block
-      throw new Error('Block not found in local chain');
-    }
-
-    if (oldBlock.hash === localBlock.hash && oldBlock.previousblockhash === localBlock.prevHash) {
+    if (oldBlock.hash === localBlock.hash && oldBlock.previousblockhash === localBlock.previousblockhash) {
       // Match found
 
       logger.info(
         'Blockchain reorganisation starting',
         {
-          reorganisationHeight: localBlock.height.toString(),
+          reorganisationHeight: height.toString(),
           blocksLength: blocks.length,
           txLength: blocks.reduce((result: number, item: any) => result + item.tx.length, 0),
         },
@@ -217,9 +208,9 @@ export class Loader extends AggregateRoot {
           aggregateId: this.aggregateId,
           requestId,
           status: LoaderStatuses.REORGANISATION,
-          // NOTE: height - is height of reorganisation(the last height where the blocks matched)
-          height: localBlock.height.toString(),
-          // NOTE: blocks that need to be reorganized
+          // IMPORTANT: height - is height of reorganisation(the last height where the blocks matched)
+          height: height.toString(),
+          // IMPORTANT: blocks that need to be reorganized
           blocks,
         })
       );
@@ -227,6 +218,7 @@ export class Loader extends AggregateRoot {
 
     // Saving blocks for publication in an event
     const newBlocks = [...blocks, localBlock];
+    const prevHeight = height - 1;
 
     // Recursive check the previous block
     return this.startReorganisation({ height: prevHeight, requestId, service, logger, blocks: newBlocks });

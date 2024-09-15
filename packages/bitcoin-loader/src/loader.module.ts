@@ -69,18 +69,17 @@ export class BitcoinLoaderModule {
         LoggerModule.forRoot({ componentName: appName }),
         CqrsTransportModule.forRoot({ isGlobal: true }),
         CqrsModule.forRoot({ isGlobal: true }),
-        // IMPORTANT: BitcoinNetworkProviderModule must be global inside one plugin
+        // IMPORTANT: NetworkProviderModule must be global inside one plugin
         NetworkProviderModule.forRootAsync({
           isGlobal: true,
           quickNodesUrls: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_QUICK_NODE_URLS,
           selfNodesUrl: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_SELF_NODE_URL,
         }),
-        EventStoreModule.forRoot({
-          path: `${appName}/data`,
-          type: eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_TYPE,
-          name: 'loader-eventstore', //eventstoreConfig.BITCOIN_INDEXER_EVENTSTORE_DB_NAME,
+        EventStoreModule.forRootAsync({
+          name: 'loader-eventstore',
           logging: eventstoreConfig.isLogging(),
-          database: 'loader-eventstore',
+          type: eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_TYPE,
+          database: eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_NAME,
           ...(eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_HOST && {
             host: eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_HOST,
           }),
@@ -94,13 +93,12 @@ export class BitcoinLoaderModule {
             password: eventstoreConfig.BITCOIN_LOADER_EVENTSTORE_DB_PASSWORD,
           }),
         }),
-        ReadDatabaseModule.forRoot({
-          path: `${appName}/data`,
-          type: readdatabaseConfig.BITCOIN_LOADER_READ_DB_TYPE,
-          name: 'loader-views', //readdatabaseConfig.BITCOIN_LOADER_READ_DB_NAME,
+        ReadDatabaseModule.forRootAsync({
+          name: 'loader-views',
           logging: readdatabaseConfig.isLogging(),
+          type: readdatabaseConfig.BITCOIN_LOADER_READ_DB_TYPE,
           entities: [System, ...schemas],
-          database: 'loader-views',
+          database: readdatabaseConfig.BITCOIN_LOADER_READ_DB_NAME,
           ...(readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST && {
             host: readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST,
           }),
@@ -115,8 +113,8 @@ export class BitcoinLoaderModule {
           }),
         }),
         BlocksQueueModule.forRootAsync({
-          blocksCommandExecutor: BlocksCommandFactoryService,
           isTransportMode: false,
+          blocksCommandExecutor: BlocksCommandFactoryService,
           maxBlockHeight: businessConfig.BITCOIN_LOADER_MAX_BLOCK_HEIGHT,
           queueWorkersNum: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_WORKERS_NUM,
           maxQueueLength: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH,

@@ -19,11 +19,11 @@ interface GenerateDocOptions {
 }
 
 class Mapper implements ILoaderMapper {
-  load(data: any): Promise<BaseViewModel | BaseViewModel[]> {
+  onLoad(data: any): Promise<BaseViewModel | BaseViewModel[]> {
     return { data } as any;
   }
 
-  reorganisation(data: any): Promise<BaseViewModel | BaseViewModel[]> {
+  onReorganisation(data: any): Promise<BaseViewModel | BaseViewModel[]> {
     return { data } as any;
   }
 }
