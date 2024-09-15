@@ -4,7 +4,7 @@ import { Currency, Money } from '@easylayer/common/arithmetic';
 import { OutputModel, InputModel } from './models';
 
 export class Mapper implements ILoaderMapper {
-  public async load(block: any) {
+  public async onLoad(block: any) {
     const currency: Currency = {
       code: 'BTC',
       minorUnit: 8,
@@ -57,7 +57,7 @@ export class Mapper implements ILoaderMapper {
     return [...outputModels, ...inputModels];
   }
 
-  public async reorganisation(lightBlock: any) {
+  public async onReorganisation(lightBlock: any) {
     const { tx } = lightBlock;
 
     const outputModels: InstanceType<typeof OutputModel>[] = [];

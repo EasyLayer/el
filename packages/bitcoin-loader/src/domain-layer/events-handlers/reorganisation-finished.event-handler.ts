@@ -24,7 +24,7 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
       const { blocks: lightBlocks } = payload;
 
       for (const block of lightBlocks) {
-        const results = await this.loaderMapper.reorganisation(block);
+        const results = await this.loaderMapper.onReorganisation(block);
         const models = Array.isArray(results) ? results : [results];
 
         this.viewsWriteRepository.process(models);

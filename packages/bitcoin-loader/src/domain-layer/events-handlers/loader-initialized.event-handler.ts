@@ -29,7 +29,7 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
         const blocks = await this.networkProviderService.getManyBlocksByHashes(restoreBlocks, 2);
 
         for (const block of blocks) {
-          const results = await this.loaderMapper.load(block);
+          const results = await this.loaderMapper.onLoad(block);
           const models = Array.isArray(results) ? results : [results];
 
           this.viewsWriteRepository.process(models);

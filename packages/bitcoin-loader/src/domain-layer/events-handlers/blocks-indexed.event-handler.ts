@@ -27,7 +27,7 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
       const confirmedBlocks = await this.blocksQueueService.confirmIndexBatch(blocks.map((block: any) => block.hash));
 
       for (const block of confirmedBlocks) {
-        const results = await this.loaderMapper.load(block);
+        const results = await this.loaderMapper.onLoad(block);
         const models = Array.isArray(results) ? results : [results];
 
         this.viewsWriteRepository.process(models);
