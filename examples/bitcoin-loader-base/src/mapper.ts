@@ -17,7 +17,16 @@ export class BlocksMapper implements ILoaderMapper {
         return model;
     }
 
-    public async reorganisation(blocksHashes: string[]) {
-        return {} as any;
+    public async reorganisation(lightBlock: any) {
+        const { hash } = lightBlock;
+
+        const model = new BlockModel();
+
+        await model.update(
+            { is_suspended: true },
+            { hash }
+        );
+
+        return model;
     }
 }

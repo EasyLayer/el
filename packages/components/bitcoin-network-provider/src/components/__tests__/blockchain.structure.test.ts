@@ -108,7 +108,7 @@ describe('Blockchain', () => {
       expect(lastBlock).toEqual({
         height: 0,
         hash: 'hash0',
-        prevHash: 'prevHash0',
+        previousblockhash: 'prevHash0',
         tx: [],
       });
     });
@@ -141,7 +141,7 @@ describe('Blockchain', () => {
       expect(removedBlock).toEqual({
         height: 0,
         hash: 'hash0',
-        prevHash: 'prevHash0',
+        previousblockhash: 'prevHash0',
         tx: [],
       });
       expect(blockchain.size).toBe(1);
@@ -163,7 +163,7 @@ describe('Blockchain', () => {
       expect(block).toEqual({
         height: 1,
         hash: 'hash1',
-        prevHash: 'hash0',
+        previousblockhash: 'hash0',
         tx: [],
       });
     });

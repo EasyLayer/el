@@ -40,7 +40,16 @@ export class Mapper implements ILoaderMapper {
         return [...blockModels, ...txsModels];
     }
 
-    public async reorganisation(blocksHashes: string[]) {
-        return {} as any;
+    public async reorganisation(lightBlock: any) {
+        const { hash } = lightBlock;
+
+        const blockModel = new BlockModel();
+    
+        await blockModel.update(
+            { is_suspended: true },
+            { hash }
+        );
+
+        return blockModel;
     }
 }
