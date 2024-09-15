@@ -20,6 +20,18 @@ const generateSchemaForConfig = (ConfigClass: ConfigConstructor, outputPath: str
     return;
   }
 
+  // Remove properties without description
+  if (schema.properties) {
+    Object.keys(schema.properties).forEach((key) => {
+      const property = schema.properties?.[key];
+
+      if (property && !('description' in property)) {
+        // Remove empty descriptions
+        delete schema.properties?.[key];
+      }
+    });
+  }
+
   // Add title (anme of class)
   schema.title = ConfigClass.name;
 

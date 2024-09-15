@@ -95,7 +95,7 @@ export class ViewsWriteRepositoryService {
       throw new Error('No operations to commit');
     }
 
-    const batchSize = this.config.BITCOIN_LOADER_READ_DB_SQLITE_CHANKS_LIMIT;
+    const batchSize = this.config.BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT;
 
     try {
       for (const operation of this.operations) {
