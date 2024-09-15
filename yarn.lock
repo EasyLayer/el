@@ -700,7 +700,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@easylayer/bitcoin-blocks-queue@workspace:packages/components/bitcoin-blocks-queue"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/swagger": 7.1.17
@@ -722,12 +722,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/bitcoin-indexer@0.0.3-experimental.1, @easylayer/bitcoin-indexer@workspace:packages/bitcoin-indexer":
+"@easylayer/bitcoin-indexer@0.0.3-experimental.2, @easylayer/bitcoin-indexer@workspace:packages/bitcoin-indexer":
   version: 0.0.0-use.local
   resolution: "@easylayer/bitcoin-indexer@workspace:packages/bitcoin-indexer"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/platform-express": 10.2.10
@@ -754,12 +754,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/bitcoin-listener@0.0.3-experimental.1, @easylayer/bitcoin-listener@workspace:packages/bitcoin-listener":
+"@easylayer/bitcoin-listener@0.0.3-experimental.2, @easylayer/bitcoin-listener@workspace:packages/bitcoin-listener":
   version: 0.0.0-use.local
   resolution: "@easylayer/bitcoin-listener@workspace:packages/bitcoin-listener"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/testing": 10.2.10
@@ -783,12 +783,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/bitcoin-loader@0.0.3-experimental.1, @easylayer/bitcoin-loader@workspace:packages/bitcoin-loader":
+"@easylayer/bitcoin-loader@0.0.3-experimental.2, @easylayer/bitcoin-loader@workspace:packages/bitcoin-loader":
   version: 0.0.0-use.local
   resolution: "@easylayer/bitcoin-loader@workspace:packages/bitcoin-loader"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@nestjs-query/core": 0.30.0
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -852,12 +852,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/bitcoin-wallet@0.0.3-experimental.1, @easylayer/bitcoin-wallet@workspace:packages/bitcoin-wallet":
+"@easylayer/bitcoin-wallet@0.0.3-experimental.2, @easylayer/bitcoin-wallet@workspace:packages/bitcoin-wallet":
   version: 0.0.0-use.local
   resolution: "@easylayer/bitcoin-wallet@workspace:packages/bitcoin-wallet"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@nestjs-query/core": 0.30.0
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
@@ -882,7 +882,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/common@0.0.3-experimental.1, @easylayer/common@workspace:packages/common":
+"@easylayer/common@0.0.3-experimental.2, @easylayer/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@easylayer/common@workspace:packages/common"
   dependencies:
@@ -901,11 +901,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@easylayer/components@0.0.3-experimental.1, @easylayer/components@workspace:packages/components":
+"@easylayer/components@0.0.3-experimental.2, @easylayer/components@workspace:packages/components":
   version: 0.0.0-use.local
   resolution: "@easylayer/components@workspace:packages/components"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/cqrs": 10.2.6
@@ -1056,7 +1056,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@easylayer/network-transport@workspace:packages/components/network-transport"
   dependencies:
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/components": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/testing": 10.2.10
@@ -1155,7 +1155,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@easylayer/websocket-messages@workspace:packages/components/websocket-messages"
   dependencies:
-    "@easylayer/common": 0.0.3-experimental.1
+    "@easylayer/common": 0.0.3-experimental.2
     "@nestjs/common": 10.2.10
     "@nestjs/core": 10.2.10
     "@nestjs/platform-socket.io": 10.2.10
@@ -3755,9 +3755,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-indexer-btc-balances@workspace:examples/bitcoin-indexer-btc-balances"
   dependencies:
-    "@easylayer/bitcoin-indexer": 0.0.3-experimental.1
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/bitcoin-indexer": 0.0.3-experimental.2
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3769,7 +3769,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-listener-base@workspace:examples/bitcoin-listener-base"
   dependencies:
-    "@easylayer/bitcoin-listener": 0.0.3-experimental.1
+    "@easylayer/bitcoin-listener": 0.0.3-experimental.2
     "@types/node": 20.10.4
     "@types/socket.io-client": 3.0.0
     rimraf: 5.0.5
@@ -3783,9 +3783,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-listener-btc-deposits@workspace:examples/bitcoin-listener-btc-deposits"
   dependencies:
-    "@easylayer/bitcoin-listener": 0.0.3-experimental.1
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/bitcoin-listener": 0.0.3-experimental.2
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@types/node": 20.10.4
     "@types/socket.io-client": 3.0.0
     rimraf: 5.0.5
@@ -3799,7 +3799,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-base@workspace:examples/bitcoin-loader-base"
   dependencies:
-    "@easylayer/bitcoin-loader": 0.0.3-experimental.1
+    "@easylayer/bitcoin-loader": 0.0.3-experimental.2
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3811,9 +3811,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-utxo@workspace:examples/bitcoin-loader-utxo"
   dependencies:
-    "@easylayer/bitcoin-loader": 0.0.3-experimental.1
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/bitcoin-loader": 0.0.3-experimental.2
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3825,7 +3825,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-with-relation@workspace:examples/bitcoin-loader-with-relation"
   dependencies:
-    "@easylayer/bitcoin-loader": 0.0.3-experimental.1
+    "@easylayer/bitcoin-loader": 0.0.3-experimental.2
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -3837,7 +3837,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "bitcoin-wallet@workspace:examples/bitcoin-wallet-base"
   dependencies:
-    "@easylayer/bitcoin-wallet": 0.0.3-experimental.1
+    "@easylayer/bitcoin-wallet": 0.0.3-experimental.2
     "@types/node": 20.10.4
     rimraf: 5.0.5
     ts-node: 10.9.2
@@ -5319,9 +5319,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "e2e-bitcoin-loader@workspace:e2e-tests/bitcoin-loader"
   dependencies:
-    "@easylayer/bitcoin-loader": 0.0.3-experimental.1
-    "@easylayer/common": 0.0.3-experimental.1
-    "@easylayer/components": 0.0.3-experimental.1
+    "@easylayer/bitcoin-loader": 0.0.3-experimental.2
+    "@easylayer/common": 0.0.3-experimental.2
+    "@easylayer/components": 0.0.3-experimental.2
     "@types/jest": 29.5.11
     "@types/node": 20.10.4
     "@types/supertest": 6.0.2
