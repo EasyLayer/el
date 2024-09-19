@@ -99,7 +99,7 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
       const data = {
         jsonrpc: '2.0',
         method: 'getblockhash',
-        params: [height.toString()],
+        params: [height],
       };
 
       const response = await this._httpClient.post('/', data);
