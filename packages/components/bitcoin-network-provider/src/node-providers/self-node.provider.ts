@@ -161,9 +161,18 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       }
 
       const results = response.data.map((item: any) => {
-        if (!item || typeof item.result === 'undefined') {
-          throw new Error(`Invalid result for hash: ${JSON.stringify(item)}`);
+        if (!item) {
+          throw new Error(`Invalid response item: ${JSON.stringify(item)}`);
         }
+
+        if (item.error) {
+          throw new Error(`Invalid result: ${JSON.stringify(item.error)}`);
+        }
+
+        if (item.result === null) {
+          throw new Error(`Null result for item: ${JSON.stringify(item)}`);
+        }
+
         return item.result;
       });
 
@@ -201,9 +210,18 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       }
 
       const results = response.data.map((item: any) => {
-        if (!item || typeof item.result === 'undefined') {
-          throw new Error(`Invalid result for height: ${JSON.stringify(item)}`);
+        if (!item) {
+          throw new Error(`Invalid response item: ${JSON.stringify(item)}`);
         }
+
+        if (item.error) {
+          throw new Error(`Invalid result: ${JSON.stringify(item.error)}`);
+        }
+
+        if (item.result === null) {
+          throw new Error(`Null result for item: ${JSON.stringify(item)}`);
+        }
+
         return item.result;
       });
 
@@ -228,7 +246,6 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
   public async getManyBlocksByHeights(heights: number[], verbosity?: number): Promise<any> {
     const blocksHashes = await this.getManyHashesByHeights(heights);
     const blocks = await this.getManyBlocksByHashes(blocksHashes, verbosity);
-
     return blocks;
   }
 }

@@ -14,7 +14,7 @@ export class ProcessReorganisationCommandHandler implements ICommandHandler<Proc
   ) {}
 
   @Transactional({ connectionName: 'loader-eventstore' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false })
   async execute({ payload }: ProcessReorganisationCommand) {
     try {
       // IMPORTANT: blocks - need to be reorganised (from LoaderModel),
@@ -30,7 +30,6 @@ export class ProcessReorganisationCommandHandler implements ICommandHandler<Proc
         blocks,
         height,
         requestId,
-        logger: this.log,
       });
 
       await this.eventStore.save(loaderModel);

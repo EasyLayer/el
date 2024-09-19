@@ -17,7 +17,7 @@ export class LoadBatchCommandHandler implements ICommandHandler<LoadBatchCommand
   ) {}
 
   @Transactional({ connectionName: 'loader-eventstore' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false })
   async execute({ payload }: LoadBatchCommand) {
     try {
       const { batch, requestId } = payload;
@@ -28,7 +28,6 @@ export class LoadBatchCommandHandler implements ICommandHandler<LoadBatchCommand
         requestId,
         blocks: batch,
         service: this.networkProviderService,
-        logger: this.log,
       });
 
       await this.eventStore.save(loaderModel);

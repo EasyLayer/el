@@ -47,9 +47,9 @@ export class BlocksQueueConfig {
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 1024 * 1024;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 200))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 20))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 200;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 20;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()

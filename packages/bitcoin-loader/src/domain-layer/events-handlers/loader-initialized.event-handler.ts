@@ -19,7 +19,7 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
   ) {}
 
   @Transactional({ connectionName: 'loader-views' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false })
   async handle({ payload }: BitcoinLoaderInitializedEvent) {
     try {
       const { restoreBlocks, indexedHeight } = payload;

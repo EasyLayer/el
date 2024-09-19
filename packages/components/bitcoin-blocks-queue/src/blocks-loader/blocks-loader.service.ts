@@ -60,7 +60,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
       await exponentialIntervalAsync(
         async (resetInterval) => {
           if (this._queue.lastHeight >= this._queue.maxBlockHeight) {
-            this.log.info(
+            this.log.debug(
               'Reached max block height',
               { lastQueueHeight: this._queue.lastHeight },
               this.constructor.name
@@ -82,7 +82,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
             await this.destroyStrategy();
           }
 
-          this.log.info(
+          this.log.debug(
             'Load blocks waiting...',
             { queueHeight: this._queue.lastHeight, queueLegth: this._queue.length },
             this.constructor.name
@@ -110,7 +110,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
   }
 
   private async setupStrategy(): Promise<void> {
-    this.log.info('Setup blocks loading strategy...', {}, this.constructor.name);
+    this.log.debug('Setup blocks loading strategy...', {}, this.constructor.name);
     // IMPORTANT: If a strategy is selected in which the .load() method completes immediately,
     // then this provider method will be called many times at first
     // (until the intervals become longer).

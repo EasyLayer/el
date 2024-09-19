@@ -10,7 +10,7 @@ export class NestLogger implements LoggerService {
   private logger: BunyanInstance;
 
   constructor() {
-    this.logger = createLogger('nest');
+    this.logger = createLogger();
   }
 
   log(message: string, context?: string) {

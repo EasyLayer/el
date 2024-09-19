@@ -58,17 +58,7 @@ export class Loader extends AggregateRoot {
     );
   }
 
-  public async addBlocks({
-    blocks,
-    requestId,
-    service,
-    logger,
-  }: {
-    blocks: any;
-    requestId: string;
-    service: any;
-    logger: any;
-  }) {
+  public async addBlocks({ blocks, requestId, service }: { blocks: any; requestId: string; service: any }) {
     if (this.status !== LoaderStatuses.AWAITING) {
       throw new Error("addBlocks() Reorganisation hasn't finished yet");
     }
@@ -80,20 +70,9 @@ export class Loader extends AggregateRoot {
         height: this.chain.lastBlockHeight,
         requestId,
         service,
-        logger,
         blocks: [],
       });
     }
-
-    logger.info(
-      'Balances successfull indexed',
-      {
-        blocksHeight: blocks[blocks.length - 1].height,
-        blocksLength: blocks.length,
-        txLength: blocks.reduce((result: number, item: any) => result + item.tx.length, 0),
-      },
-      this.constructor.name
-    );
 
     return await this.apply(
       new BitcoinLoaderBlocksIndexedEvent({
@@ -112,12 +91,10 @@ export class Loader extends AggregateRoot {
     blocks,
     height,
     requestId,
-    logger,
   }: {
     blocks: LightBlock[];
     height: string | number;
     requestId: string;
-    logger: any;
   }): Promise<void> {
     if (this.status !== LoaderStatuses.REORGANISATION) {
       throw new Error("processReorganisation() Reorganisation hasn't started yet");
@@ -131,14 +108,6 @@ export class Loader extends AggregateRoot {
     // if (blocks.length > 100) {
     //   const blocksToProcessed = blocks;
 
-    //   logger.info(
-    //     `Blockchain continue reorganising by blocks count`,
-    //     {
-    //       blocksLength: blocksToProcessed.length,
-    //     },
-    //     this.constructor.name
-    //   );
-
     //   return await this.apply(
     //     new BitcoinLoaderReorganisationProcessedEvent({
     //       aggregateId: this.aggregateId,
@@ -149,14 +118,6 @@ export class Loader extends AggregateRoot {
     //     })
     //   );
     // }
-
-    logger.info(
-      `Blockchain successfull reorganised to height`,
-      {
-        height,
-      },
-      this.constructor.name
-    );
 
     return await this.apply(
       new BitcoinLoaderReorganisationFinishedEvent({
@@ -174,13 +135,11 @@ export class Loader extends AggregateRoot {
     height,
     requestId,
     service,
-    logger,
     blocks,
   }: {
     height: number;
     requestId: string;
     service: NetworkProviderService;
-    logger: any;
     blocks: any[];
   }): Promise<void> {
     if (this.status !== LoaderStatuses.AWAITING) {
@@ -192,16 +151,6 @@ export class Loader extends AggregateRoot {
 
     if (oldBlock.hash === localBlock.hash && oldBlock.previousblockhash === localBlock.previousblockhash) {
       // Match found
-
-      logger.info(
-        'Blockchain reorganisation starting',
-        {
-          reorganisationHeight: height.toString(),
-          blocksLength: blocks.length,
-          txLength: blocks.reduce((result: number, item: any) => result + item.tx.length, 0),
-        },
-        this.constructor.name
-      );
 
       return await this.apply(
         new BitcoinLoaderReorganisationStartedEvent({
@@ -221,7 +170,7 @@ export class Loader extends AggregateRoot {
     const prevHeight = height - 1;
 
     // Recursive check the previous block
-    return this.startReorganisation({ height: prevHeight, requestId, service, logger, blocks: newBlocks });
+    return this.startReorganisation({ height: prevHeight, requestId, service, blocks: newBlocks });
   }
 
   private onBitcoinLoaderInitializedEvent({ payload }: BitcoinLoaderInitializedEvent) {

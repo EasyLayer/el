@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
-import { AppLogger } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { BlocksQueue } from '../blocks-queue';
 import { Block, BlocksCommandExecutor } from '../interfaces';
 
@@ -83,6 +83,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     }
   }
 
+  @RuntimeTracker({ showMemory: true })
   private async peekNextBatch(): Promise<Block[]> {
     // NOTE: Before processing the next batch from the queue,
     // we wait for the resolving of the promise of the previous batch
@@ -100,7 +101,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
       const { value: nextBlock, done } = blocksIterator.next();
 
       if (done) {
-        this.log.info('Queue is empty', {}, this.constructor.name);
+        this.log.debug('Queue is empty', {}, this.constructor.name);
         // Stop iteration if there are no more blocks
         break;
       }

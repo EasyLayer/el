@@ -42,7 +42,7 @@ interface LoaderModuleOptions {
 
 @Module({})
 export class BitcoinLoaderModule {
-  static async register({ appName, schemas, mapper }: LoaderModuleOptions): Promise<DynamicModule> {
+  static async register({ schemas, mapper }: LoaderModuleOptions): Promise<DynamicModule> {
     const eventstoreConfig = await transformAndValidate(EventStoreConfig, process.env, {
       validator: { whitelist: true },
     });
@@ -66,7 +66,7 @@ export class BitcoinLoaderModule {
       module: BitcoinLoaderModule,
       controllers: [LoaderController],
       imports: [
-        LoggerModule.forRoot({ componentName: appName }),
+        LoggerModule.forRoot({ componentName: 'BitcoinLoaderModule' }),
         CqrsTransportModule.forRoot({ isGlobal: true }),
         CqrsModule.forRoot({ isGlobal: true }),
         // IMPORTANT: NetworkProviderModule must be global inside one plugin

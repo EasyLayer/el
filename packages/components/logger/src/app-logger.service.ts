@@ -10,7 +10,7 @@ export interface IAppLogger {
 }
 
 export class AppLogger implements IAppLogger {
-  constructor(private logger: BunyanInstance) {}
+  constructor(private logger: BunyanInstance = createLogger()) {}
 
   info(message: string, args?: any, context?: string): void {
     this.logger.info({ args, context }, message);
@@ -44,12 +44,3 @@ export class AppLogger implements IAppLogger {
     return new AppLogger(childProvider);
   }
 }
-
-let singletonLogger: IAppLogger | null = null;
-
-export const logger = (name = 'app') => {
-  if (!singletonLogger) {
-    singletonLogger = new AppLogger(createLogger(name));
-  }
-  return singletonLogger;
-};

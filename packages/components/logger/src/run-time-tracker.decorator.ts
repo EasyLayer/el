@@ -1,4 +1,4 @@
-import { logger } from './app-logger.service';
+import { createLogger } from './bunyan-logger.service';
 
 interface MemoryUsage {
   [key: string]: string;
@@ -26,9 +26,10 @@ export function RuntimeTracker({
 }: RuntimeTrackerParams): MethodDecorator {
   return (target: object, key: string | symbol, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
-    const log = logger();
 
     descriptor.value = async function (...args: any[]) {
+      // Initialize the logger ONLY when calling the method
+      const log = createLogger();
       const start = Date.now();
 
       try {

@@ -14,7 +14,7 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
   ) {}
 
   @Transactional({ connectionName: 'loader-eventstore' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false })
   async execute({ payload }: InitLoaderCommand) {
     try {
       const { requestId, startHeight, lastReadStateHeight } = payload;

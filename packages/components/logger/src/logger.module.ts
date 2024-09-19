@@ -1,5 +1,5 @@
 import { DynamicModule, Module } from '@nestjs/common';
-import { logger, AppLogger } from './app-logger.service';
+import { AppLogger } from './app-logger.service';
 
 interface LoggerModuleOptions {
   name?: string;
@@ -8,13 +8,13 @@ interface LoggerModuleOptions {
 
 @Module({})
 export class LoggerModule {
-  static forRoot({ name, componentName }: LoggerModuleOptions): DynamicModule {
+  static forRoot({ componentName }: LoggerModuleOptions): DynamicModule {
     return {
       module: LoggerModule,
       providers: [
         {
           provide: AppLogger,
-          useValue: logger(name).child(componentName),
+          useValue: new AppLogger().child(componentName),
         },
       ],
       exports: [AppLogger],
