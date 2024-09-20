@@ -60,21 +60,33 @@ function replacer(key: string, value: any) {
   return value;
 }
 
-export function createLogger(name: string): bunyan {
-  const level = process.env.DEBUG === '1' ? 'debug' : 'info';
+class LoggerSingleton {
+  private static instance: bunyan | null = null;
 
-  const options: LoggerOptions = {
-    name,
-    level,
-    streams: [
-      {
-        type: 'raw',
-        stream: new BunyanStream(),
-      },
-    ],
-  };
+  public static getInstance(name: string): bunyan {
+    if (!LoggerSingleton.instance) {
+      const level = process.env.DEBUG === '1' ? 'debug' : 'info';
 
-  return bunyan.createLogger(options);
+      const options: LoggerOptions = {
+        name,
+        level,
+        streams: [
+          {
+            type: 'raw',
+            stream: new BunyanStream(),
+          },
+        ],
+      };
+
+      LoggerSingleton.instance = bunyan.createLogger(options);
+    }
+
+    return LoggerSingleton.instance;
+  }
+}
+
+export function createLogger(name: string = 'System'): bunyan {
+  return LoggerSingleton.getInstance(name);
 }
 
 export type BunyanInstance = bunyan;

@@ -82,7 +82,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
             await this.destroyStrategy();
           }
 
-          this.log.info(
+          this.log.debug(
             'Load blocks waiting...',
             { queueHeight: this._queue.lastHeight, queueLegth: this._queue.length },
             this.constructor.name
@@ -110,7 +110,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
   }
 
   private async setupStrategy(): Promise<void> {
-    this.log.info('Setup blocks loading strategy...', {}, this.constructor.name);
+    this.log.debug('Setup blocks loading strategy...', {}, this.constructor.name);
     // IMPORTANT: If a strategy is selected in which the .load() method completes immediately,
     // then this provider method will be called many times at first
     // (until the intervals become longer).
@@ -145,7 +145,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
           maxThreads: this.config.queueWorkersNum,
         });
       case StrategyNames.PULL_NETWORK_PROVIDER_BY_BATCHES:
-        return new PullNetworkProviderByBatchesStrategy(this.networkProviderService, this._queue, {
+        return new PullNetworkProviderByBatchesStrategy(this.networkProviderService, this.log, this._queue, {
           batchLength: this.config.queueLoaderNetworkProviderBatchesLength,
         });
       // case StrategyNames.PULL_BLOCKS_BY_NETWORK_TRANSPORT:

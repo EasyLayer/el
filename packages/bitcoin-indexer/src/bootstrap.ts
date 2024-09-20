@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { DynamicModule, INestApplication, INestApplicationContext } from '@nestjs/common';
-import { NestLogger, logger } from '@easylayer/components/logger';
+import { NestLogger } from '@easylayer/components/logger';
 import { BitcoinIndexerModule } from './indexer.module';
 import { AppConfig } from './config';
 import { MapperType, Schema } from './protocol';
@@ -27,7 +27,6 @@ export const bootstrap = async ({
   config({ path: resolve(process.cwd(), '.env') });
 
   const nestLogger = new NestLogger();
-  logger(appName);
 
   try {
     const rootModule = await BitcoinIndexerModule.register({

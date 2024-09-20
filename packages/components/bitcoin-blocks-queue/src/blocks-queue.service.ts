@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppLogger } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { BlocksQueue } from './blocks-queue';
 import { Block } from './interfaces';
 import { BlocksQueueIteratorService } from './blocks-iterator';
@@ -54,6 +54,7 @@ export class BlocksQueueService {
     this.log.info('Queue was clear to height: ', { newStartHeight }, this.constructor.name);
   }
 
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   public async confirmIndexBatch(blockHashes: string[]): Promise<Block[]> {
     const confirmedBlocks: Block[] = [];
 

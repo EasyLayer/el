@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 import { Observable } from 'rxjs';
 import { NestFactory } from '@nestjs/core';
 import { DynamicModule, INestApplication, INestApplicationContext } from '@nestjs/common';
-import { NestLogger, logger } from '@easylayer/components/logger';
+import { NestLogger } from '@easylayer/components/logger';
 import { CqrsModule, CustomEventBus, ofType } from '@easylayer/components/cqrs';
 import { BitcoinLoaderModule } from './loader.module';
 import { AppConfig } from './config';
@@ -41,7 +41,6 @@ export const bootstrap = async ({
   config({ path: resolve(process.cwd(), '.env') });
 
   const nestLogger = new NestLogger();
-  logger(appName);
 
   try {
     const rootModule = await BitcoinLoaderModule.register({

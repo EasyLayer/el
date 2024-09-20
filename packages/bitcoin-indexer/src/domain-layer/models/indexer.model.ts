@@ -71,7 +71,7 @@ export class Indexer extends AggregateRoot {
     }
 
     logger.info(
-      'Balances successfull indexed',
+      'Blocks successfull indexed',
       {
         blocksHeight: blocks[blocks.length - 1].height,
         blocksLength: blocks.length,

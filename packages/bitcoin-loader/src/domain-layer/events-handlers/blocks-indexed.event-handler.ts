@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
-import { RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
 import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderBlocksIndexedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
@@ -11,6 +11,7 @@ import { System } from '../../infrastructure-layer/view-models';
 @EventsHandler(BitcoinLoaderBlocksIndexedEvent)
 export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<BitcoinLoaderBlocksIndexedEvent> {
   constructor(
+    private readonly log: AppLogger,
     private readonly viewsWriteRepository: ViewsWriteRepositoryService,
     @Inject('BlocksQueueService')
     private readonly blocksQueueService: BlocksQueueService,
@@ -19,9 +20,10 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
   ) {}
 
   @Transactional({ connectionName: 'loader-views' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   async handle({ payload }: BitcoinLoaderBlocksIndexedEvent) {
     try {
+      // console.timeEnd('CqrsTransportTime');
       const { blocks } = payload;
 
       const confirmedBlocks = await this.blocksQueueService.confirmIndexBatch(blocks.map((block: any) => block.hash));
@@ -40,6 +42,16 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
       });
 
       await this.viewsWriteRepository.commit();
+
+      this.log.info(
+        'Blocks successfull loaded',
+        {
+          blocksHeight: lastBlockHeight,
+          blocksLength: confirmedBlocks.length,
+          txLength: confirmedBlocks.reduce((result: number, item: any) => result + item.tx.length, 0),
+        },
+        this.constructor.name
+      );
     } catch (error) {
       this.viewsWriteRepository.clearOperations();
 

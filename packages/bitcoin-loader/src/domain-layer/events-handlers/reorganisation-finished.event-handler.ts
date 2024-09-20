@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
-import { RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderReorganisationFinishedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
@@ -12,13 +12,14 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
   implements IEventHandler<BitcoinLoaderReorganisationFinishedEvent>
 {
   constructor(
+    private readonly log: AppLogger,
     private readonly viewsWriteRepository: ViewsWriteRepositoryService,
     @Inject('LoaderMapper')
     private readonly loaderMapper: ILoaderMapper
   ) {}
 
   @Transactional({ connectionName: 'loader-views' })
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false })
   async handle({ payload }: BitcoinLoaderReorganisationFinishedEvent) {
     try {
       const { blocks: lightBlocks } = payload;
@@ -37,6 +38,14 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
       });
 
       await this.viewsWriteRepository.commit();
+
+      this.log.info(
+        `Blockchain successfull reorganised to height`,
+        {
+          height: lastBlockHeight,
+        },
+        this.constructor.name
+      );
     } catch (error) {
       this.viewsWriteRepository.clearOperations();
 

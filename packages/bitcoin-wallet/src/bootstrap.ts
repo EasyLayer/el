@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { config } from 'dotenv';
 import { NestFactory } from '@nestjs/core';
 import { DynamicModule, INestApplication, INestApplicationContext } from '@nestjs/common';
-import { NestLogger, logger } from '@easylayer/components/logger';
+import { NestLogger } from '@easylayer/components/logger';
 import { BitcoinWalletModule } from './wallet.module';
 import { AppConfig } from './config';
 
@@ -17,7 +17,6 @@ export const bootstrap = async ({ appName = 'bitcoin-wallet' }: BootstrapOptions
   config({ path: resolve(process.cwd(), '.env') });
 
   const nestLogger = new NestLogger();
-  logger(appName);
 
   try {
     const rootModule = await BitcoinWalletModule.register({ appName });
