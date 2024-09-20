@@ -150,7 +150,9 @@ export class BlocksQueue<T extends Block> {
     }
 
     for (let i = this.outStack.length - 1; i >= 0; i--) {
-      yield _.cloneDeep(this.outStack[i]);
+      // TODO: think about whether shallow copy is enough for us?
+      // yield _.cloneDeep(this.outStack[i]);
+      yield { ...this.outStack[i] };
     }
   }
 

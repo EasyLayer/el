@@ -60,7 +60,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
       await exponentialIntervalAsync(
         async (resetInterval) => {
           if (this._queue.lastHeight >= this._queue.maxBlockHeight) {
-            this.log.debug(
+            this.log.info(
               'Reached max block height',
               { lastQueueHeight: this._queue.lastHeight },
               this.constructor.name
@@ -145,7 +145,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
           maxThreads: this.config.queueWorkersNum,
         });
       case StrategyNames.PULL_NETWORK_PROVIDER_BY_BATCHES:
-        return new PullNetworkProviderByBatchesStrategy(this.networkProviderService, this._queue, {
+        return new PullNetworkProviderByBatchesStrategy(this.networkProviderService, this.log, this._queue, {
           batchLength: this.config.queueLoaderNetworkProviderBatchesLength,
         });
       // case StrategyNames.PULL_BLOCKS_BY_NETWORK_TRANSPORT:

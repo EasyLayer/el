@@ -20,9 +20,10 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
   ) {}
 
   @Transactional({ connectionName: 'loader-views' })
-  @RuntimeTracker({ showMemory: false })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   async handle({ payload }: BitcoinLoaderBlocksIndexedEvent) {
     try {
+      // console.timeEnd('CqrsTransportTime');
       const { blocks } = payload;
 
       const confirmedBlocks = await this.blocksQueueService.confirmIndexBatch(blocks.map((block: any) => block.hash));
@@ -43,7 +44,7 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
       await this.viewsWriteRepository.commit();
 
       this.log.info(
-        'Blocks successfull indexed',
+        'Blocks successfull loaded',
         {
           blocksHeight: lastBlockHeight,
           blocksLength: confirmedBlocks.length,

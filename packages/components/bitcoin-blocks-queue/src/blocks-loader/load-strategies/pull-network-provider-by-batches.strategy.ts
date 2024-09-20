@@ -1,4 +1,5 @@
 import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksLoadingStrategy, StrategyNames } from './load-strategy.interface';
 import { Block } from '../../interfaces';
 import { BlocksQueue } from '../../blocks-queue';
@@ -10,6 +11,7 @@ export class PullNetworkProviderByBatchesStrategy implements BlocksLoadingStrate
 
   constructor(
     private readonly networkProvider: NetworkProviderService,
+    private readonly log: AppLogger,
     private readonly queue: BlocksQueue<Block>,
     config: {
       batchLength: number;
@@ -51,8 +53,9 @@ export class PullNetworkProviderByBatchesStrategy implements BlocksLoadingStrate
         // NOTE: second param = 2 means that we want to fetch all transactions with block
         blocksBatch = await this.networkProvider.getManyBlocksByHeights(heights, 2);
 
+        this.log.debug('Blocks was fetched', { length: blocksBatch.length }, this.constructor.name);
+
         if (blocksBatch.length > 0) {
-          // console.log('blocks length', blocksBatch.length);
           this.enqueueBlocksBatch(blocksBatch);
         }
 
@@ -76,6 +79,7 @@ export class PullNetworkProviderByBatchesStrategy implements BlocksLoadingStrate
 
   async destroy(): Promise<void> {}
 
+  // @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   private enqueueBlocksBatch(blocksBatch: Block[]): void {
     blocksBatch.sort((a, b) => {
       if (a.height < b.height) return -1;

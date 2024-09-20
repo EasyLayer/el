@@ -20,13 +20,13 @@ export class BlocksQueueConfig {
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_WORKERS_NUM: number = 1;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 3000))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1000))
   @IsNumber()
   @JSONSchema({
     description: 'Maximum length of the Bitcoin loader blocks queue.',
-    default: 3000,
+    default: 1000,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH: number = 3000;
+  BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH: number = 1000;
 
   @Transform(({ value }) => (value !== undefined ? value : BlocksQueueStrategy.PULL_NETWORK_PROVIDER_BY_BATCHES))
   @IsEnum(BlocksQueueStrategy)
@@ -38,18 +38,18 @@ export class BlocksQueueConfig {
   BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: BlocksQueueStrategy =
     BlocksQueueStrategy.PULL_NETWORK_PROVIDER_BY_BATCHES;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4 * 1024 * 1024))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4 * 10 * 1024 * 1024))
   @IsNumber()
   @JSONSchema({
     description:
       'Batch size of the blocks iterator in the loader. Should not be smaller than the size of a single block.',
-    default: 4194304,
+    default: 41943040,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 1024 * 1024;
+  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 10 * 1024 * 1024;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 20))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 50))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 20;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 50;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()

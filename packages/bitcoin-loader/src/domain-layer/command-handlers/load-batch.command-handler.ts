@@ -17,7 +17,7 @@ export class LoadBatchCommandHandler implements ICommandHandler<LoadBatchCommand
   ) {}
 
   @Transactional({ connectionName: 'loader-eventstore' })
-  @RuntimeTracker({ showMemory: false })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   async execute({ payload }: LoadBatchCommand) {
     try {
       const { batch, requestId } = payload;
@@ -35,6 +35,7 @@ export class LoadBatchCommandHandler implements ICommandHandler<LoadBatchCommand
       this.loaderModelFactory.updateCache(loaderModel);
 
       await loaderModel.commit();
+      // console.time('CqrsTransportTime');
     } catch (error) {
       this.log.error('execute()', error, this.constructor.name);
       this.loaderModelFactory.clearCache();

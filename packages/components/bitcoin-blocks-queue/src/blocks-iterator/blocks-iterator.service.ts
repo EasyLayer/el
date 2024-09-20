@@ -83,7 +83,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     }
   }
 
-  @RuntimeTracker({ showMemory: true })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
   private async peekNextBatch(): Promise<Block[]> {
     // NOTE: Before processing the next batch from the queue,
     // we wait for the resolving of the promise of the previous batch

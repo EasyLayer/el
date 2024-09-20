@@ -77,7 +77,7 @@ class LoggerSingleton {
           },
         ],
       };
-      console.log('options', options);
+
       LoggerSingleton.instance = bunyan.createLogger(options);
     }
 
