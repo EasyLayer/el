@@ -37,10 +37,10 @@ export const BlockSchema = new EntitySchema<IBlock>({
   ],
   relations: {
     tx: {
-      type: 'one-to-many',   // Указываем тип связи
-      target: 'txs',          // Ссылаемся на таблицу `txs`
-      inverseSide: 'block',   // Ссылаемся на обратную сторону связи в `txs`
-      cascade: true,          // Определяем каскадные операции
+      type: 'one-to-many',
+      target: 'txs',
+      inverseSide: 'block',
+      cascade: true,
     },
   },
 });

@@ -1,5 +1,5 @@
 import { AggregateRoot } from '@easylayer/components/cqrs';
-import { NetworkProviderService, Blockchain } from '@easylayer/components/bitcoin-network-provider';
+import { NetworkProviderService, Blockchain, restoreChainLinks } from '@easylayer/components/bitcoin-network-provider';
 import {
   BitcoinListenerInitializedEvent,
   BitcoinListenerBlocksParsedEvent,
@@ -24,7 +24,7 @@ export class Listener extends AggregateRoot {
   // IMPORTANT: There must be only one Listener Aggregate in the module,
   // so we immediately give it aggregateId by which we can find it.
   public aggregateId: string = 'indexer';
-  public status!: ListenerStatuses;
+  public status: ListenerStatuses = ListenerStatuses.AWAITING;
   public chain: Blockchain = new Blockchain({ maxSize: 5000 });
 
   // IMPORTANT: this method doing two things:
@@ -212,6 +212,20 @@ export class Listener extends AggregateRoot {
 
     // Recursive check the previous block
     return this.startReorganisation({ height: prevHeight, requestId, service, logger, blocks: newBlocks });
+  }
+
+  // Override the load From Snapshot method to restore the Blockchain data structure
+  async loadFromSnapshot<T extends AggregateRoot>(state: T): Promise<void> {
+    // Calling a base class method to restore shared data
+    await super.loadFromSnapshot(state);
+
+    // Restore the block chain if it exists in the state
+    if (this.chain && typeof this.chain === 'object') {
+      Object.setPrototypeOf(this.chain, Blockchain.prototype);
+
+      // Restore links (next and prev) inside the block chain
+      restoreChainLinks(this.chain.head);
+    }
   }
 
   private onBitcoinListenerInitializedEvent({ payload }: BitcoinListenerInitializedEvent) {

@@ -20,7 +20,7 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
   ) {}
 
   @Transactional({ connectionName: 'loader-views' })
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
   async handle({ payload }: BitcoinLoaderBlocksIndexedEvent) {
     try {
       // console.timeEnd('CqrsTransportTime');

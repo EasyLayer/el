@@ -38,11 +38,11 @@ export const TransactionSchema = new EntitySchema<ITransaction>({
   ],
   relations: {
     block: {
-      type: 'many-to-one',     // Определяем тип связи как `many-to-one`
-      target: 'blocks',        // Ссылаемся на таблицу `blocks`
-      inverseSide: 'tx',       // Указываем обратную сторону связи в `blocks`
+      type: 'many-to-one',
+      target: 'blocks',
+      inverseSide: 'tx',
       joinColumn: {
-        name: 'block_hash',    // Это внешний ключ в таблице `txs`, который ссылается на поле `hash` в таблице `blocks`
+        name: 'block_hash',
         referencedColumnName: 'hash',
       },
     },

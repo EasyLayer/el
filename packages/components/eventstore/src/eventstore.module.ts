@@ -26,7 +26,7 @@ export class EventStoreModule {
       ...restOptions,
       name,
       database,
-      entities: [EventDataModel],
+      entities: [EventDataModel, SnapshotsModel],
       synchronize: false, // Disable synchronization by default
     };
 
@@ -52,6 +52,7 @@ export class EventStoreModule {
     return {
       module: EventStoreModule,
       imports: [
+        LoggerModule.forRoot({ componentName: 'EventStore' }),
         // IMPORTANT: 'name' - is required everywhere and for convenience we indicate it the same
         // so as not to get confused. It must be unique to the one module connection.
         TypeOrmModule.forRootAsync({

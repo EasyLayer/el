@@ -44,7 +44,7 @@ export class NetworkProviderService {
     }
   }
 
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 1000 })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 1000, errorThresholdMs: 5000 })
   public async getManyBlocksByHeights(heights: string[] | number[], verbosity?: number): Promise<any> {
     try {
       const provider = await this._connectionManager.getActiveProvider();

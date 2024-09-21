@@ -23,19 +23,17 @@ export class Mapper implements ILoaderMapper {
       const txid = t.txid;
 
       for (const vout of t.vout) {
-        const address = ScriptUtilService.getScriptHashFromScriptPubKey(vout.scriptPubKey);
+        const scriptHash = ScriptUtilService.getScriptHashFromScriptPubKey(vout.scriptPubKey);
         const value = Money.fromDecimal(vout.value, currency).toCents();
-
         const outputModel = new OutputModel();
 
         await outputModel.insert({
           txid,
-          address,
+          script_hash: scriptHash,
           value,
           n: Number(vout.n),
           block_height: Number(height)
         });
-
         outputModels.push(outputModel);
       }
 

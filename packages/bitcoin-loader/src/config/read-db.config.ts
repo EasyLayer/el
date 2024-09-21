@@ -56,13 +56,13 @@ export class ReadDatabaseConfig {
   })
   BITCOIN_LOADER_READ_DB_PASSWORD?: string;
 
-  @Transform(({ value }) => (value ? Number(value) : 10000))
+  @Transform(({ value }) => (value ? Number(value) : 999))
   @IsNumber()
   @JSONSchema({
     description: 'Limit for data chunks when inserting into the database.',
-    default: 10000,
+    default: 999,
   })
-  BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT: number = 10000;
+  BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT: number = 999;
 
   @Transform(({ value }) => (value ? value : resolve(process.cwd(), 'data/loader-views.db')))
   @IsString()

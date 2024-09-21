@@ -5,11 +5,35 @@ type LightBlock = {
   tx: string[];
 };
 
-type Chain = {
-  block: LightBlock;
-  next: Chain | null;
-  prev: Chain | null;
-};
+export class Chain {
+  block!: LightBlock;
+  next: Chain | null = null;
+  prev: Chain | null = null;
+}
+
+/**
+ * Restores the chain links (next and prev) for the blockchain.
+ * @param currentNode The starting node of the chain to restore links for.
+ */
+export function restoreChainLinks(currentNode: Chain | null): void {
+  while (currentNode) {
+    // Restore the prototype for the current Chain node
+    Object.setPrototypeOf(currentNode, Chain.prototype);
+
+    // If there is a next node, restore its prototype
+    if (currentNode.next) {
+      Object.setPrototypeOf(currentNode.next, Chain.prototype);
+    }
+
+    // If there is a previous node, restore its prototype
+    if (currentNode.prev) {
+      Object.setPrototypeOf(currentNode.prev, Chain.prototype);
+    }
+
+    // Move to the next node
+    currentNode = currentNode.next;
+  }
+}
 
 /**
  * Blockchain class representing a doubly linked list of blocks.
@@ -17,8 +41,8 @@ type Chain = {
  * and automatically removes the oldest blocks when new blocks are added beyond this size.
  */
 export class Blockchain {
-  private head: Chain | null = null;
-  private tail: Chain | null = null;
+  private _head: Chain | null = null;
+  private _tail: Chain | null = null;
   private _size: number = 0;
   // NOTE: _maxSize - Maximum number of blocks allowed in the blockchain at any given time.
   private _maxSize: number;
@@ -27,15 +51,23 @@ export class Blockchain {
     this._maxSize = maxSize;
   }
 
+  get head() {
+    return this._head;
+  }
+
+  get tail() {
+    return this._tail;
+  }
+
   // Gets the hash of the first block in the chain.
   // Complexity: O(1)
   get firstBlockHash(): string {
-    return this.head ? this.head.block.hash : '';
+    return this._head ? this._head.block.hash : '';
   }
 
   get lastBlock(): LightBlock | undefined {
-    if (this.tail) {
-      return this.tail.block;
+    if (this._tail) {
+      return this._tail.block;
     }
   }
 
@@ -45,8 +77,8 @@ export class Blockchain {
    * Complexity: O(1)
    */
   get lastPrevBlockHash(): string {
-    if (this.tail) {
-      return this.tail.block.previousblockhash;
+    if (this._tail) {
+      return this._tail.block.previousblockhash;
     } else {
       return '';
     }
@@ -58,8 +90,8 @@ export class Blockchain {
    * Complexity: O(1)
    */
   get lastBlockHash(): string {
-    if (this.tail) {
-      return this.tail.block.hash;
+    if (this._tail) {
+      return this._tail.block.hash;
     } else {
       return '';
     }
@@ -71,8 +103,8 @@ export class Blockchain {
    * Complexity: O(1)
    */
   get lastBlockHeight(): number {
-    if (this.tail) {
-      return this.tail.block.height;
+    if (this._tail) {
+      return this._tail.block.height;
     } else {
       // IMPORTANT: the blockchain starts from block 0,
       // so if there are no blocks at all, we use -1
@@ -104,15 +136,15 @@ export class Blockchain {
     }
 
     const newBlock: LightBlock = { height, hash, previousblockhash, tx };
-    const newNode: Chain = { block: newBlock, next: null, prev: this.tail };
+    const newNode: Chain = { block: newBlock, next: null, prev: this._tail };
 
-    if (this.tail) {
-      this.tail.next = newNode;
+    if (this._tail) {
+      this._tail.next = newNode;
     }
-    this.tail = newNode;
+    this._tail = newNode;
 
-    if (!this.head) {
-      this.head = newNode;
+    if (!this._head) {
+      this._head = newNode;
     }
 
     this._size++;
@@ -138,16 +170,16 @@ export class Blockchain {
     }
 
     for (const block of blocks) {
-      const newNode: Chain = { block, next: null, prev: this.tail };
+      const newNode: Chain = { block, next: null, prev: this._tail };
 
-      if (this.tail) {
-        this.tail.next = newNode;
+      if (this._tail) {
+        this._tail.next = newNode;
       }
 
-      this.tail = newNode;
+      this._tail = newNode;
 
-      if (!this.head) {
-        this.head = newNode;
+      if (!this._head) {
+        this._head = newNode;
       }
 
       this._size++;
@@ -167,7 +199,7 @@ export class Blockchain {
    * Complexity: O(1)
    */
   public peekLast(): LightBlock | null {
-    return this.tail ? this.tail.block : null;
+    return this._tail ? this._tail.block : null;
   }
 
   /**
@@ -178,18 +210,18 @@ export class Blockchain {
    * Complexity: O(1)
    */
   public validateNextBlock(height: number, previousblockhash: string): boolean {
-    if (!this.tail) {
+    if (!this._tail) {
       // If there's no blocks in the chain, we assume this is the first block.
       return true;
     }
 
     // Check if the given height is exactly one more than the last block's height.
-    if (this.tail.block.height + 1 !== height) {
+    if (this._tail.block.height + 1 !== height) {
       return false;
     }
 
     // Check if the given previous hash matches the last block's hash.
-    if (this.tail.block.hash !== previousblockhash) {
+    if (this._tail.block.hash !== previousblockhash) {
       return false;
     }
 
@@ -236,7 +268,7 @@ export class Blockchain {
    * Complexity: O(n), where n - is the number of blocks in the chain
    */
   public validateChain(): boolean {
-    let current = this.head;
+    let current = this._head;
 
     if (!current) {
       // An empty chain is considered valid
@@ -255,8 +287,8 @@ export class Blockchain {
       current = current.next;
     }
 
-    // Если цикл завершился и current указывает на последний блок (this.tail)
-    return current === this.tail;
+    // If the loop has finished and current points to the last block (this._tail)
+    return current === this._tail;
   }
 
   /**
@@ -270,23 +302,23 @@ export class Blockchain {
    * Complexity: O(1)
    */
   public validateLastBlock(height: number, hash: string, previousblockhash: string): boolean {
-    if (!this.tail) {
+    if (!this._tail) {
       // If there's no blocks in the chain, we assume this is the first block.
       return true;
     }
 
     // Check that the height of the last block matches the passed height.
-    if (this.tail.block.height !== height) {
+    if (this._tail.block.height !== height) {
       return false;
     }
 
     // Check that the hash of the last block matches the passed hash
-    if (this.tail.block.hash !== hash) {
+    if (this._tail.block.hash !== hash) {
       return false; // Hash mismatch
     }
 
     // Check that the previous hash of the last block matches the previous hash passed in.
-    if (this.tail.block.previousblockhash !== previousblockhash) {
+    if (this._tail.block.previousblockhash !== previousblockhash) {
       return false;
     }
 
@@ -300,7 +332,7 @@ export class Blockchain {
    * Complexity: O(n), where n - is the number of blocks in the chain
    */
   public findBlockByHeight(height: number): LightBlock | null {
-    let currentNode = this.tail;
+    let currentNode = this._tail;
     while (currentNode) {
       if (currentNode.block.height === height) {
         return currentNode.block;
@@ -317,21 +349,21 @@ export class Blockchain {
    * Complexity: O(n), where n - is the number of blocks in the chain
    */
   public truncateToBlock(height: number): boolean {
-    let currentNode = this.tail;
+    let currentNode = this._tail;
     let found = false;
 
     // Iterate backwards from the last block
     // until we find the block immediately before the given height
     while (currentNode && currentNode.prev) {
       if (currentNode.prev.block.height === height - 1) {
-        // Update the tail to the block before the specified height
-        this.tail = currentNode.prev;
+        // Update the _tail to the block before the specified height
+        this._tail = currentNode.prev;
 
         // Delete all blocks after the found block
-        this.tail.next = null;
+        this._tail.next = null;
 
         // Update the size
-        this._size = this.tail.block.height + 1;
+        this._size = this._tail.block.height + 1;
 
         found = true;
         break;
@@ -340,9 +372,9 @@ export class Blockchain {
     }
 
     // Delete all blocks if the specified height is 1 (cut off the entire chain)
-    if (height === 0 && this.head) {
-      this.head = null;
-      this.tail = null;
+    if (height === 0 && this._head) {
+      this._head = null;
+      this._tail = null;
       this._size = 0;
       found = true;
     }
@@ -356,15 +388,15 @@ export class Blockchain {
    * Complexity: O(1)
    */
   private removeOldestChain(): LightBlock | null {
-    if (!this.head) return null;
+    if (!this._head) return null;
 
-    const block = this.head.block;
-    this.head = this.head.next;
+    const block = this._head.block;
+    this._head = this._head.next;
 
-    if (this.head) {
-      this.head.prev = null;
+    if (this._head) {
+      this._head.prev = null;
     } else {
-      this.tail = null;
+      this._tail = null;
     }
 
     this._size--;
@@ -383,7 +415,7 @@ export class Blockchain {
     }
 
     const blocks: LightBlock[] = [];
-    let currentNode = this.tail;
+    let currentNode = this._tail;
     let count = 0;
 
     while (currentNode && count < n) {
