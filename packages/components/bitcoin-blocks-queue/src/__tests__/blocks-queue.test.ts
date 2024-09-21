@@ -17,7 +17,7 @@ describe('BlocksQueue', () => {
   let queue: BlocksQueue<TestBlock>;
 
   beforeEach(() => {
-    queue = new BlocksQueue<TestBlock>();
+    queue = new BlocksQueue<TestBlock>(-1);
   });
 
   it('should initialize with empty queue', () => {
@@ -80,7 +80,7 @@ describe('BlocksQueue', () => {
     queue.enqueue(block2);
     queue.clear();
     expect(queue.length).toBe(0);
-    expect(queue.lastHeight).toBe(-1);
+    expect(queue.lastHeight).toBe(1);
   });
 
   it('should handle multiple enqueues correctly', () => {

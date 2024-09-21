@@ -37,7 +37,7 @@ describe('BlocksQueueIteratorService', () => {
       handleBatch: jest.fn().mockResolvedValue(undefined),
     } as any;
 
-    mockQueue = new BlocksQueue<TestBlock>();
+    mockQueue = new BlocksQueue<TestBlock>(-1);
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [

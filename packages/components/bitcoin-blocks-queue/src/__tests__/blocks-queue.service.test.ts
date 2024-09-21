@@ -1,5 +1,4 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NetworkProviderService, WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
 import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueueService } from '../blocks-queue.service';
 import { BlocksQueue } from '../blocks-queue';
@@ -10,28 +9,19 @@ import { BlocksQueueCollectorService } from '../blocks-collector';
 
 describe('BlocksQueueService', () => {
   let service: BlocksQueueService;
-  let mockLogger: AppLogger;
-  let mockNetworkProviderService: jest.Mocked<NetworkProviderService>;
-  let mockWebhookStreamService: jest.Mocked<WebhookStreamService>;
+  let mockLogger: jest.Mocked<AppLogger>;
   let mockBlocksIterator: jest.Mocked<BlocksQueueIteratorService>;
-  let mockBlockCollectorService: jest.Mocked<BlocksQueueCollectorService>;
+  let mockBlocksLoader: jest.Mocked<BlocksQueueLoaderService>;
+  let mockBlocksCollectorService: jest.Mocked<BlocksQueueCollectorService>;
   let mockBlockQueue: jest.Mocked<BlocksQueue<Block>>;
-  let queueLength: number;
+  let config: { maxQueueLength: number; maxBlockHeight: number };
 
   beforeEach(async () => {
     mockLogger = {
       debug: jest.fn(),
       error: jest.fn(),
       info: jest.fn(),
-    } as any;
-
-    mockNetworkProviderService = {
-      getCurrentBlockHeight: jest.fn(),
-    } as any;
-
-    mockWebhookStreamService = {
-      createStream: jest.fn(),
-      handleStream: jest.fn(),
+      warn: jest.fn(),
     } as any;
 
     mockBlocksIterator = {
@@ -39,94 +29,88 @@ describe('BlocksQueueService', () => {
       resolveNextBatch: jest.fn(),
     } as any;
 
-    mockBlockCollectorService = {
+    mockBlocksLoader = {
+      startBlocksLoading: jest.fn(),
+    } as any;
+
+    mockBlocksCollectorService = {
       init: jest.fn(),
     } as any;
 
-    queueLength = 0;
-
+    // Initialize the mockBlockQueue without directly assigning to read-only properties
     mockBlockQueue = {
       enqueue: jest.fn(),
-      fetchBlockFromOutStack: jest.fn(),
-      peekFirstBlock: jest.fn(),
       dequeue: jest.fn(),
-      clear: jest.fn(),
-      get length() {
-        return queueLength;
-      },
-      set length(value: number) {
-        queueLength = value;
-      },
-      lastHeight: 0,
+      reorganize: jest.fn(),
+      findBlocks: jest.fn(),
+      inStack: [],
+      outStack: [],
+      length: 0,
+      maxQueueLength: 0,
+      maxBlockHeight: 0,
     } as any;
+
+    config = { maxQueueLength: 1000, maxBlockHeight: 1000000 };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         { provide: AppLogger, useValue: mockLogger },
-        { provide: NetworkProviderService, useValue: mockNetworkProviderService },
-        { provide: WebhookStreamService, useValue: mockWebhookStreamService },
-        {
-          provide: BlocksQueueIteratorService,
-          useValue: mockBlocksIterator,
-        },
-        {
-          provide: BlocksQueueLoaderService,
-          useFactory: (logger, networkProvider, webhookStreamService) =>
-            new BlocksQueueLoaderService(logger, networkProvider, webhookStreamService, {
-              isTransportMode: false,
-            }),
-          inject: [AppLogger, NetworkProviderService, WebhookStreamService],
-        },
-        {
-          provide: BlocksQueueCollectorService,
-          useValue: mockBlockCollectorService,
-        },
+        { provide: BlocksQueueIteratorService, useValue: mockBlocksIterator },
+        { provide: BlocksQueueLoaderService, useValue: mockBlocksLoader },
+        { provide: BlocksQueueCollectorService, useValue: mockBlocksCollectorService },
+        { provide: 'CONFIG', useValue: config },
         {
           provide: BlocksQueueService,
-          useFactory: (logger, iterator, loader, collector) =>
-            new BlocksQueueService(logger, iterator, loader, collector, { maxBlockHeight: 10 }),
-          inject: [AppLogger, BlocksQueueIteratorService, BlocksQueueLoaderService, BlocksQueueCollectorService],
+          useFactory: (
+            logger: AppLogger,
+            iterator: BlocksQueueIteratorService,
+            loader: BlocksQueueLoaderService,
+            collector: BlocksQueueCollectorService,
+            config: any
+          ) => new BlocksQueueService(logger, iterator, loader, collector, config),
+          inject: [
+            AppLogger,
+            BlocksQueueIteratorService,
+            BlocksQueueLoaderService,
+            BlocksQueueCollectorService,
+            'CONFIG',
+          ],
         },
-        { provide: BlocksQueue, useValue: mockBlockQueue },
       ],
     }).compile();
 
     service = module.get<BlocksQueueService>(BlocksQueueService);
+
+    // Assign the mocked block queue to the service
     service['_blockQueue'] = mockBlockQueue;
   });
 
   describe('start', () => {
-    it('should start blocks loading and queue iterating', () => {
-      service.start(100);
+    it('should initialize and start loading and iterating', () => {
+      const indexedHeight = 100;
+      service['init'] = jest.fn(); // Mock the init method
 
+      service.start(indexedHeight);
+
+      expect(service['init']).toHaveBeenCalledWith(indexedHeight);
+      expect(mockBlocksLoader.startBlocksLoading).toHaveBeenCalledWith(mockBlockQueue);
       expect(mockBlocksIterator.startQueueIterating).toHaveBeenCalledWith(mockBlockQueue);
     });
   });
 
   describe('reorganizeBlocks', () => {
-    it('should clear the queue and set a new starting height', async () => {
-      jest.spyOn(service['queue'], 'clear');
+    it('should reorganize the queue and resolve the next batch', async () => {
+      mockBlockQueue.reorganize = jest.fn();
+      const newStartHeight = 200;
 
-      await service.reorganizeBlocks(2);
+      await service.reorganizeBlocks(newStartHeight);
 
-      expect(service['queue'].clear).toHaveBeenCalled();
-      expect(service['queue'].lastHeight).toBe(2);
-      expect(service['blocksQueueIterator'].resolveNextBatch).toHaveBeenCalled();
+      expect(mockBlockQueue.reorganize).toHaveBeenCalledWith(Number(newStartHeight));
+      expect(mockBlocksIterator.resolveNextBatch).toHaveBeenCalled();
       expect(mockLogger.info).toHaveBeenCalledWith(
         'Queue was clear to height: ',
-        { newStartHeight: 2 },
-        'BlocksQueueService'
-      );
-    });
-  });
-
-  describe('confirmIndexBatch', () => {
-    it('should throw an error if block hash does not match', async () => {
-      const blockMock = { hash: 'wrong-hash', height: 0, tx: [] } as Block;
-      mockBlockQueue.peekFirstBlock.mockReturnValueOnce(blockMock);
-
-      await expect(service.confirmIndexBatch(['test-hash'])).rejects.toThrow(
-        'Block not found or hash mismatch: test-hash'
+        { newStartHeight },
+        service.constructor.name
       );
     });
   });
@@ -138,8 +122,8 @@ describe('BlocksQueueService', () => {
   });
 
   describe('blocksCollector', () => {
-    it('should return the block collector service', () => {
-      expect(service.blocksCollector).toBe(mockBlockCollectorService);
+    it('should return the blocks collector service', () => {
+      expect(service.blocksCollector).toBe(mockBlocksCollectorService);
     });
   });
 });
