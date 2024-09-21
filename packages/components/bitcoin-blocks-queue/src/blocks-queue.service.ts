@@ -8,7 +8,7 @@ import { BlocksQueueCollectorService } from './blocks-collector';
 
 @Injectable()
 export class BlocksQueueService {
-  private _blockQueue = new BlocksQueue<Block>();
+  private _blockQueue!: BlocksQueue<Block>;
 
   constructor(
     private readonly log: AppLogger,
@@ -16,16 +16,7 @@ export class BlocksQueueService {
     private readonly blocksQueueLoader: BlocksQueueLoaderService,
     private readonly blocksCollectorService: BlocksQueueCollectorService,
     private readonly config: any
-  ) {
-    // IMPORTANT: We init the collector in the constructor to be sure
-    // that it is immediately operational;
-    // this is necessary because the collector is exported from the module
-    // and can be used directly by other components.
-    this.blocksCollectorService.init(this._blockQueue);
-
-    this._blockQueue.maxQueueLength = this.config.maxQueueLength;
-    this._blockQueue.maxBlockHeight = this.config.maxBlockHeight;
-  }
+  ) {}
 
   get queue(): BlocksQueue<Block> {
     return this._blockQueue;
@@ -36,18 +27,29 @@ export class BlocksQueueService {
   }
 
   start(indexedHeight: string | number) {
-    this.blocksQueueLoader.startBlocksLoading(Number(indexedHeight), this._blockQueue);
+    this.init(indexedHeight);
+    this.blocksQueueLoader.startBlocksLoading(this._blockQueue);
     this.blocksQueueIterator.startQueueIterating(this._blockQueue);
   }
 
+  private init(indexedHeight: string | number) {
+    this._blockQueue = new BlocksQueue<Block>(Number(indexedHeight));
+
+    // IMPORTANT: We init the collector in the constructor to be sure
+    // that it is immediately operational;
+    // this is necessary because the collector is exported from the module
+    // and can be used directly by other components.
+    this.blocksCollectorService.init(this._blockQueue);
+
+    this._blockQueue.maxQueueLength = this.config.maxQueueLength;
+    this._blockQueue.maxBlockHeight = this.config.maxBlockHeight;
+  }
+
   public async reorganizeBlocks(newStartHeight: string | number): Promise<void> {
-    //  NOTE: We clear the entire queue
+    // NOTE: We clear the entire queue
     // because if a reorganization has occurred, this means that all the blocks in the queue
     // have already gone along the wrong chain
-    this._blockQueue.clear();
-
-    // Set a new initial height for loading blocks
-    this._blockQueue.lastHeight = Number(newStartHeight);
+    this._blockQueue.reorganize(Number(newStartHeight));
 
     this.blocksQueueIterator.resolveNextBatch();
 
@@ -81,7 +83,7 @@ export class BlocksQueueService {
     return confirmedBlocks;
   }
 
-  public getBlocksByHashes(hashes: string): Block[] {
+  public getBlocksByHashes(hashes: string[]): Block[] {
     const hashSet = new Set(hashes);
 
     return this._blockQueue.findBlocks(hashSet);

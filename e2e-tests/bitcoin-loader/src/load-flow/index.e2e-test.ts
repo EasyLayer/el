@@ -23,7 +23,7 @@ jest.mock('piscina', () => {
       }),
       destroy: jest.fn().mockResolvedValue(undefined),
       options: {
-        maxThreads: process.env.BITCOIN_LOADER_BLOCKS_QUEUE_WORKERS_NUM,
+        concurrency: process.env.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
       },
     };
   });

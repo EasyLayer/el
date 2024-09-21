@@ -63,7 +63,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
         } else {
           // TODO: add description about why we use setTimeout() here
           // await new Promise(resolve => setImmediate(resolve));
-          await new Promise((resolve) => setTimeout(resolve, 0));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       }
     } catch (error) {

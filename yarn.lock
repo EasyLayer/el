@@ -710,6 +710,7 @@ __metadata:
     "@types/lodash": 4.17.7
     "@types/node": 20.10.4
     "@types/uuid": 9.0.7
+    async-mutex: 0.5.0
     jest: 29.7.0
     lodash: 4.17.21
     piscina: 4.1.0
@@ -914,6 +915,7 @@ __metadata:
     "@nestjs/typeorm": 10.0.2
     "@nestjs/websockets": 10.2.10
     "@types/node": 20.10.4
+    async-mutex: 0.5.0
     axios: 0.27.2
     axios-rate-limit: 1.3.0
     bip32: 4.0.0
@@ -3465,6 +3467,15 @@ __metadata:
   dependencies:
     stack-chain: ^1.3.7
   checksum: f84421c83ad5bc4e54a3a6ad7be4fb911840a17c01e5ee3f8e4e9cd077a42c7bc206dbc6b36d52eaca5fa37f16a15f83d63135976cf3e17d5bdc2824f6002705
+  languageName: node
+  linkType: hard
+
+"async-mutex@npm:0.5.0":
+  version: 0.5.0
+  resolution: "async-mutex@npm:0.5.0"
+  dependencies:
+    tslib: ^2.4.0
+  checksum: be1587f4875f3bb15e34e9fcce82eac2966daef4432c8d0046e61947fb9a1b95405284601bc7ce4869319249bc07c75100880191db6af11d1498931ac2a2f9ea
   languageName: node
   linkType: hard
 

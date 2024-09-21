@@ -5,9 +5,8 @@ import { JSONSchema } from 'class-validator-jsonschema';
 
 enum BlocksQueueStrategy {
   WEBHOOK_STREAM = 'webhook-stream',
-  PULL_NETWORK_PROVIDER_BY_BATCHES = 'pull-network-provider-by-batches',
   PULL_NETWORK_TRANSPORT = 'pull-network-transport',
-  PULL_NETWORL_PROVIDER_BY_WORKERS = 'pull-network-provider-by-workers',
+  PULL_NETWORL_PROVIDER = 'pull-network-provider',
 }
 
 @Injectable()
@@ -15,10 +14,10 @@ export class BlocksQueueConfig {
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
   @IsNumber()
   @JSONSchema({
-    description: 'Number of workers for the Bitcoin loader queue.',
+    description: 'Number of parallel requests for the Bitcoin loader queue.',
     default: 1,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_WORKERS_NUM: number = 1;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1000))
   @IsNumber()
@@ -28,15 +27,14 @@ export class BlocksQueueConfig {
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH: number = 1000;
 
-  @Transform(({ value }) => (value !== undefined ? value : BlocksQueueStrategy.PULL_NETWORK_PROVIDER_BY_BATCHES))
+  @Transform(({ value }) => (value !== undefined ? value : BlocksQueueStrategy.PULL_NETWORL_PROVIDER))
   @IsEnum(BlocksQueueStrategy)
   @JSONSchema({
     description: 'Loader strategy name for the Bitcoin blocks queue.',
-    default: BlocksQueueStrategy.PULL_NETWORK_PROVIDER_BY_BATCHES,
+    default: BlocksQueueStrategy.PULL_NETWORL_PROVIDER,
     enum: Object.values(BlocksQueueStrategy),
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: BlocksQueueStrategy =
-    BlocksQueueStrategy.PULL_NETWORK_PROVIDER_BY_BATCHES;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: BlocksQueueStrategy = BlocksQueueStrategy.PULL_NETWORL_PROVIDER;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4 * 10 * 1024 * 1024))
   @IsNumber()
@@ -49,7 +47,7 @@ export class BlocksQueueConfig {
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 50))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 50;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 50;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()

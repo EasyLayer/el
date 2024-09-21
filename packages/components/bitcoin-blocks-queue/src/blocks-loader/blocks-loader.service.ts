@@ -6,8 +6,7 @@ import { BlocksQueue } from '../blocks-queue';
 import { Block } from '../interfaces';
 import {
   WebhookStreamStrategy,
-  PullNetworkProviderByBatchesStrategy,
-  PullNetworkProviderByWorkersStrategy,
+  PullNetworkProviderStrategy,
   BlocksLoadingStrategy,
   StrategyNames,
 } from './load-strategies';
@@ -38,9 +37,9 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
     this._isLoading = false;
   }
 
-  public async startBlocksLoading(indexedHeight: number | string, queue: BlocksQueue<Block>): Promise<void> {
+  public async startBlocksLoading(queue: BlocksQueue<Block>): Promise<void> {
     try {
-      this.log.info('Setup blocks loading from height', { indexedHeight }, this.constructor.name);
+      this.log.info('Setup blocks loading from height', { indexedHeight: queue.lastHeight }, this.constructor.name);
 
       // NOTE: We use this to make sure that
       // method startQueueIterating() is executed only once in its entire life.
@@ -52,10 +51,6 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
 
       // TODO: think where put this
       this._queue = queue;
-
-      // INPORTANT: Here we indicate the height that was actually the last processed
-      // (NOT the next one)
-      this._queue.lastHeight = Number(indexedHeight);
 
       await exponentialIntervalAsync(
         async (resetInterval) => {
@@ -139,14 +134,10 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
     switch (name) {
       case StrategyNames.WEBHOOK_STREAM:
         return new WebhookStreamStrategy(this.webhookStreamService, this._queue);
-      case StrategyNames.PULL_NETWORL_PROVIDER_BY_WORKERS:
-        return new PullNetworkProviderByWorkersStrategy(this.networkProviderService, this._queue, {
-          minThreads: this.config.queueWorkersNum,
-          maxThreads: this.config.queueWorkersNum,
-        });
-      case StrategyNames.PULL_NETWORK_PROVIDER_BY_BATCHES:
-        return new PullNetworkProviderByBatchesStrategy(this.networkProviderService, this.log, this._queue, {
-          batchLength: this.config.queueLoaderNetworkProviderBatchesLength,
+      case StrategyNames.PULL_NETWORL_PROVIDER:
+        return new PullNetworkProviderStrategy(this.log, this.networkProviderService, this._queue, {
+          concurrency: this.config.queueLoaderConcurrencyNum,
+          batchLength: this.config.queueLoaderBlocksBatchLength,
         });
       // case StrategyNames.PULL_BLOCKS_BY_NETWORK_TRANSPORT:
       //   return new PullNetworkProviderStrategy({}, this._queue, options);

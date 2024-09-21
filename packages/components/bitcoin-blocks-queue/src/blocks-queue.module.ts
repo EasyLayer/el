@@ -12,10 +12,10 @@ export interface BlocksQueueModuleOptions {
   blocksCommandExecutor: Type<BlocksCommandExecutor>;
   isTransportMode: boolean;
   maxBlockHeight: number;
-  queueWorkersNum: number;
   maxQueueLength: number;
   queueLoaderStrategyName: string;
-  queueLoaderNetworkProviderBatchesLength: number;
+  queueLoaderConcurrencyNum: number;
+  queueLoaderBlocksBatchLength: number;
   queueLoaderIntervalMs: number;
   queueLoaderMaxIntervalMs: number;
   queueLoaderMaxIntervalMultiplier: number;
