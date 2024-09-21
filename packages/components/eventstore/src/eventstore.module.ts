@@ -76,16 +76,16 @@ export class EventStoreModule {
             // TODO: move its somewhere
             // Apply PRAGMA settings (for improve writing) for SQLite
             if (restOptions.type === 'sqlite') {
-              await dataSource.query('PRAGMA cache_size = 10000;');
-              await dataSource.query('PRAGMA temp_store = MEMORY;');
+              await dataSource.query('PRAGMA cache_size = 2000;'); // ~8 МБ
+              await dataSource.query('PRAGMA temp_store = MEMORY;'); // DEFAULT
               await dataSource.query('PRAGMA locking_mode = EXCLUSIVE;');
-              await dataSource.query('PRAGMA mmap_size = 268435456;');
+              await dataSource.query('PRAGMA mmap_size = 67108864;'); // 64 МБ
 
               await dataSource.query('PRAGMA synchronous = OFF;');
               await dataSource.query('PRAGMA journal_mode = WAL;');
-              await dataSource.query('PRAGMA journal_size_limit = 6144000;');
+              await dataSource.query('PRAGMA journal_size_limit = 67108864;'); // 64 МБ // 6144000 - 6 МБ
 
-              await dataSource.query('PRAGMA wal_checkpoint(TRUNCATE);');
+              // await dataSource.query('PRAGMA wal_checkpoint(TRUNCATE);');
             }
 
             // Add a DataSource with a unique name
