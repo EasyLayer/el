@@ -98,11 +98,10 @@ export class BitcoinIndexerModule {
           blocksCommandExecutor: BlocksCommandFactoryService,
           isTransportMode: appConfig.BITCOIN_INDEXER_IS_TRANSPORT_MODE,
           maxBlockHeight: businessConfig.BITCOIN_INDEXER_MAX_BLOCK_HEIGHT,
-          queueWorkersNum: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_WORKERS_NUM,
+          queueLoaderConcurrencyNum: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
           maxQueueLength: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_MAX_LENGTH,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
-          queueLoaderNetworkProviderBatchesLength:
-            blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH,
+          queueLoaderBlocksBatchLength: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH,
           queueLoaderIntervalMs: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_INTERVAL_MS,
           queueLoaderMaxIntervalMs: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS,
           queueLoaderMaxIntervalMultiplier:

@@ -6,19 +6,19 @@ import { IsNumber, IsString } from 'class-validator';
 export class BlocksQueueConfig {
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
   @IsNumber()
-  BITCOIN_LISTENER_BLOCKS_QUEUE_WORKERS_NUM: number = 1;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 3000))
   @IsNumber()
   BITCOIN_LISTENER_BLOCKS_QUEUE_MAX_LENGTH: number = 3000;
 
-  @Transform(({ value }) => (value !== undefined ? value : 'pull-network-provider-by-batches'))
+  @Transform(({ value }) => (value !== undefined ? value : 'pull-network-provider'))
   @IsString()
-  BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: string = 'pull-network-provider-by-batches';
+  BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: string = 'pull-network-provider';
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 200))
   @IsNumber()
-  BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_NETWORK_PROVIDER_BATCHES_LENGTH: number = 200;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 200;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()

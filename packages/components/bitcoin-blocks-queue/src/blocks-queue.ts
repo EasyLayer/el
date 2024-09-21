@@ -8,11 +8,13 @@ import { Block } from './interfaces';
 export class BlocksQueue<T extends Block> {
   private inStack: T[] = [];
   private outStack: T[] = [];
-  // IMPORTANT: the blockchain starts from block 0,
-  // so if there are no blocks at all, we use -1
-  private _lastHeight: number = -1;
+  private _lastHeight: number;
   private _maxQueueLength: number = 100;
   private _maxBlockHeight: number = Number.MAX_SAFE_INTEGER;
+
+  constructor(lastHeight: number) {
+    this._lastHeight = lastHeight;
+  }
 
   get isQueueFull(): boolean {
     return this.length >= this._maxQueueLength;
@@ -52,10 +54,6 @@ export class BlocksQueue<T extends Block> {
    */
   public get lastHeight(): number {
     return this._lastHeight;
-  }
-
-  public set lastHeight(height: number) {
-    this._lastHeight = height;
   }
 
   /**
@@ -163,7 +161,11 @@ export class BlocksQueue<T extends Block> {
     // Clear the entire queue
     this.inStack = [];
     this.outStack = [];
-    this._lastHeight = -1;
+  }
+
+  public reorganize(reorganizeHeight: number): void {
+    this.clear();
+    this._lastHeight = reorganizeHeight;
   }
 
   /**
