@@ -1,4 +1,3 @@
-// import { v4 as uuidv4 } from 'uuid';
 import { CommandHandler, ICommandHandler } from '@easylayer/components/cqrs';
 import { Transactional, EventStoreRepository } from '@easylayer/components/eventstore';
 import { LoadBatchCommand } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
@@ -17,7 +16,7 @@ export class LoadBatchCommandHandler implements ICommandHandler<LoadBatchCommand
   ) {}
 
   @Transactional({ connectionName: 'loader-eventstore' })
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
   async execute({ payload }: LoadBatchCommand) {
     try {
       const { batch, requestId } = payload;

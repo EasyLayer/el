@@ -54,6 +54,7 @@ export class ReadDatabaseModule {
     return {
       module: ReadDatabaseModule,
       imports: [
+        LoggerModule.forRoot({ componentName: 'ViewsDatabase' }),
         TypeOrmModule.forRootAsync({
           imports: [LoggerModule.forRoot({ componentName: 'ViewsDatabase' })],
           name,

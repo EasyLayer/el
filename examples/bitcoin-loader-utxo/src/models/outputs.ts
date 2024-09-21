@@ -1,7 +1,7 @@
 import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
 
 export interface IOutput {
-    address?: string;
+    script_hash: string | null;
     txid: string;           // block.tx[].txid
     n: number;              // block.tx[].vout[].n
     value: string;
@@ -13,7 +13,7 @@ export const OutputSchema = new EntitySchema<IOutput>({
     name: 'outputs',
     tableName: 'outputs',
     columns: {
-      address: {
+      script_hash: {
         type: 'varchar',
         nullable: true,
       },

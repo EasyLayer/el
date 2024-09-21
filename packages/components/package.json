@@ -92,6 +92,7 @@
     "bitcoin-core": "4.1.0",
     "bitcoinjs-lib": "6.1.6",
     "ecpair": "2.1.0",
+    "lodash": "4.17.21",
     "p-queue": "6.6.2",
     "pg": "8.12.0",
     "pg-error-enum": "0.7.1",

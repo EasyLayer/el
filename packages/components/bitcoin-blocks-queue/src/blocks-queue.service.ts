@@ -54,7 +54,7 @@ export class BlocksQueueService {
     this.log.info('Queue was clear to height: ', { newStartHeight }, this.constructor.name);
   }
 
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10 })
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
   public async confirmIndexBatch(blockHashes: string[]): Promise<Block[]> {
     const confirmedBlocks: Block[] = [];
 

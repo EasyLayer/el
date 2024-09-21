@@ -1,19 +1,22 @@
+import _ from 'lodash';
 import { PostgresError } from 'pg-error-enum';
 import { Injectable, Inject } from '@nestjs/common';
-import { Repository, QueryFailedError, In } from 'typeorm';
+import { Repository, QueryFailedError, In, MoreThan } from 'typeorm';
 import { AggregateRoot, IEvent } from '@easylayer/components/cqrs';
+import { AppLogger } from '@easylayer/components/logger';
 import { EventDataModel, BasicEvent } from './event-data.model';
-// import { SnapshotsModel } from './snapshots.model';
+import { SnapshotsModel } from './snapshots.model';
 
 type AggregateWithId = AggregateRoot & { aggregateId: string };
 
 @Injectable()
 export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
   constructor(
+    private readonly log: AppLogger,
     @Inject('EVENT_DATA_MODEL_REPOSITORY')
-    private eventsRepository: Repository<EventDataModel>
-    // @Inject('SNAPSHOTS_MODEL_REPOSITORY')
-    // private snapshotsRepository: Repository<SnapshotsModel>
+    private readonly eventsRepository: Repository<EventDataModel>,
+    @Inject('SNAPSHOTS_MODEL_REPOSITORY')
+    private readonly snapshotsRepository: Repository<SnapshotsModel>
   ) {}
 
   public async save(models: T | T[]): Promise<void> {
@@ -30,17 +33,36 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
       return model;
     }
 
-    // TODO: add snapshot logic
+    const snapshot = await this.snapshotsRepository.findOneBy({ aggregateId });
+
+    if (!snapshot) {
+      // If there is no snapshot at all, then we only get events sorted by version
+      const eventRaws = await this.eventsRepository.find({
+        where: { aggregateId },
+        order: { version: 'ASC' },
+      });
+
+      await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+      return model;
+    }
+
+    // If the snapshot was in the database,
+    // then we still need to check
+    // its relevance by getting events according to a version higher than that of the snapshot.
+    await model.loadFromSnapshot(SnapshotsModel.deserialize(snapshot));
 
     const eventRaws = await this.eventsRepository.find({
-      where: { aggregateId },
-      order: { version: 'ASC' }, // TODO: think can we sort by "id" here?
+      where: { aggregateId, version: MoreThan(model.version) },
     });
 
-    await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+    if (eventRaws.length > 0) {
+      await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+    }
+
     return model;
   }
 
+  // IMPORTANT: This method does not currently support snapshots.
   public async getMany(models: T[]): Promise<T[]> {
     // Extract all aggregateIds from the models
     const aggregateIds = models.map((model) => model.aggregateId);
@@ -99,6 +121,7 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     return event;
   }
 
+  // IMPORTANT: This method does not currently support snapshots.
   public async getOneByExtra(model: T & { extra: string }): Promise<T> {
     const { extra } = model;
 
@@ -130,34 +153,64 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
         return EventDataModel.serialize(event, aggregate.version);
       });
 
-      // TODO
-      // if (aggregate.version % 100 === 0) {
-      //   const snapshot = SnapshotsModel.serialize(aggregate);
-
-      //   await this.snapshotsRepository
-      //     .createQueryBuilder()
-      //     .insert()
-      //     .into(SnapshotsModel)
-      //     .values(snapshot)
-      //     .orUpdate(
-      //       Object.keys(snapshot), // Columns that we update
-      //       ['aggregateId']
-      //     )
-      //     .updateEntity(false)
-      //     .execute()
-      // }
-
       // IMPORTANT: We use createQueryBuilder with "updateEntity = false" option to ensure there is only one query
       // (without select after insert)
       // https://github.com/typeorm/typeorm/issues/4651
       await this.eventsRepository.createQueryBuilder().insert().values(events).updateEntity(false).execute();
+
+      // Update snapshot only when version is a multiple of 100
+      if (aggregate.version % 100 === 0) {
+        await this.updateSnapshot(aggregate);
+      }
     } catch (error) {
       this.handleDatabaseError(error);
     }
   }
 
-  // This are possible methods at the future
-  public async findEvents() {}
+  private async updateSnapshot(aggregate: T) {
+    try {
+      // IMPORTANT: At the moment this is a crutch (temporary) solution
+      // (The problem is that before publishing(commit) events are in the aggregate and we don't want to store them in the snapshot).
+
+      // Clone the aggregate deeply excluding uncommitted events
+      const clonedAggregate = _.cloneDeep(aggregate);
+      // Remove internal events from the cloned aggregate
+      clonedAggregate.uncommit();
+
+      // Serialize the cloned aggregate
+      const snapshot = SnapshotsModel.serialize(clonedAggregate);
+
+      await this.snapshotsRepository
+        .createQueryBuilder()
+        .insert()
+        .into(SnapshotsModel)
+        .values(snapshot)
+        .orUpdate(
+          ['payload'], // Columns that we update
+          ['aggregateId']
+        )
+        .updateEntity(false)
+        .execute();
+    } catch (error) {
+      if (error instanceof QueryFailedError) {
+        const driverError = error.driverError;
+
+        if (driverError.code === 'SQLITE_CONSTRAINT') {
+          this.log.error('updateSnapshot()', { error: driverError.message }, this.constructor.name);
+          return;
+        }
+
+        if (driverError.code === PostgresError.UNIQUE_VIOLATION) {
+          this.log.error('updateSnapshot()', { error: driverError.detail }, this.constructor.name);
+          return;
+        }
+
+        throw error;
+      }
+
+      throw error;
+    }
+  }
 
   // TODO: move to new file or class
   private handleDatabaseError(error: any): void {

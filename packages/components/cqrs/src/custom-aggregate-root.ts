@@ -45,11 +45,19 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
     this.uncommit();
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async loadFromHistory(history: EventBase[]): Promise<void> {
     for (const event of history) {
       await this.apply(event, true);
     }
+  }
+
+  // IMPORTANT: When an aggregate inherits from CustomAggregateRoot
+  // and has complex structures in its properties, for the restoration of which a prototype is required,
+  // then this loadFromSnapshot method must be overridden in the aggregate itself,
+  // since it has access to the classes of its structures.
+  async loadFromSnapshot<T extends CustomAggregateRoot>(state: T): Promise<void> {
+    Object.assign(this, state);
+    this._version = state.version;
   }
 
   async apply<T extends EventBase = EventBase>(
