@@ -5,29 +5,19 @@ import {
   BitcoinLoaderBlocksIndexedEvent,
   BitcoinLoaderInitializedEvent,
 } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
 import { SQLiteService } from '../+helpers/sqlite/sqlite.service';
 import { cleanDataFolder } from '../+helpers/clean-data-folder';
 import { BlockSchema } from './blocks';
 import { BlocksMapper } from './mapper';
 import { mockBlocks } from './mocks/blocks';
 
-jest.mock('piscina', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      run: jest.fn().mockImplementation(({ height }) => {
-        const block = mockBlocks.find((block) => Number(block.height) === Number(height));
-        if (!block) {
-          return Promise.reject(new Error(`Block with height ${height} not found`));
-        }
-        return Promise.resolve(block);
-      }),
-      destroy: jest.fn().mockResolvedValue(undefined),
-      options: {
-        concurrency: process.env.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
-      },
-    };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+jest
+  .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHeights')
+  .mockImplementation(async (heights: (string | number)[]): Promise<any> => {
+    return mockBlocks.filter((block) => heights.includes(block.height));
   });
-});
 
 describe('/Bitcoin Loader: Load Flow', () => {
   let dbService!: SQLiteService;

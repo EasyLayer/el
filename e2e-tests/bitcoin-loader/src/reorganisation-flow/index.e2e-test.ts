@@ -9,23 +9,12 @@ import { BlockSchema } from './blocks';
 import { BlocksMapper } from './mapper';
 import { mockFakeChainBlocks, mockRealChainBlocks } from './mocks/fake-and-real-blockschain';
 
-jest.mock('piscina', () => {
-  return jest.fn().mockImplementation(() => {
-    return {
-      run: jest.fn().mockImplementation(({ height }) => {
-        const block = mockFakeChainBlocks.find((block) => BigInt(block.height) === BigInt(height));
-        if (!block) {
-          return Promise.reject(new Error(`Block with height ${height} not found`));
-        }
-        return Promise.resolve(block);
-      }),
-      destroy: jest.fn().mockResolvedValue(undefined),
-      options: {
-        concurency: process.env.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
-      },
-    };
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+jest
+  .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHeights')
+  .mockImplementation(async (heights: (string | number)[]): Promise<any> => {
+    return mockFakeChainBlocks.filter((block) => heights.includes(block.height));
   });
-});
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 jest.spyOn(NetworkProviderService.prototype, 'getManyBlocksByHashes').mockImplementation(async (hashes, verbosity) => {
