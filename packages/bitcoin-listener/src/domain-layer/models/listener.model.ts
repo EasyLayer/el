@@ -25,7 +25,11 @@ export class Listener extends AggregateRoot {
   // so we immediately give it aggregateId by which we can find it.
   public aggregateId: string = 'indexer';
   public status: ListenerStatuses = ListenerStatuses.AWAITING;
-  public chain: Blockchain = new Blockchain({ maxSize: 5000 });
+  // IMPORTANT: 'maxSize' must be NOT LESS than the number of blocks in a single batch when iterating over BlocksQueue.
+  // The number of blocks in a batch depends on the block size,
+  // so we must take the smallest blocks in the network,
+  // and make sure that they fit into a single batch less than the value of 'maxSize' .
+  public chain: Blockchain = new Blockchain({ maxSize: 1000 });
 
   // IMPORTANT: this method doing two things:
   // 1 - create Listener if it's first creation

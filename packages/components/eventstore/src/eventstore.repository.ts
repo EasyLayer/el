@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import { Readable } from 'stream';
 import { PostgresError } from 'pg-error-enum';
 import { Injectable, Inject } from '@nestjs/common';
@@ -39,11 +38,9 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     }
 
     const snapshot = await this.snapshotsRepository.findOneBy({ aggregateId });
-    this.log.debug('getOne snapshot', { snapshot }, this.constructor.name);
+    this.log.debug('getOne snapshot', {}, this.constructor.name);
 
     if (!snapshot) {
-      this.log.debug('getOne snapshot dosnt exist', { snapshot }, this.constructor.name);
-
       if (this.isStreamSupport) {
         await this.applyEventsStreamToAggregate(model, aggregateId);
       } else {
@@ -57,15 +54,13 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     // then we still need to check
     // its relevance by getting events according to a version higher than that of the snapshot.
     await model.loadFromSnapshot(SnapshotsModel.deserialize(snapshot));
-    this.log.debug('getOne loadFromSnapshot', { model }, this.constructor.name);
+    this.log.debug('getOne loadFromSnapshot', {}, this.constructor.name);
 
     if (this.isStreamSupport) {
       await this.applyEventsStreamToAggregate(model, aggregateId, model.version);
     } else {
       await this.applyEventsInBatches(model, aggregateId, model.version);
     }
-
-    this.log.debug('getOne loadFromEvents', { model }, this.constructor.name);
 
     return model;
   }
@@ -166,8 +161,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
       // https://github.com/typeorm/typeorm/issues/4651
       await this.eventsRepository.createQueryBuilder().insert().values(events).updateEntity(false).execute();
 
-      // Update snapshot only when version is a multiple of 50
-      if (aggregate.version % 50 === 0) {
+      // Update snapshot only when version is a multiple of 100
+      if (aggregate.version % 100 === 0) {
         await this.updateSnapshot(aggregate);
       }
     } catch (error) {
@@ -177,16 +172,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
 
   private async updateSnapshot(aggregate: T) {
     try {
-      // IMPORTANT: At the moment this is a crutch (temporary) solution
-      // (The problem is that before publishing(commit) events are in the aggregate and we don't want to store them in the snapshot).
-
-      // Clone the aggregate deeply excluding uncommitted events
-      const clonedAggregate = _.cloneDeep(aggregate);
-      // Remove internal events from the cloned aggregate
-      clonedAggregate.uncommit();
-
       // Serialize the cloned aggregate
-      const snapshot = SnapshotsModel.serialize(clonedAggregate);
+      const snapshot = SnapshotsModel.serialize(aggregate);
 
       await this.snapshotsRepository
         .createQueryBuilder()
@@ -216,6 +203,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
         throw error;
       }
 
+      this.log.error('updateSnapshot()', { error }, this.constructor.name);
+
       throw error;
     }
   }
@@ -224,6 +213,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     if (!this.isStreamSupport) {
       throw new Error('Stream is not supported by this database driver.');
     }
+
+    this.log.debug('applyEventsStreamToAggregate()', {}, this.constructor.name);
 
     return new Promise<T>(async (resolve, reject) => {
       const queryBuilder = this.eventsRepository
@@ -254,6 +245,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     lastVersion: number = 0,
     batchSize: number = 1000
   ): Promise<void> {
+    this.log.debug('applyEventsInBatches()', {}, this.constructor.name);
+
     let hasMore = true;
     let currentLastVersion = lastVersion;
 
