@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { Readable } from 'stream';
 import { PostgresError } from 'pg-error-enum';
 import { Injectable, Inject } from '@nestjs/common';
 import { Repository, QueryFailedError, In, MoreThan } from 'typeorm';
@@ -11,13 +12,17 @@ type AggregateWithId = AggregateRoot & { aggregateId: string };
 
 @Injectable()
 export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
+  private isStreamSupport: boolean;
+
   constructor(
     private readonly log: AppLogger,
     @Inject('EVENT_DATA_MODEL_REPOSITORY')
     private readonly eventsRepository: Repository<EventDataModel>,
     @Inject('SNAPSHOTS_MODEL_REPOSITORY')
     private readonly snapshotsRepository: Repository<SnapshotsModel>
-  ) {}
+  ) {
+    this.isStreamSupport = this.eventsRepository.manager.connection?.options?.type === 'postgres';
+  }
 
   public async save(models: T | T[]): Promise<void> {
     const aggregates: T[] = Array.isArray(models) ? models : [models];
@@ -34,15 +39,17 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     }
 
     const snapshot = await this.snapshotsRepository.findOneBy({ aggregateId });
+    this.log.debug('getOne snapshot', { snapshot }, this.constructor.name);
 
     if (!snapshot) {
-      // If there is no snapshot at all, then we only get events sorted by version
-      const eventRaws = await this.eventsRepository.find({
-        where: { aggregateId },
-        order: { version: 'ASC' },
-      });
+      this.log.debug('getOne snapshot dosnt exist', { snapshot }, this.constructor.name);
 
-      await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+      if (this.isStreamSupport) {
+        await this.applyEventsStreamToAggregate(model, aggregateId);
+      } else {
+        await this.applyEventsInBatches(model, aggregateId);
+      }
+
       return model;
     }
 
@@ -50,14 +57,15 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     // then we still need to check
     // its relevance by getting events according to a version higher than that of the snapshot.
     await model.loadFromSnapshot(SnapshotsModel.deserialize(snapshot));
+    this.log.debug('getOne loadFromSnapshot', { model }, this.constructor.name);
 
-    const eventRaws = await this.eventsRepository.find({
-      where: { aggregateId, version: MoreThan(model.version) },
-    });
-
-    if (eventRaws.length > 0) {
-      await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+    if (this.isStreamSupport) {
+      await this.applyEventsStreamToAggregate(model, aggregateId, model.version);
+    } else {
+      await this.applyEventsInBatches(model, aggregateId, model.version);
     }
+
+    this.log.debug('getOne loadFromEvents', { model }, this.constructor.name);
 
     return model;
   }
@@ -209,6 +217,74 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
       }
 
       throw error;
+    }
+  }
+
+  private async applyEventsStreamToAggregate(model: T, aggregateId: string, lastVersion: number = 0): Promise<T> {
+    if (!this.isStreamSupport) {
+      throw new Error('Stream is not supported by this database driver.');
+    }
+
+    return new Promise<T>(async (resolve, reject) => {
+      const queryBuilder = this.eventsRepository
+        .createQueryBuilder('event')
+        .where('event.aggregateId = :aggregateId', { aggregateId })
+        .andWhere('event.version > :lastVersion', { lastVersion })
+        .orderBy('event.version', 'ASC');
+
+      const stream: Readable = await queryBuilder.stream();
+
+      stream.on('data', async (eventRaw: EventDataModel) => {
+        await model.loadFromHistory([EventDataModel.deserialize(eventRaw)]);
+      });
+
+      stream.on('end', () => {
+        resolve(model);
+      });
+
+      stream.on('error', (error: any) => {
+        reject(error);
+      });
+    });
+  }
+
+  private async applyEventsInBatches(
+    model: T,
+    aggregateId: string,
+    lastVersion: number = 0,
+    batchSize: number = 1000
+  ): Promise<void> {
+    let hasMore = true;
+    let currentLastVersion = lastVersion;
+
+    while (hasMore) {
+      const eventRaws = await this.eventsRepository.find({
+        where: {
+          aggregateId,
+          version: MoreThan(currentLastVersion),
+        },
+        order: {
+          version: 'ASC',
+        },
+        take: batchSize,
+      });
+
+      if (eventRaws.length === 0) {
+        hasMore = false;
+        break;
+      }
+
+      await model.loadFromHistory(eventRaws.map(EventDataModel.deserialize));
+
+      const lastEvent = eventRaws[eventRaws.length - 1];
+      if (lastEvent) {
+        currentLastVersion = lastEvent.version;
+      }
+
+      // If the number of loaded events is less than the batch size, then there is no more data
+      if (eventRaws.length < batchSize) {
+        hasMore = false;
+      }
     }
   }
 
