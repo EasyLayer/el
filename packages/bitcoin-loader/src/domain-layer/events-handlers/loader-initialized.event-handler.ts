@@ -1,6 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
-import { RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
 import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
@@ -13,6 +13,7 @@ import { BlocksQueueConfig } from '../../config';
 @EventsHandler(BitcoinLoaderInitializedEvent)
 export class BitcoinLoaderInitializedEventHandler implements IEventHandler<BitcoinLoaderInitializedEvent> {
   constructor(
+    private readonly log: AppLogger,
     private readonly viewsWriteRepository: ViewsWriteRepositoryService,
     private readonly networkProviderService: NetworkProviderService,
     private readonly blocksQueueConfig: BlocksQueueConfig,
@@ -27,6 +28,8 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
       const { restoreBlocks, indexedHeight } = payload;
 
       if (Array.isArray(restoreBlocks) && restoreBlocks.length > 0) {
+        this.log.info(`Start restoring blocks...`, { length: restoreBlocks.length }, this.constructor.name);
+
         // Fetch blocks from provider
         const blocks = await this.loadBlocks(restoreBlocks);
 
@@ -94,10 +97,17 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
         } catch (error) {
           attempt++;
 
+          this.log.error(`Error processing chunk ${index + 1}`, error, this.constructor.name);
+
           if (attempt >= MAX_RETRIES) {
             throw new Error(`Failed to load blocks for chunk ${index + 1} after ${MAX_RETRIES} attempts.`);
           }
 
+          this.log.info(
+            `Retrying to download chunk ${index + 1} in ${RETRY_DELAY_MS / 1000} seconds...`,
+            {},
+            this.constructor.name
+          );
           await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
         }
       }
