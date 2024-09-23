@@ -119,15 +119,19 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     }
 
     // Process missed heights
-    while (this._missedHeights.length > 0) {
-      const height = this._missedHeights.shift();
+    // IMPORTANT: After assign workers for new heights
+    await this._mutex.runExclusive(async () => {
+      while (this._missedHeights.length > 0) {
+        // We take the oldest height
+        const height = this._missedHeights.shift();
 
-      if (height) {
-        this.log.debug('Re-attempting missed height.', { height }, this.constructor.name);
-        const taskPromise = this.assignWorker(height);
-        activeTasks.push(taskPromise);
+        if (height) {
+          this.log.debug('Re-attempting missed height.', { height }, this.constructor.name);
+          const taskPromise = this.assignWorker(height);
+          activeTasks.push(taskPromise);
+        }
       }
-    }
+    });
 
     await Promise.allSettled(activeTasks);
 
@@ -139,7 +143,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
    * @param startHeight - The starting height for the batch.
    * @returns A promise that resolves when the worker has completed its task.
    */
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 100, errorThresholdMs: 3000 })
+  @RuntimeTracker({ showMemory: true, warningThresholdMs: 100, errorThresholdMs: 3000 })
   private async assignWorker(startHeight: number): Promise<void> {
     try {
       const heights: number[] = [];
@@ -155,15 +159,19 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         this._loadedBlocks.push(...blocksBatch);
       });
     } catch (error) {
-      // Check the number of missed heights
-      if (this._missedHeights.length >= 100) {
-        this._missedHeights = [];
-        throw new Error('Missed heights exceed 100. Clearing missed heights.');
-      }
+      await this._mutex.runExclusive(async () => {
+        this.log.debug('AssignWorker encountered an error.', { error, startHeight }, this.constructor.name);
 
-      if (!this._missedHeights.includes(startHeight)) {
-        this._missedHeights.push(startHeight);
-      }
+        // Check the number of missing heights
+        if (this._missedHeights.length >= 100) {
+          this._missedHeights = [];
+          throw new Error('Missed heights exceed 100. Clearing missed heights.');
+        }
+
+        if (!this._missedHeights.includes(startHeight)) {
+          this._missedHeights.push(startHeight);
+        }
+      });
     }
   }
 
