@@ -1,5 +1,7 @@
 import { Readable } from 'node:stream';
 import axios, { AxiosInstance } from 'axios';
+import * as http from 'http';
+import * as https from 'https';
 import rateLimit from 'axios-rate-limit';
 import { parser } from 'stream-json';
 import StreamArray from 'stream-json/streamers/StreamArray';
@@ -42,6 +44,10 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
         },
         // TODO: add to envs
         // TODO: we must also compare these values ​​with the number of workers and batches
+        // keepAlive - Allows reuse of TCP connections.
+        httpAgent: new http.Agent({ keepAlive: true }),
+        httpsAgent: new https.Agent({ keepAlive: true }),
+        timeout: 20000,
       }),
       { maxRequests: 15, perMilliseconds: 1000 }
     );

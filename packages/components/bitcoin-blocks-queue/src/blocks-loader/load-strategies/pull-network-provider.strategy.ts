@@ -1,6 +1,6 @@
 import { Mutex } from 'async-mutex';
 import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
-import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksLoadingStrategy, StrategyNames } from './load-strategy.interface';
 import { Block } from '../../interfaces';
 import { BlocksQueue } from '../../blocks-queue';
@@ -57,6 +57,12 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     this._loadedBlocks = [];
 
     while (this._isLoading) {
+      this.log.debug(
+        'Queue size',
+        { length: this.queue.length, lastHeight: this.queue.lastHeight },
+        this.constructor.name
+      );
+
       // Check if we have reached the current network height
       if (this.queue.lastHeight >= currentNetworkHeight) {
         this.log.debug('Reached current network height.', { lastHeight: this.queue.lastHeight }, this.constructor.name);
@@ -67,7 +73,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       if (this.queue.length >= this.queue.maxQueueLength) {
         // When the queue is full, wait a bit
         this.log.debug('Queue is full. Waiting...', { queueLength: this.queue.length }, this.constructor.name);
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         continue;
       }
 
@@ -143,15 +149,8 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
    * @param startHeight - The starting height for the batch.
    * @returns A promise that resolves when the worker has completed its task.
    */
-  @RuntimeTracker({ showMemory: true, warningThresholdMs: 100, errorThresholdMs: 3000 })
   private async assignWorker(startHeight: number): Promise<void> {
     try {
-      this.log.debug(
-        'assignWorker()',
-        { missedHeights: this._missedHeights.length, loadedBlocks: this._loadedBlocks.length },
-        this.constructor.name
-      );
-
       const heights: number[] = [];
 
       for (let i = 0; i < this._batchLength; i++) {

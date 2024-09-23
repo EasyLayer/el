@@ -1,4 +1,6 @@
 import axios from 'axios';
+import * as http from 'http';
+import * as https from 'https';
 import { BaseNodeProvider, BaseNodeProviderOptions } from './base-node-provider';
 import { NodeProviderTypes, Hash } from './interfaces';
 
@@ -34,6 +36,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       headers: {
         'Content-Type': 'application/json',
       },
+      // keepAlive - Allows reuse of TCP connections.
+      httpAgent: new http.Agent({ keepAlive: true }),
+      httpsAgent: new https.Agent({ keepAlive: true }),
+      timeout: 20000,
     });
 
     const health = await this.healthcheck();
@@ -246,6 +252,6 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
   public async getManyBlocksByHeights(heights: number[], verbosity?: number): Promise<any> {
     const blocksHashes = await this.getManyHashesByHeights(heights);
     const blocks = await this.getManyBlocksByHashes(blocksHashes, verbosity);
-    return blocks;
+    return blocks.filter((block: any) => block);
   }
 }
