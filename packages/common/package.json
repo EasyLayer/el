@@ -1,6 +1,6 @@
 {
   "name": "@easylayer/common",
-  "version": "0.0.3-experimental.9",
+  "version": "0.0.3-experimental.10",
   "description": "",
   "exports": {
     "./arithmetic": {
