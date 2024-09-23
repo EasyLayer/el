@@ -44,15 +44,14 @@ export class NetworkProviderService {
     }
   }
 
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 1000, errorThresholdMs: 5000 })
+  @RuntimeTracker({ showMemory: true, warningThresholdMs: 1000, errorThresholdMs: 5000 })
   public async getManyBlocksByHeights(heights: string[] | number[], verbosity?: number): Promise<any> {
     try {
       const provider = await this._connectionManager.getActiveProvider();
-      const blocks = await provider.getManyBlocksByHeights(
+      return await provider.getManyBlocksByHeights(
         heights.map((item) => Number(item)),
         verbosity
       );
-      return blocks.filter((block: any) => block);
     } catch (error) {
       this.log.error('getManyBlocksByHeights()', error, this.constructor.name);
       throw error;

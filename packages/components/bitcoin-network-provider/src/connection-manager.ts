@@ -92,11 +92,13 @@ export class ConnectionManager implements OnModuleInit {
       throw new Error(`Provider with name ${this.activeProviderName} not found`);
     }
 
-    if ((await provider.healthcheck()) || (await this.tryConnectProvider(provider))) {
-      return provider;
-    }
+    return provider;
 
-    throw new Error('No available providers found');
+    // if ((await provider.healthcheck()) || (await this.tryConnectProvider(provider))) {
+    //   return provider;
+    // }
+
+    // throw new Error('No available providers found');
   }
 
   // TODO: remove from this adapter connection logic
