@@ -23,10 +23,10 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async publish<T extends EventBase = EventBase>(event: T): Promise<void> {}
+  public async publish<T extends EventBase = EventBase>(event: T): Promise<void> {}
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async publishAll<T extends EventBase = EventBase>(event: T[]): Promise<void> {}
+  public async publishAll<T extends EventBase = EventBase>(event: T[]): Promise<void> {}
 
   /**
    * Publishes an event.
@@ -34,33 +34,24 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
    *
    * @param event The event to be published.
    */
-  async republish<T extends EventBase = EventBase>(event: T): Promise<void> {
+  public async republish<T extends EventBase = EventBase>(event: T): Promise<void> {
     this.setEventMetadata(event);
     await this.publish(event);
   }
 
-  async commit(): Promise<void> {
+  public async commit(): Promise<void> {
     const events = this.getUncommittedEvents();
     await this.publishAll(events);
     this.uncommit();
   }
 
-  async loadFromHistory(history: EventBase[]): Promise<void> {
+  public async loadFromHistory(history: EventBase[]): Promise<void> {
     for (const event of history) {
       await this.apply(event, true);
     }
   }
 
-  // IMPORTANT: When an aggregate inherits from CustomAggregateRoot
-  // and has complex structures in its properties, for the restoration of which a prototype is required,
-  // then this loadFromSnapshot method must be overridden in the aggregate itself,
-  // since it has access to the classes of its structures.
-  async loadFromSnapshot<T extends CustomAggregateRoot>(state: T): Promise<void> {
-    Object.assign(this, state);
-    this._version = state.version;
-  }
-
-  async apply<T extends EventBase = EventBase>(
+  public async apply<T extends EventBase = EventBase>(
     event: T,
     optionsOrIsFromHistory?:
       | boolean
@@ -103,12 +94,45 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
     this._version++;
   }
 
-  uncommit() {
+  public uncommit() {
     this[INTERNAL_EVENTS].length = 0;
   }
 
-  getUncommittedEvents(): EventBase[] {
+  public getUncommittedEvents(): EventBase[] {
     return this[INTERNAL_EVENTS];
+  }
+
+  public toSnapshotPayload(): string {
+    const payload: any = {
+      __type: this.constructor.name,
+      ...this.toJsonPayload(),
+      version: this._version,
+    };
+    return JSON.stringify(payload, this.getCircularReplacer());
+  }
+
+  public loadFromSnapshot({ payload }: any): void {
+    const deserializedPayload = JSON.parse(payload);
+
+    this.constructor = { name: deserializedPayload.__type } as typeof Object.constructor;
+
+    if (deserializedPayload.version !== undefined) {
+      this._version = deserializedPayload.version;
+    }
+
+    this.fromSnapshot(deserializedPayload);
+  }
+
+  protected toJsonPayload(): any {
+    return {};
+  }
+
+  // IMPORTANT: When an aggregate inherits from CustomAggregateRoot
+  // and has complex structures in its properties, for the restoration of which a prototype is required,
+  // then this fromSnapshot method must be overridden in the aggregate itself,
+  // since it has access to the classes of its structures.
+  protected fromSnapshot(state: any): void {
+    Object.assign(this, state);
   }
 
   protected getEventHandler<T extends EventBase = EventBase>(event: T): Type<IEventHandler> | undefined {
@@ -134,5 +158,26 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
     if (!Reflect.hasOwnMetadata(EVENT_METADATA, event.constructor)) {
       Reflect.defineMetadata(EVENT_METADATA, { id: eventName }, event.constructor);
     }
+  }
+
+  protected getCircularReplacer() {
+    const seen = new WeakSet();
+    return function (key: any, value: any) {
+      // Check is used to ensure that the current value is an object but not null (since typeof null === 'object).
+      if (typeof value === 'object' && value !== null) {
+        if (seen.has(value)) {
+          // If the object has already been processed (i.e. it is in a WeakSet),
+          // this means that a circular reference has been found and the function returns undefined instead,
+          // (which prevents the circular reference from being serialized).
+          // Skip cyclic references
+          return;
+        }
+        // If the object has not yet been seen,
+        // it is added to the WeakSet using seen.add(value)
+        // to keep track of which objects have already been processed.
+        seen.add(value);
+      }
+      return value;
+    };
   }
 }
