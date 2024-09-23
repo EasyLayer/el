@@ -38,7 +38,6 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     }
 
     const snapshot = await this.snapshotsRepository.findOneBy({ aggregateId });
-    this.log.debug('getOne snapshot', {}, this.constructor.name);
 
     if (!snapshot) {
       if (this.isStreamSupport) {
@@ -53,8 +52,7 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     // If the snapshot was in the database,
     // then we still need to check
     // its relevance by getting events according to a version higher than that of the snapshot.
-    await model.loadFromSnapshot(SnapshotsModel.deserialize(snapshot));
-    this.log.debug('getOne loadFromSnapshot', {}, this.constructor.name);
+    model.loadFromSnapshot(snapshot);
 
     if (this.isStreamSupport) {
       await this.applyEventsStreamToAggregate(model, aggregateId, model.version);
@@ -173,7 +171,7 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
   private async updateSnapshot(aggregate: T) {
     try {
       // Serialize the cloned aggregate
-      const snapshot = SnapshotsModel.serialize(aggregate);
+      const snapshot = SnapshotsModel.toSnapshot(aggregate);
 
       await this.snapshotsRepository
         .createQueryBuilder()
@@ -214,8 +212,6 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
       throw new Error('Stream is not supported by this database driver.');
     }
 
-    this.log.debug('applyEventsStreamToAggregate()', {}, this.constructor.name);
-
     return new Promise<T>(async (resolve, reject) => {
       const queryBuilder = this.eventsRepository
         .createQueryBuilder('event')
@@ -245,8 +241,6 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
     lastVersion: number = 0,
     batchSize: number = 1000
   ): Promise<void> {
-    this.log.debug('applyEventsInBatches()', {}, this.constructor.name);
-
     let hasMore = true;
     let currentLastVersion = lastVersion;
 

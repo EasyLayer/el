@@ -1,5 +1,10 @@
 import { AggregateRoot } from '@easylayer/components/cqrs';
-import { NetworkProviderService, Blockchain, restoreChainLinks } from '@easylayer/components/bitcoin-network-provider';
+import {
+  NetworkProviderService,
+  LightBlock,
+  Blockchain,
+  restoreChainLinks,
+} from '@easylayer/components/bitcoin-network-provider';
 import {
   BitcoinListenerInitializedEvent,
   BitcoinListenerBlocksParsedEvent,
@@ -13,13 +18,6 @@ enum ListenerStatuses {
   REORGANISATION = 'reorganisation',
 }
 
-type LightBlock = {
-  height: number;
-  hash: string;
-  previousblockhash: string;
-  tx: string[];
-};
-
 export class Listener extends AggregateRoot {
   // IMPORTANT: There must be only one Listener Aggregate in the module,
   // so we immediately give it aggregateId by which we can find it.
@@ -30,6 +28,24 @@ export class Listener extends AggregateRoot {
   // so we must take the smallest blocks in the network,
   // and make sure that they fit into a single batch less than the value of 'maxSize' .
   public chain: Blockchain = new Blockchain({ maxSize: 1000 });
+
+  protected toJsonPayload(): any {
+    return {
+      status: this.status,
+      // Convert Blockchain to an array of blocks
+      chain: this.chain.toArray(),
+    };
+  }
+
+  protected fromSnapshot(state: any): void {
+    this.status = state.status;
+    if (state.chain && Array.isArray(state.chain)) {
+      this.chain = new Blockchain({ maxSize: 1000 });
+      this.chain.fromArray(state.chain);
+      // Recovering links in Blockchain
+      restoreChainLinks(this.chain.head);
+    }
+  }
 
   // IMPORTANT: this method doing two things:
   // 1 - create Listener if it's first creation
@@ -216,20 +232,6 @@ export class Listener extends AggregateRoot {
 
     // Recursive check the previous block
     return this.startReorganisation({ height: prevHeight, requestId, service, logger, blocks: newBlocks });
-  }
-
-  // Override the load From Snapshot method to restore the Blockchain data structure
-  async loadFromSnapshot<T extends AggregateRoot>(state: T): Promise<void> {
-    // Calling a base class method to restore shared data
-    await super.loadFromSnapshot(state);
-
-    // Restore the block chain if it exists in the state
-    if (this.chain && typeof this.chain === 'object') {
-      Object.setPrototypeOf(this.chain, Blockchain.prototype);
-
-      // Restore links (next and prev) inside the block chain
-      restoreChainLinks(this.chain.head);
-    }
   }
 
   private onBitcoinListenerInitializedEvent({ payload }: BitcoinListenerInitializedEvent) {

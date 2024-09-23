@@ -1,4 +1,4 @@
-type LightBlock = {
+export type LightBlock = {
   height: number;
   hash: string;
   previousblockhash: string;
@@ -426,5 +426,53 @@ export class Blockchain {
 
     // Reverse the array to get the correct order
     return blocks.reverse();
+  }
+
+  /**
+   * Converts the linked list of blocks into an ordered array of LightBlock objects.
+   * @returns {LightBlock[]} An array containing all blocks in the blockchain from head to tail.
+   * Complexity O(n) - where n is the number of blocks in the blockchain.
+   */
+  public toArray(): LightBlock[] {
+    const blocks: LightBlock[] = [];
+    let current = this._head;
+    while (current) {
+      blocks.push(current.block);
+      current = current.next;
+    }
+    return blocks;
+  }
+
+  /**
+   * Restores the linked list of blocks from an ordered array of LightBlock objects.
+   * This method clears the current blockchain and rebuilds it from the provided array.
+   * @param {LightBlock[]} blocks - An array of LightBlock objects to reconstruct the blockchain.
+   * @returns {void}
+   * Complexity O(n) - where n is the number of blocks in the provided array.
+   */
+  public fromArray(blocks: LightBlock[]): void {
+    this._head = null;
+    this._tail = null;
+    this._size = 0;
+
+    for (const block of blocks) {
+      const newNode: Chain = { block, next: null, prev: this._tail };
+
+      if (this._tail) {
+        this._tail.next = newNode;
+      }
+      this._tail = newNode;
+
+      if (!this._head) {
+        this._head = newNode;
+      }
+
+      this._size++;
+
+      // Remove the oldest block if the chain size exceeds the maximum allowed size.
+      if (this._size > this._maxSize) {
+        this.removeOldestChain();
+      }
+    }
   }
 }
