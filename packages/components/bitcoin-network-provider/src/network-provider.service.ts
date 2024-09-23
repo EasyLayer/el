@@ -74,7 +74,8 @@ export class NetworkProviderService {
     try {
       const provider = await this._connectionManager.getActiveProvider();
       // TODO: add method transform into Hash
-      return await provider.getManyBlocksByHashes(hashes as Hash[], verbosity);
+      const blocks = await provider.getManyBlocksByHashes(hashes as Hash[], verbosity);
+      return blocks.filter((block: any) => block);
     } catch (error) {
       this.log.error('getManyBlocksByHashes()', error, this.constructor.name);
       throw error;

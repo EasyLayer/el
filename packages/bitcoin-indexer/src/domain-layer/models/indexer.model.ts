@@ -27,7 +27,7 @@ export class Indexer extends AggregateRoot {
   // The number of blocks in a batch depends on the block size,
   // so we must take the smallest blocks in the network,
   // and make sure that they fit into a single batch less than the value of 'maxSize' .
-  public chain: Blockchain = new Blockchain({ maxSize: 1000 });
+  public chain: Blockchain = new Blockchain({ maxSize: 3000 });
 
   protected toJsonPayload(): any {
     return {
@@ -40,7 +40,7 @@ export class Indexer extends AggregateRoot {
   protected fromSnapshot(state: any): void {
     this.status = state.status;
     if (state.chain && Array.isArray(state.chain)) {
-      this.chain = new Blockchain({ maxSize: 1000 });
+      this.chain = new Blockchain({ maxSize: 3000 });
       this.chain.fromArray(state.chain);
       // Recovering links in Blockchain
       restoreChainLinks(this.chain.head);

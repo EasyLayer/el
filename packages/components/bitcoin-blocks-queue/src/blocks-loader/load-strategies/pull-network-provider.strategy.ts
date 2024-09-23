@@ -107,35 +107,35 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
   private async execute(currentNetworkHeight: number): Promise<void> {
     const activeTasks: Promise<void>[] = [];
 
-    for (let i = 0; i < this._concurrency; i++) {
-      const nextStartHeight = this.queue.lastHeight + 1 + i * this._batchLength;
+    // Process missed heights at first
+    while (this._missedHeights.length > 0) {
+      // We take the oldest height
+      const height = this._missedHeights.shift();
 
-      if (currentNetworkHeight >= nextStartHeight) {
-        if (!this._missedHeights.includes(nextStartHeight)) {
-          const taskPromise = this.assignWorker(nextStartHeight);
-          activeTasks.push(taskPromise);
+      if (height) {
+        this.log.debug('Re-attempting missed height.', { height }, this.constructor.name);
+        const taskPromise = this.assignWorker(height);
+        activeTasks.push(taskPromise);
+      }
+    }
+
+    // Only if the missed heights have been processed, then we can move on to new ones
+    if (this._missedHeights.length === 0) {
+      for (let i = 0; i < this._concurrency; i++) {
+        const nextStartHeight = this.queue.lastHeight + 1 + i * this._batchLength;
+
+        if (currentNetworkHeight >= nextStartHeight) {
+          if (!this._missedHeights.includes(nextStartHeight)) {
+            const taskPromise = this.assignWorker(nextStartHeight);
+            activeTasks.push(taskPromise);
+          }
         }
       }
     }
 
-    // Process missed heights
-    // IMPORTANT: After assign workers for new heights
-    await this._mutex.runExclusive(async () => {
-      while (this._missedHeights.length > 0) {
-        // We take the oldest height
-        const height = this._missedHeights.shift();
-
-        if (height) {
-          this.log.debug('Re-attempting missed height.', { height }, this.constructor.name);
-          const taskPromise = this.assignWorker(height);
-          activeTasks.push(taskPromise);
-        }
-      }
-    });
-
     await Promise.allSettled(activeTasks);
 
-    await this.enqueueBatches();
+    this.enqueueBatches();
   }
 
   /**
@@ -146,6 +146,12 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
   @RuntimeTracker({ showMemory: true, warningThresholdMs: 100, errorThresholdMs: 3000 })
   private async assignWorker(startHeight: number): Promise<void> {
     try {
+      this.log.debug(
+        'assignWorker()',
+        { missedHeights: this._missedHeights.length, loadedBlocks: this._loadedBlocks.length },
+        this.constructor.name
+      );
+
       const heights: number[] = [];
 
       for (let i = 0; i < this._batchLength; i++) {
@@ -159,9 +165,9 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         this._loadedBlocks.push(...blocksBatch);
       });
     } catch (error) {
-      await this._mutex.runExclusive(async () => {
-        this.log.debug('AssignWorker encountered an error.', { error, startHeight }, this.constructor.name);
+      this.log.debug('AssignWorker encountered an error.', { error, startHeight }, this.constructor.name);
 
+      await this._mutex.runExclusive(async () => {
         // Check the number of missing heights
         if (this._missedHeights.length >= 100) {
           this._missedHeights = [];
@@ -177,9 +183,8 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
   /**
    * Enqueues loaded blocks into the queue in the correct order.
-   * @returns A promise that resolves when all eligible blocks have been enqueued.
    */
-  private async enqueueBatches(): Promise<void> {
+  private enqueueBatches(): void {
     // Sort blocks by height in descending order
     this._loadedBlocks.sort((a, b) => {
       if (a.height < b.height) return 1;
@@ -187,7 +192,10 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       return 0;
     });
 
-    while (this._loadedBlocks.length > 0) {
+    // fix the current length of the array with blocks
+    const initialLength = this._loadedBlocks.length;
+
+    for (let i = 0; i < initialLength; i++) {
       // Extract the last block from the array
       const block = this._loadedBlocks.pop();
 
