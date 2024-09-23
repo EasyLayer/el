@@ -57,7 +57,7 @@ export class BlocksQueueService {
   }
 
   @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
-  public async confirmIndexBatch(blockHashes: string[]): Promise<Block[]> {
+  public async confirmProcessedBatch(blockHashes: string[]): Promise<Block[]> {
     const confirmedBlocks: Block[] = [];
 
     for (const hash of blockHashes) {
@@ -71,14 +71,14 @@ export class BlocksQueueService {
         }
 
         confirmedBlocks.push(dequeuedBlock);
-
-        // Allow the next batch to be processed
-        this.blocksQueueIterator.resolveNextBatch();
       } else {
         // If the block is not found or the hash does not match, throw an error
         throw new Error(`Block not found or hash mismatch: ${hash}`);
       }
     }
+
+    // Allow the next batch to be processed
+    this.blocksQueueIterator.resolveNextBatch();
 
     return confirmedBlocks;
   }

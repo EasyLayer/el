@@ -21,7 +21,9 @@ export class BitcoinIndexerBlocksIndexedEventHandler implements IEventHandler<Bi
     try {
       const { blocks } = payload;
 
-      const confirmedBlocks = await this.blocksQueueService.confirmIndexBatch(blocks.map((block: any) => block.hash));
+      const confirmedBlocks = await this.blocksQueueService.confirmProcessedBatch(
+        blocks.map((block: any) => block.hash)
+      );
 
       for (const block of confirmedBlocks) {
         const results = await this.indexerMapper.index(block);
