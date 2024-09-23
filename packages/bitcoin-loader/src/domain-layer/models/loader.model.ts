@@ -100,9 +100,7 @@ export class Loader extends AggregateRoot {
         requestId,
         status: LoaderStatuses.AWAITING,
         blocks: blocks.map((block: any) => ({
-          height: Number(block.height),
-          hash: block.hash,
-          previousblockhash: block?.previousblockhash || '',
+          ...block,
           tx: block.tx.map((t: any) => t.txid),
         })),
       })
@@ -205,7 +203,14 @@ export class Loader extends AggregateRoot {
     const { blocks, status } = payload;
 
     this.status = status as LoaderStatuses;
-    this.chain.addBlocks(blocks);
+    this.chain.addBlocks(
+      blocks.map((block: any) => ({
+        height: Number(block.height),
+        hash: block.hash,
+        previousblockhash: block?.previousblockhash || '',
+        tx: block.tx.map((t: any) => t.txid),
+      }))
+    );
   }
 
   private onBitcoinLoaderReorganisationStartedEvent({ payload }: BitcoinLoaderReorganisationStartedEvent) {
