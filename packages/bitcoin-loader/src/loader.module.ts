@@ -137,6 +137,10 @@ export class BitcoinLoaderModule {
           useValue: businessConfig,
         },
         {
+          provide: BlocksQueueConfig,
+          useValue: blocksQueueConfig,
+        },
+        {
           provide: EventStoreConfig,
           useValue: eventstoreConfig,
         },

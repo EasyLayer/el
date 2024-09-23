@@ -8,12 +8,14 @@ import { BitcoinLoaderInitializedEvent } from '@easylayer/common/domain-cqrs-com
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
 import { System } from '../../infrastructure-layer/view-models';
+import { BlocksQueueConfig } from '../../config';
 
 @EventsHandler(BitcoinLoaderInitializedEvent)
 export class BitcoinLoaderInitializedEventHandler implements IEventHandler<BitcoinLoaderInitializedEvent> {
   constructor(
     private readonly viewsWriteRepository: ViewsWriteRepositoryService,
     private readonly networkProviderService: NetworkProviderService,
+    private readonly blocksQueueConfig: BlocksQueueConfig,
     @Inject('BlocksQueueService') private readonly blocksQueueService: BlocksQueueService,
     @Inject('LoaderMapper') private readonly loaderMapper: ILoaderMapper
   ) {}
@@ -26,7 +28,7 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
 
       if (Array.isArray(restoreBlocks) && restoreBlocks.length > 0) {
         // Fetch blocks from provider
-        const blocks = await this.networkProviderService.getManyBlocksByHashes(restoreBlocks, 2);
+        const blocks = await this.loadBlocks(restoreBlocks);
 
         for (const block of blocks) {
           const results = await this.loaderMapper.onLoad(block);
@@ -62,5 +64,59 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
 
       throw error;
     }
+  }
+
+  /**
+   * Loads blocks in batches, processing each batch sequentially.
+   * Retries indefinitely on failure with a delay between attempts.
+   * @param hashes Array of block hashes to load
+   */
+  private async loadBlocks(hashes: string[]): Promise<any> {
+    const batchSize = this.blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH;
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_MS = 5000;
+
+    const blocks: any[] = [];
+
+    const chunks = this.splitIntoChunks(hashes, batchSize);
+
+    for (const [index, chunk] of chunks.entries()) {
+      let attempt = 0;
+      let success = false;
+
+      while (!success && attempt < MAX_RETRIES) {
+        try {
+          const batch = await this.networkProviderService.getManyBlocksByHashes(chunk, 2);
+
+          blocks.push(...batch);
+
+          success = true;
+        } catch (error) {
+          attempt++;
+
+          if (attempt >= MAX_RETRIES) {
+            throw new Error(`Failed to load blocks for chunk ${index + 1} after ${MAX_RETRIES} attempts.`);
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS));
+        }
+      }
+    }
+
+    return blocks;
+  }
+
+  /**
+   * Splits an array into smaller chunks of a specified size.
+   * @param array The array to split
+   * @param size The size of each chunk
+   * @returns An array of chunks
+   */
+  private splitIntoChunks<T>(array: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
   }
 }
