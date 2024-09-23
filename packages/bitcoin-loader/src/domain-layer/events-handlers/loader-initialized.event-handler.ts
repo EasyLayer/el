@@ -47,6 +47,12 @@ export class BitcoinLoaderInitializedEventHandler implements IEventHandler<Bitco
         });
 
         await this.viewsWriteRepository.commit();
+
+        this.log.info(
+          'Synchronization of blocks between write and read states was finished',
+          null,
+          this.constructor.name
+        );
       }
 
       // IMPORTANT: We will only start loading to the blocks queue after the restoration of the Read State

@@ -39,12 +39,6 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
         // IMPORTANT: We want to restore events one block more than the difference between write and read state.
         const blocks = loaderModel.chain.getLastNBlocks(restoreBlocksCount + 1);
 
-        this.log.info(
-          'Synchronization of blocks between write and read states was finished',
-          null,
-          this.constructor.name
-        );
-
         // For restore block in read state we publish indexer with blocks hashes
         blocks.forEach((item) => restoreBlocks.push(item.hash));
       }
@@ -53,8 +47,6 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
         this.log.info('Reorganisation of blocks was started...', null, this.constructor.name);
         // Publish last indexer event to process reorganisation
         await this.loaderModelFactory.publishLastEvent();
-
-        this.log.info('Reorganisation of blocks was finished.', null, this.constructor.name);
       }
 
       await loaderModel.init({
