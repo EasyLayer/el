@@ -73,7 +73,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       };
       const response = await this._httpClient.post('/', data);
       const blockHeight = response.data.result;
-      return Number(blockHeight);
+      return blockHeight;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         if (error.response) {

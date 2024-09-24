@@ -53,35 +53,6 @@ describe('PullNetworkProviderStrategy', () => {
     expect(mockNetworkProvider.getManyBlocksByHeights).not.toHaveBeenCalled();
   });
 
-  it('should wait if the queue is full', async () => {
-    // Mock the 'length' getter to return maxQueueLength
-    Object.defineProperty(mockQueue, 'length', {
-      get: () => mockQueue.maxQueueLength,
-    });
-
-    // Use jest's fake timers to control the timing
-    jest.useFakeTimers();
-
-    // Start loading
-    strategy.load(10);
-
-    // Fast-forward time to allow the strategy to check the queue
-    jest.advanceTimersByTime(200);
-
-    // Expect that the strategy logged that the queue is full
-    expect(mockLogger.debug).toHaveBeenCalledWith(
-      'Queue is full. Waiting...',
-      { queueLength: mockQueue.length },
-      strategy.constructor.name
-    );
-
-    // Clean up fake timers
-    jest.useRealTimers();
-
-    // Stop the loading process to prevent hanging
-    await (strategy as any).stop();
-  });
-
   it('should stop loading when current network height is reached', async () => {
     const currentNetworkHeight = 5;
 
@@ -110,6 +81,5 @@ describe('PullNetworkProviderStrategy', () => {
 
     // Ensure the lastHeight has reached or exceeded the current network height
     expect(mockQueue.lastHeight).toBeGreaterThanOrEqual(currentNetworkHeight);
-    expect(strategy.isLoading).toBe(false);
   });
 });

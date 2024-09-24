@@ -31,6 +31,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
 
   onModuleDestroy() {
     this._isIterating = false;
+    this._resolveNextBatch();
   }
 
   /**
@@ -64,6 +65,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
           await this.processBatch(batch);
         }
       } else {
+        // If the queue is empty, we can easily wait even 1-2 seconds.
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }

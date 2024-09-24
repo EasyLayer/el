@@ -17,7 +17,8 @@ export class NetworkProviderService {
   public async getCurrentBlockHeight(): Promise<number> {
     try {
       const provider = await this._connectionManager.getActiveProvider();
-      return await provider.getBlockHeight();
+      const height = await provider.getBlockHeight();
+      return Number(height);
     } catch (error) {
       this.log.error('getCurrentBlockHeight()', error, this.constructor.name);
       throw error;

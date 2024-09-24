@@ -7,7 +7,6 @@ import { BlocksQueueController } from '../blocks-queue.controller';
 import { BlocksQueueService } from '../blocks-queue.service';
 import { BlocksQueueIteratorService } from '../blocks-iterator';
 import { BlocksQueueLoaderService } from '../blocks-loader';
-import { BlocksQueueCollectorService } from '../blocks-collector';
 import { BlocksCommandExecutor } from '../interfaces';
 
 describe('BlocksQueueModule', () => {
@@ -47,7 +46,6 @@ describe('BlocksQueueModule', () => {
     expect(module.get('BlocksQueueService')).toBeInstanceOf(BlocksQueueService);
     expect(module.get(BlocksQueueIteratorService)).toBeInstanceOf(BlocksQueueIteratorService);
     expect(module.get(BlocksQueueLoaderService)).toBeInstanceOf(BlocksQueueLoaderService);
-    expect(module.get(BlocksQueueCollectorService)).toBeInstanceOf(BlocksQueueCollectorService);
     expect(module.get(LoggerModule)).toBeDefined();
   });
 });

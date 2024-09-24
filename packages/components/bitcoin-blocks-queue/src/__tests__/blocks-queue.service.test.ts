@@ -5,14 +5,12 @@ import { BlocksQueue } from '../blocks-queue';
 import { Block } from '../interfaces';
 import { BlocksQueueIteratorService } from '../blocks-iterator';
 import { BlocksQueueLoaderService } from '../blocks-loader';
-import { BlocksQueueCollectorService } from '../blocks-collector';
 
 describe('BlocksQueueService', () => {
   let service: BlocksQueueService;
   let mockLogger: jest.Mocked<AppLogger>;
   let mockBlocksIterator: jest.Mocked<BlocksQueueIteratorService>;
   let mockBlocksLoader: jest.Mocked<BlocksQueueLoaderService>;
-  let mockBlocksCollectorService: jest.Mocked<BlocksQueueCollectorService>;
   let mockBlockQueue: jest.Mocked<BlocksQueue<Block>>;
   let config: { maxQueueLength: number; maxBlockHeight: number };
 
@@ -31,10 +29,6 @@ describe('BlocksQueueService', () => {
 
     mockBlocksLoader = {
       startBlocksLoading: jest.fn(),
-    } as any;
-
-    mockBlocksCollectorService = {
-      init: jest.fn(),
     } as any;
 
     // Initialize the mockBlockQueue without directly assigning to read-only properties
@@ -57,7 +51,6 @@ describe('BlocksQueueService', () => {
         { provide: AppLogger, useValue: mockLogger },
         { provide: BlocksQueueIteratorService, useValue: mockBlocksIterator },
         { provide: BlocksQueueLoaderService, useValue: mockBlocksLoader },
-        { provide: BlocksQueueCollectorService, useValue: mockBlocksCollectorService },
         { provide: 'CONFIG', useValue: config },
         {
           provide: BlocksQueueService,
@@ -65,16 +58,9 @@ describe('BlocksQueueService', () => {
             logger: AppLogger,
             iterator: BlocksQueueIteratorService,
             loader: BlocksQueueLoaderService,
-            collector: BlocksQueueCollectorService,
             config: any
-          ) => new BlocksQueueService(logger, iterator, loader, collector, config),
-          inject: [
-            AppLogger,
-            BlocksQueueIteratorService,
-            BlocksQueueLoaderService,
-            BlocksQueueCollectorService,
-            'CONFIG',
-          ],
+          ) => new BlocksQueueService(logger, iterator, loader, config),
+          inject: [AppLogger, BlocksQueueIteratorService, BlocksQueueLoaderService, 'CONFIG'],
         },
       ],
     }).compile();
@@ -82,17 +68,17 @@ describe('BlocksQueueService', () => {
     service = module.get<BlocksQueueService>(BlocksQueueService);
 
     // Assign the mocked block queue to the service
-    service['_blockQueue'] = mockBlockQueue;
+    service['_queue'] = mockBlockQueue;
   });
 
   describe('start', () => {
     it('should initialize and start loading and iterating', () => {
       const indexedHeight = 100;
-      service['init'] = jest.fn(); // Mock the init method
+      service['initQueue'] = jest.fn(); // Mock the init method
 
       service.start(indexedHeight);
 
-      expect(service['init']).toHaveBeenCalledWith(indexedHeight);
+      expect(service['initQueue']).toHaveBeenCalledWith(indexedHeight);
       expect(mockBlocksLoader.startBlocksLoading).toHaveBeenCalledWith(mockBlockQueue);
       expect(mockBlocksIterator.startQueueIterating).toHaveBeenCalledWith(mockBlockQueue);
     });
@@ -118,12 +104,6 @@ describe('BlocksQueueService', () => {
   describe('queue', () => {
     it('should return the block queue', () => {
       expect(service.queue).toBe(mockBlockQueue);
-    });
-  });
-
-  describe('blocksCollector', () => {
-    it('should return the blocks collector service', () => {
-      expect(service.blocksCollector).toBe(mockBlocksCollectorService);
     });
   });
 });
