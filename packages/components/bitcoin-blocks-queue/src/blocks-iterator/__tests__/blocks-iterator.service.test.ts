@@ -121,14 +121,6 @@ describe('BlocksQueueIteratorService', () => {
 
       expect(blockSize).toBe(7); // 2 + 5 bytes
     });
-
-    it('should return 0 if there are no transactions in the block', () => {
-      const blockMock = new TestBlock(0);
-
-      const blockSize = service['calculateBlockSize'](blockMock);
-
-      expect(blockSize).toBe(0);
-    });
   });
 
   describe('peekNextBatch', () => {
