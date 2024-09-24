@@ -58,7 +58,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
     while (this._isLoading) {
       this.log.debug(
-        'Queue size',
+        'Queue length',
         { length: this.queue.length, lastHeight: this.queue.lastHeight },
         this.constructor.name
       );
@@ -66,7 +66,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       // Check if we have reached the current network height
       if (this.queue.lastHeight >= currentNetworkHeight) {
         this.log.debug('Reached current network height.', { lastHeight: this.queue.lastHeight }, this.constructor.name);
-        break;
+        this.stop();
       }
 
       // Check if the queue is full
@@ -84,8 +84,6 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         throw error;
       }
     }
-
-    await this.stop();
   }
 
   /**

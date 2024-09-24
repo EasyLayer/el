@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
-import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueue } from '../blocks-queue';
 import { Block, BlocksCommandExecutor } from '../interfaces';
 
@@ -37,36 +37,35 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
    * Starts iterating over the block queue and processing blocks.
    */
   public async startQueueIterating(queue: BlocksQueue<Block>): Promise<void> {
-    try {
-      this.log.info('Setup blocks iterating', {}, this.constructor.name);
+    this.log.info('Setup blocks iterating', {}, this.constructor.name);
 
-      // NOTE: We use this to make sure that
-      // method startQueueIterating() is executed only once in its entire life.
-      if (this._isIterating) {
-        // Iterating Blocks already started
-        return;
-      }
+    // NOTE: We use this to make sure that
+    // method startQueueIterating() is executed only once in its entire life.
+    if (this._isIterating) {
+      // Iterating Blocks already started
+      return;
+    }
 
-      this._isIterating = true;
+    this._isIterating = true;
 
-      // TODO: think where put this
-      this._queue = queue;
+    // TODO: think where put this
+    this._queue = queue;
 
-      this.initBatchProcessedPromise();
+    this.initBatchProcessedPromise();
 
-      while (this.isIterating) {
-        if (this._queue.length > 0) {
-          const batch = await this.peekNextBatch();
-          if (batch.length > 0) {
-            await this.processBatch(batch);
-          }
-        } else {
-          // TODO: add description about why we use setTimeout() here
-          await new Promise((resolve) => setTimeout(resolve, 0));
+    while (this.isIterating) {
+      // IMPORTANT: Before processing the next batch from the queue,
+      // we wait for the resolving of the promise of the previous batch (confirm batch method)
+      await this.batchProcessedPromise;
+
+      if (this._queue.length > 0) {
+        const batch = this.peekNextBatch();
+        if (batch.length > 0) {
+          await this.processBatch(batch);
         }
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
-    } catch (error) {
-      this.log.error('Error', error, this.constructor.name);
     }
   }
 
@@ -82,11 +81,8 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     }
   }
 
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
-  private async peekNextBatch(): Promise<Block[]> {
-    // NOTE: Before processing the next batch from the queue,
-    // we wait for the resolving of the promise of the previous batch
-    await this.batchProcessedPromise;
+  private peekNextBatch(): Block[] {
+    this.log.debug('Iterator peeking next blocks batch...', {}, this.constructor.name);
 
     // Init the promise for the next wait
     this.initBatchProcessedPromise();
@@ -100,7 +96,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
       const { value: nextBlock, done } = blocksIterator.next();
 
       if (done) {
-        this.log.debug('Queue is empty', {}, this.constructor.name);
+        this.log.debug('Queue is empty, stop iteration', {}, this.constructor.name);
         // Stop iteration if there are no more blocks
         break;
       }
@@ -129,6 +125,8 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
       currentBatchSize += blockSize;
     }
 
+    this.log.debug('Iterator peeked blocks batch with length', { batchLength: batch.length }, this.constructor.name);
+
     return batch;
   }
 
@@ -147,7 +145,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
       // Check that hex exists and is a string
       if (!t.hex || typeof t.hex !== 'string') {
         this.log.error('Invalid hex in transaction', { transaction: t }, this.constructor.name);
-        continue; // Пропускаем транзакцию с некорректными данными
+        continue;
       }
 
       // Divide by 2 since each byte is represented by two characters in hex
