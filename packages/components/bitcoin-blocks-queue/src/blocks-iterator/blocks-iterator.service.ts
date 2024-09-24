@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable, Inject, OnModuleDestroy } from '@nestjs/common';
+import { exponentialIntervalAsync, ExponentialTimer } from '@easylayer/common/exponential-interval-async';
 import { AppLogger } from '@easylayer/components/logger';
 import { BlocksQueue } from '../blocks-queue';
 import { Block, BlocksCommandExecutor } from '../interfaces';
@@ -11,6 +12,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
   private batchProcessedPromise!: Promise<void>;
   protected _resolveNextBatch!: () => void;
   private _blocksBatchSize: number = 1024;
+  private _timer: ExponentialTimer | null = null;
 
   constructor(
     private readonly log: AppLogger,
@@ -30,6 +32,8 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
   }
 
   onModuleDestroy() {
+    this._timer?.destroy();
+    this._timer = null;
     this._isIterating = false;
     this._resolveNextBatch();
   }
@@ -54,21 +58,32 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
 
     this.initBatchProcessedPromise();
 
-    while (this.isIterating) {
-      // IMPORTANT: Before processing the next batch from the queue,
-      // we wait for the resolving of the promise of the previous batch (confirm batch method)
-      await this.batchProcessedPromise;
+    this._timer = exponentialIntervalAsync(
+      async (resetInterval) => {
+        // IMPORTANT: Before processing the next batch from the queue,
+        // we wait for the resolving of the promise of the previous batch (confirm batch method)
+        await this.batchProcessedPromise;
 
-      if (this._queue.length > 0) {
-        const batch = this.peekNextBatch();
-        if (batch.length > 0) {
-          await this.processBatch(batch);
+        if (this._queue.length > 0) {
+          const batch = this.peekNextBatch();
+          if (batch.length > 0) {
+            await this.processBatch(batch);
+            resetInterval();
+          }
+        } else {
+          this.log.debug(
+            'Queue is empty. Waiting...',
+            { queueLastHeight: this._queue.lastHeight },
+            this.constructor.name
+          );
         }
-      } else {
-        // If the queue is empty, we can easily wait even 1-2 seconds.
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      },
+      {
+        interval: 150,
+        maxInterval: 3000,
+        multiplier: 2,
       }
-    }
+    );
   }
 
   private async processBatch(batch: Block[]) {
@@ -138,16 +153,14 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     const { tx } = block;
 
     if (!tx || tx.length === 0) {
-      this.log.error('No transactions found in block or transactions are empty', {}, this.constructor.name);
-      return 0;
+      throw new Error('No transactions found in block or transactions are empty');
     }
 
     // Sum up the sizes of all transactions in a block based on their hex representation
     for (const t of tx) {
       // Check that hex exists and is a string
       if (!t.hex || typeof t.hex !== 'string') {
-        this.log.error('Invalid hex in transaction', { transaction: t }, this.constructor.name);
-        continue;
+        throw new Error(`Invalid hex in transaction hex: ${t?.hex}`);
       }
 
       // Divide by 2 since each byte is represented by two characters in hex

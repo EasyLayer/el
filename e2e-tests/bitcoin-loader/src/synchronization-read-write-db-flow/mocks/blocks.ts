@@ -13,6 +13,7 @@ export const mockBlocks = [
       {
         txid: 'tx0-1',
         hash: 'abcd1234',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -61,6 +62,7 @@ export const mockBlocks = [
       {
         txid: 'tx1-1',
         hash: 'abcd1235',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -89,6 +91,7 @@ export const mockBlocks = [
       {
         txid: 'tx1-2',
         hash: 'abcd1236',
+        hex: 'ffff0000000000',
         version: 1,
         size: 144,
         vsize: 144,
@@ -154,6 +157,7 @@ export const mockBlocks = [
       {
         txid: 'tx2-1',
         hash: 'abcd1237',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -182,6 +186,7 @@ export const mockBlocks = [
       {
         txid: 'tx2-2',
         hash: 'abcd1238',
+        hex: 'ffff0000000000',
         version: 1,
         size: 144,
         vsize: 144,

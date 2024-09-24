@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
+import { AppLogger } from '@easylayer/components/logger';
 import { ConnectionManager } from './connection-manager';
 import { Hash } from './node-providers';
 
@@ -45,7 +45,6 @@ export class NetworkProviderService {
     }
   }
 
-  @RuntimeTracker({ showMemory: true, warningThresholdMs: 1000, errorThresholdMs: 5000 })
   public async getManyBlocksByHeights(heights: string[] | number[], verbosity?: number): Promise<any> {
     try {
       const provider = await this._connectionManager.getActiveProvider();

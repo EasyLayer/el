@@ -1,6 +1,6 @@
 import { Mutex } from 'async-mutex';
 import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
-import { AppLogger } from '@easylayer/components/logger';
+import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { BlocksLoadingStrategy, StrategyNames } from './load-strategy.interface';
 import { Block } from '../../interfaces';
 import { BlocksQueue } from '../../blocks-queue';
@@ -78,6 +78,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     this._loadedBlocks = [];
   }
 
+  @RuntimeTracker({ showMemory: false, warningThresholdMs: 800, errorThresholdMs: 10000 })
   private async loadAndEnqueueBlocks(currentNetworkHeight: number): Promise<void> {
     const activeTasks: Promise<void>[] = [];
 

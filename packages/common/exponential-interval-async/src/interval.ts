@@ -5,10 +5,14 @@ type IntervalOptions = {
   maxAttempts?: number; // number of attempts (infinite by default)
 };
 
-export const exponentialIntervalAsync = async (
+export type ExponentialTimer = {
+  destroy: () => void;
+};
+
+export const exponentialIntervalAsync = (
   asyncFunction: (resetInterval: () => void) => Promise<void>,
   options: IntervalOptions
-): Promise<void> => {
+): ExponentialTimer => {
   const { interval, multiplier, maxAttempts = Infinity, maxInterval } = options;
 
   if (maxInterval < interval) {
@@ -17,39 +21,42 @@ export const exponentialIntervalAsync = async (
 
   let attemptCount = 0;
   let currentInterval = interval;
+  let stopped = false;
+  let timeoutId: NodeJS.Timeout;
 
-  // Interval reset function
   const resetInterval = () => {
     currentInterval = interval;
     attemptCount = 0;
   };
 
-  return new Promise<void>((resolve, reject) => {
-    async function scheduler() {
-      if (maxAttempts !== Infinity && attemptCount >= maxAttempts) {
-        resolve();
-        return;
-      }
+  const scheduler = async () => {
+    if (stopped) return;
 
-      try {
-        await asyncFunction(resetInterval);
-      } catch (error) {
-        reject(error);
-        return;
-      }
-
-      if (maxAttempts !== Infinity) {
-        attemptCount++;
-      }
-
-      // Increase the interval taking into account the maximum value
-      currentInterval = Math.min(currentInterval * multiplier, maxInterval);
-
-      // Schedule next call
-      setTimeout(scheduler, currentInterval);
+    if (attemptCount >= maxAttempts) {
+      return;
     }
 
-    // First call to the scheduler
-    setTimeout(scheduler, currentInterval);
-  });
+    await asyncFunction(resetInterval);
+
+    if (attemptCount < maxAttempts) {
+      attemptCount++;
+    }
+
+    // Increase the interval taking into account the maximum value
+    currentInterval = Math.min(currentInterval * multiplier, maxInterval);
+
+    // Schedule next call
+    timeoutId = setTimeout(scheduler, currentInterval);
+  };
+
+  // First call to the scheduler
+  timeoutId = setTimeout(scheduler, currentInterval);
+
+  // Return the control object
+  return {
+    destroy: () => {
+      stopped = true;
+      clearTimeout(timeoutId);
+    },
+  };
 };
