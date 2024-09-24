@@ -38,60 +38,52 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
   }
 
   public async startBlocksLoading(queue: BlocksQueue<Block>): Promise<void> {
-    try {
-      this.log.info('Setup blocks loading from height', { indexedHeight: queue.lastHeight }, this.constructor.name);
+    this.log.info('Setup blocks loading from height', { indexedHeight: queue.lastHeight }, this.constructor.name);
 
-      // NOTE: We use this to make sure that
-      // method startQueueIterating() is executed only once in its entire life.
-      if (this._isLoading) {
-        return;
-      }
-
-      this._isLoading = true;
-
-      // TODO: think where put this
-      this._queue = queue;
-
-      await exponentialIntervalAsync(
-        async (resetInterval) => {
-          if (this._queue.lastHeight >= this._queue.maxBlockHeight) {
-            this.log.info(
-              'Reached max block height',
-              { lastQueueHeight: this._queue.lastHeight },
-              this.constructor.name
-            );
-            return;
-          }
-
-          // Setup the strategy
-          await this.setupStrategy();
-
-          try {
-            await this._loadingStrategy?.load(this._currentNetworkHeight);
-          } catch (error) {
-            this.log.error('Load blocks strategy error', error, this.constructor.name);
-
-            resetInterval();
-
-            // IMPORTANT: In case of an error, we are obliged to restart the strategy
-            await this.destroyStrategy();
-          }
-
-          this.log.debug(
-            'Load blocks waiting...',
-            { queueHeight: this._queue.lastHeight, queueLegth: this._queue.length },
-            this.constructor.name
-          );
-        },
-        {
-          interval: this.config.queueLoaderIntervalMs,
-          maxInterval: this.config.queueLoaderMaxIntervalMs,
-          multiplier: this.config.queueLoaderMaxIntervalMultiplier,
-        }
-      );
-    } catch (error) {
-      this.log.error('Erorr', error, this.constructor.name);
+    // NOTE: We use this to make sure that
+    // method startQueueIterating() is executed only once in its entire life.
+    if (this._isLoading) {
+      return;
     }
+
+    this._isLoading = true;
+
+    // TODO: think where put this
+    this._queue = queue;
+
+    await exponentialIntervalAsync(
+      async (resetInterval) => {
+        if (this._queue.lastHeight >= this._queue.maxBlockHeight) {
+          this.log.info('Reached max block height', { lastQueueHeight: this._queue.lastHeight }, this.constructor.name);
+          return;
+        }
+
+        // Setup the strategy
+        await this.setupStrategy();
+
+        try {
+          await this._loadingStrategy?.load(this._currentNetworkHeight);
+        } catch (error) {
+          this.log.error('Load blocks strategy error', error, this.constructor.name);
+
+          resetInterval();
+
+          // IMPORTANT: In case of an error, we are obliged to restart the strategy
+          await this.destroyStrategy();
+        }
+
+        this.log.debug(
+          'Load blocks waiting...',
+          { queueHeight: this._queue.lastHeight, queueLegth: this._queue.length },
+          this.constructor.name
+        );
+      },
+      {
+        interval: this.config.queueLoaderIntervalMs,
+        maxInterval: this.config.queueLoaderMaxIntervalMs,
+        multiplier: this.config.queueLoaderMaxIntervalMultiplier,
+      }
+    );
   }
 
   public async handleBlockFromStream(block: Block): Promise<void> {
