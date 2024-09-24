@@ -1,16 +1,15 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
-import { NetworkProviderService, WebhookStreamService } from '@easylayer/components/bitcoin-network-provider';
+import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
 import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { BlocksQueueController } from './blocks-queue.controller';
 import { BlocksQueueService } from './blocks-queue.service';
 import { BlocksQueueIteratorService } from './blocks-iterator';
 import { BlocksQueueLoaderService } from './blocks-loader';
-import { BlocksQueueCollectorService } from './blocks-collector';
 import { BlocksCommandExecutor } from './interfaces';
 
 export interface BlocksQueueModuleOptions {
   blocksCommandExecutor: Type<BlocksCommandExecutor>;
-  isTransportMode: boolean;
+  isTransportMode: boolean; // TODO: remove
   maxBlockHeight: number;
   maxQueueLength: number;
   queueLoaderStrategyName: string;
@@ -25,7 +24,7 @@ export interface BlocksQueueModuleOptions {
 @Module({})
 export class BlocksQueueModule {
   static async forRootAsync(config: BlocksQueueModuleOptions): Promise<DynamicModule> {
-    const { blocksCommandExecutor, isTransportMode, maxBlockHeight, ...restConfig } = config;
+    const { blocksCommandExecutor, maxBlockHeight, ...restConfig } = config;
 
     return {
       module: BlocksQueueModule,
@@ -39,25 +38,23 @@ export class BlocksQueueModule {
         },
         {
           provide: 'BlocksQueueService',
-          useFactory: (logger, iterator, loader, collector) =>
-            new BlocksQueueService(logger, iterator, loader, collector, { ...restConfig, maxBlockHeight }),
-          inject: [AppLogger, BlocksQueueIteratorService, BlocksQueueLoaderService, BlocksQueueCollectorService],
+          useFactory: (logger, iterator, loader) =>
+            new BlocksQueueService(logger, iterator, loader, { ...restConfig, maxBlockHeight }),
+          inject: [AppLogger, BlocksQueueIteratorService, BlocksQueueLoaderService],
         },
         {
           provide: BlocksQueueLoaderService,
-          useFactory: (logger, networkProvider, webhookStreamService) =>
-            new BlocksQueueLoaderService(logger, networkProvider, webhookStreamService, {
+          useFactory: (logger, networkProvider) =>
+            new BlocksQueueLoaderService(logger, networkProvider, {
               ...restConfig,
-              isTransportMode,
             }),
-          inject: [AppLogger, NetworkProviderService, WebhookStreamService],
+          inject: [AppLogger, NetworkProviderService],
         },
         {
           provide: BlocksQueueIteratorService,
           useFactory: (logger, executor) => new BlocksQueueIteratorService(logger, executor, { ...restConfig }),
           inject: [AppLogger, 'BlocksCommandExecutor'],
         },
-        BlocksQueueCollectorService,
       ],
       exports: ['BlocksQueueService'],
     };

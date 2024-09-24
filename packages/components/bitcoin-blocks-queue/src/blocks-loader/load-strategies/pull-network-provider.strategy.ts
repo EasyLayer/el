@@ -7,11 +7,11 @@ import { BlocksQueue } from '../../blocks-queue';
 
 export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
   readonly name: StrategyNames = StrategyNames.PULL_NETWORL_PROVIDER;
-  private _isLoading: boolean = false;
   private _batchLength!: number;
   private _concurrency!: number;
   private _missedHeights: number[] = [];
   private _loadedBlocks: Block[] = [];
+  private _isLoading: boolean = false;
   private _mutex: Mutex = new Mutex();
 
   /**
@@ -34,81 +34,51 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     this._concurrency = config.concurrency;
   }
 
-  /**
-   * Indicates whether the loading process is currently active.
-   * @returns A boolean indicating the loading state.
-   */
-  get isLoading(): boolean {
-    return this._isLoading;
-  }
-
-  /**
-   * Starts the process of loading blocks up to the current network height.
-   * @param currentNetworkHeight - The current height of the blockchain.
-   * @returns A promise that resolves when loading is complete.
-   */
   public async load(currentNetworkHeight: number): Promise<void> {
     if (this._isLoading) {
       return;
     }
 
     this._isLoading = true;
+
     this._missedHeights = [];
     this._loadedBlocks = [];
 
     while (this._isLoading) {
-      this.log.debug(
-        'Queue length',
-        { length: this.queue.length, lastHeight: this.queue.lastHeight },
-        this.constructor.name
-      );
+      if (this.queue.isMaxHeightReached) {
+        this.log.info('Reached max block height', { lastQueueHeight: this.queue.lastHeight }, this.constructor.name);
+        break;
+      }
 
       // Check if we have reached the current network height
       if (this.queue.lastHeight >= currentNetworkHeight) {
-        this.log.debug('Reached current network height.', { lastHeight: this.queue.lastHeight }, this.constructor.name);
-        this.stop();
+        this.log.info(
+          'Reached current network height.',
+          { lastQueueHeight: this.queue.lastHeight },
+          this.constructor.name
+        );
+        break;
       }
 
       // Check if the queue is full
-      if (this.queue.length >= this.queue.maxQueueLength) {
-        // When the queue is full, wait a bit
+      if (this.queue.isQueueFull) {
         this.log.debug('Queue is full. Waiting...', { queueLength: this.queue.length }, this.constructor.name);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        // If the queue is full, we can easily wait even 2-3 seconds.
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         continue;
       }
 
-      try {
-        await this.execute(currentNetworkHeight);
-      } catch (error) {
-        await this.stop();
-        throw error;
-      }
+      await this.loadAndEnqueueBlocks(currentNetworkHeight);
     }
   }
 
-  /**
-   * Stops the loading process.
-   * @returns A promise that resolves when the loading process has stopped.
-   */
-  private async stop(): Promise<void> {
-    if (!this._isLoading) return;
-    this._isLoading = false;
-  }
-
-  /**
-   * Destroys the strategy by stopping the loading process.
-   * @returns A promise that resolves when the strategy has been destroyed.
-   */
   public async destroy(): Promise<void> {
-    await this.stop();
+    this._isLoading = false;
+    this._missedHeights = [];
+    this._loadedBlocks = [];
   }
 
-  /**
-   * Executes the loading tasks by assigning workers and handling missed heights.
-   * @param currentNetworkHeight - The current height of the blockchain.
-   * @returns A promise that resolves when execution is complete.
-   */
-  private async execute(currentNetworkHeight: number): Promise<void> {
+  private async loadAndEnqueueBlocks(currentNetworkHeight: number): Promise<void> {
     const activeTasks: Promise<void>[] = [];
 
     // Process missed heights at first
@@ -118,7 +88,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
       if (height) {
         this.log.debug('Re-attempting missed height.', { height }, this.constructor.name);
-        const taskPromise = this.assignWorker(height);
+        const taskPromise = this.assignWorker(height, this._batchLength);
         activeTasks.push(taskPromise);
       }
     }
@@ -130,28 +100,24 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
         if (currentNetworkHeight >= nextStartHeight) {
           if (!this._missedHeights.includes(nextStartHeight)) {
-            const taskPromise = this.assignWorker(nextStartHeight);
+            const taskPromise = this.assignWorker(nextStartHeight, this._batchLength);
             activeTasks.push(taskPromise);
           }
         }
       }
     }
 
-    await Promise.allSettled(activeTasks);
+    await Promise.all(activeTasks);
 
-    this.enqueueBatches();
+    // Only after all requests have been processed, we try to insert blocks into the queue.
+    this.enqueueBlocks();
   }
 
-  /**
-   * Assigns a worker to load a batch of blocks starting from a specific height.
-   * @param startHeight - The starting height for the batch.
-   * @returns A promise that resolves when the worker has completed its task.
-   */
-  private async assignWorker(startHeight: number): Promise<void> {
+  private async assignWorker(startHeight: number, length: number): Promise<void> {
     try {
       const heights: number[] = [];
 
-      for (let i = 0; i < this._batchLength; i++) {
+      for (let i = 0; i < length; i++) {
         heights.push(startHeight + i);
       }
 
@@ -165,12 +131,6 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       this.log.debug('AssignWorker encountered an error.', { error, startHeight }, this.constructor.name);
 
       await this._mutex.runExclusive(async () => {
-        // Check the number of missing heights
-        if (this._missedHeights.length >= 100) {
-          this._missedHeights = [];
-          throw new Error('Missed heights exceed 100. Clearing missed heights.');
-        }
-
         if (!this._missedHeights.includes(startHeight)) {
           this._missedHeights.push(startHeight);
         }
@@ -178,10 +138,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     }
   }
 
-  /**
-   * Enqueues loaded blocks into the queue in the correct order.
-   */
-  private enqueueBatches(): void {
+  private enqueueBlocks(): void {
     // Sort blocks by height in descending order
     this._loadedBlocks.sort((a, b) => {
       if (a.height < b.height) return 1;
