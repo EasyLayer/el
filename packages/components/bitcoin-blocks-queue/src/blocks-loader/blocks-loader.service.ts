@@ -1,7 +1,7 @@
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { AppLogger } from '@easylayer/components/logger';
 import { NetworkProviderService } from '@easylayer/components/bitcoin-network-provider';
-import { exponentialIntervalAsync } from '@easylayer/common/exponential-interval-async';
+import { exponentialIntervalAsync, ExponentialTimer } from '@easylayer/common/exponential-interval-async';
 import { BlocksQueue } from '../blocks-queue';
 import { Block } from '../interfaces';
 import { PullNetworkProviderStrategy, BlocksLoadingStrategy, StrategyNames } from './load-strategies';
@@ -10,6 +10,7 @@ import { PullNetworkProviderStrategy, BlocksLoadingStrategy, StrategyNames } fro
 export class BlocksQueueLoaderService implements OnModuleDestroy {
   private _isLoading: boolean = false;
   private _loadingStrategy: BlocksLoadingStrategy | null = null;
+  private _timer: ExponentialTimer | null = null;
 
   constructor(
     private readonly log: AppLogger,
@@ -23,6 +24,8 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
 
   async onModuleDestroy() {
     await this._loadingStrategy?.destroy();
+    this._timer?.destroy();
+    this._timer = null;
     this._loadingStrategy = null;
     this._isLoading = false;
   }
@@ -40,14 +43,14 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
 
     this.createStrategy(queue);
 
-    await exponentialIntervalAsync(
+    this._timer = exponentialIntervalAsync(
       async (resetInterval) => {
         try {
           // IMPORTANT: every exponential tick we fetch current blockchain network height
           const currentNetworkHeight = await this.networkProviderService.getCurrentBlockHeight();
 
           // IMPORTANT: We expect that strategy load all blocks to currentNetworkHeight for one method call
-          await this._loadingStrategy!.load(currentNetworkHeight);
+          await this._loadingStrategy?.load(currentNetworkHeight);
         } catch (error) {
           this.log.error('Loader strategy throw an error', error, this.constructor.name);
           resetInterval();

@@ -12,6 +12,7 @@ export const commonBlock = {
     {
       txid: 'tx0-1',
       hash: 'abcd1234',
+      hex: 'ffff0000000000',
       version: 1,
       size: 134,
       vsize: 134,
@@ -67,6 +68,7 @@ export const mockFakeChainBlocks = [
       {
         txid: 'tx1-1',
         hash: 'abcd1235',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -116,6 +118,7 @@ export const mockFakeChainBlocks = [
       {
         txid: 'tx2-1',
         hash: 'abcd1237',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -165,6 +168,7 @@ export const mockFakeChainBlocks = [
       {
         txid: 'tx3-1',
         hash: 'abcd1239',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -222,6 +226,7 @@ export const mockRealChainBlocks = [
       {
         txid: 'tx1-1',
         hash: 'abcd1235',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -271,6 +276,7 @@ export const mockRealChainBlocks = [
       {
         txid: 'tx2-1',
         hash: 'abcd1237',
+        hex: 'ffff0000000000',
         version: 1,
         size: 134,
         vsize: 134,
@@ -320,6 +326,7 @@ export const mockRealChainBlocks = [
       {
         txid: 'tx3-2',
         hash: 'abcd1240',
+        hex: 'ffff0000000000',
         version: 1,
         size: 144,
         vsize: 144,

@@ -45,9 +45,9 @@ export class BlocksQueueConfig {
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 10 * 1024 * 1024;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 50))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 25))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 50;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 25;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()
@@ -57,7 +57,7 @@ export class BlocksQueueConfig {
   @IsNumber()
   BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS: number = 10 * 60 * 1000;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 2))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER: number = 1;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER: number = 2;
 }
