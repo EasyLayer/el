@@ -150,25 +150,47 @@ export class BlocksQueue<T extends Block> {
    * - The queue has not reached the maximum block height.
    * @param block - The block to be added to the queue.
    * @throws Will throw an error if the queue is full, the maximum block height is reached, or the block's height is incorrect.
-   * @complexity O(1)
+   * @complexity O(n) - due to iteration over transactions
    */
   public async enqueue(block: T): Promise<void> {
     await this.mutex.runExclusive(async () => {
-      const blockSize = this.calculateBlockSize(block);
+      // Calculate the total block size based on tx.hex without modifying the original block
+      let totalBlockSize = 0;
 
-      if (this.isQueueFull || this.isMaxHeightReached || this._size + blockSize > this._maxQueueSize) {
+      for (const transaction of block.tx) {
+        if (transaction.hex && typeof transaction.hex === 'string') {
+          // Each byte is represented by two hex characters
+          const transactionSize = transaction.hex.length / 2;
+          totalBlockSize += transactionSize;
+        } else {
+          throw new Error(`Invalid hex in transaction: ${transaction?.hex}`);
+        }
+      }
+
+      // Check if adding this block would exceed the maximum queue size
+      if (this.isQueueFull || this.isMaxHeightReached || this._size + totalBlockSize > this._maxQueueSize) {
         throw new Error(
-          `Can't enqueue block. isQueueFull: ${this.isQueueFull}, isMaxHeightReached: ${this.isMaxHeightReached}`
+          `Can't enqueue block. isQueueFull: ${this.isQueueFull}, isMaxHeightReached: ${
+            this.isMaxHeightReached
+          }, Current size + block size: ${this._size + totalBlockSize}`
         );
       }
 
+      // Check if the block's height is exactly one more than the last block's height
       if (Number(block.height) !== this._lastHeight + 1) {
         throw new Error(`Can't enqueue block. Block height: ${block.height}, Queue last height: ${this._lastHeight}`);
       }
 
-      this.inStack.push(block);
+      // Modify the original block by removing tx.hex and adding __size
+      for (const transaction of block.tx) {
+        // IMPORTANT: // Remove tx.hex to save memory
+        delete transaction.hex;
+      }
+
+      // Add the modified block to the inStack
+      this.inStack.push({ ...block, __size: totalBlockSize });
       this._lastHeight = Number(block.height);
-      this._size += blockSize;
+      this._size += totalBlockSize;
     });
   }
 
@@ -185,8 +207,7 @@ export class BlocksQueue<T extends Block> {
 
       const block = this.outStack.pop();
       if (block) {
-        const blockSize = this.calculateBlockSize(block);
-        this._size -= blockSize;
+        this._size -= block.__size;
       }
       return block;
     });
@@ -246,9 +267,7 @@ export class BlocksQueue<T extends Block> {
       const iterator = this.peekPrevBlock();
 
       for (const block of iterator) {
-        const blockSize = this.calculateBlockSize(block);
-
-        if (accumulatedSize + blockSize > maxSize) {
+        if (accumulatedSize + block.__size > maxSize) {
           if (batch.length === 0) {
             // If the first block exceeds maxSize, throw an error
             throw new Error('Block size exceeds the maximum batch size');
@@ -257,7 +276,7 @@ export class BlocksQueue<T extends Block> {
         }
 
         batch.push(block);
-        accumulatedSize += blockSize;
+        accumulatedSize += block.__size;
       }
 
       return batch;
@@ -355,35 +374,5 @@ export class BlocksQueue<T extends Block> {
     }
 
     return undefined;
-  }
-
-  /**
-   * Calculates the size of a block in bytes based on the length of its transactions' hex representations.
-   * @param block - The block for which to calculate the size.
-   * @returns The total size of the block in bytes.
-   * @throws Will throw an error if the block has no transactions or if any transaction lacks a valid `hex` property.
-   * @complexity O(n)
-   */
-  private calculateBlockSize(block: T): number {
-    let totalSize = 0;
-
-    const { tx } = block;
-
-    if (!tx || tx.length === 0) {
-      throw new Error('No transactions found in block or transactions are empty');
-    }
-
-    // Sum up the sizes of all transactions in the block based on their hex representation
-    for (const t of tx) {
-      // Check that hex exists and is a string
-      if (!t.hex || typeof t.hex !== 'string') {
-        throw new Error(`Invalid hex in transaction hex: ${t?.hex}`);
-      }
-
-      // Each byte is represented by two characters in hex
-      totalSize += t.hex.length / 2;
-    }
-
-    return totalSize;
   }
 }

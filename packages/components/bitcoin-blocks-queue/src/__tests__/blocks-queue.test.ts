@@ -8,11 +8,13 @@ class TestBlock implements Block {
   height: number;
   hash: string;
   tx: Transaction[];
+  __size: number; // Mandatory property
 
   constructor(height: number, tx: Transaction[] = []) {
     this.height = height;
     this.hash = `hash${height}`;
     this.tx = tx;
+    this.__size = 0; // Initialize __size
   }
 }
 
@@ -103,7 +105,7 @@ describe('BlocksQueue', () => {
 
       // Attempt to enqueue block3 which exceeds maxBlockHeight
       await expect(queue.enqueue(block3)).rejects.toThrow(
-        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: true`
+        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: true, Current size + block size: 350`
       );
 
       expect(queue.length).toBe(2);
@@ -111,6 +113,27 @@ describe('BlocksQueue', () => {
       expect(queue.currentSize).toBe(250);
       expect(queue.isQueueFull).toBe(false);
       expect(queue.isMaxHeightReached).toBe(true);
+    });
+
+    it('should throw error when enqueueing block that exceeds maxQueueSize', async () => {
+      // Set maxQueueSize to 500 bytes
+      queue.maxQueueSize = 500;
+
+      const block1 = new TestBlock(0, [createTransaction(300)]); // 300 bytes
+      const block2 = new TestBlock(1, [createTransaction(250)]); // 250 bytes
+
+      await queue.enqueue(block1);
+
+      // Attempt to enqueue block2 which would make total size 550 > 500
+      await expect(queue.enqueue(block2)).rejects.toThrow(
+        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: false, Current size + block size: 550`
+      );
+
+      expect(queue.length).toBe(1);
+      expect(queue.lastHeight).toBe(0);
+      expect(queue.currentSize).toBe(300);
+      expect(queue.isQueueFull).toBe(false);
+      expect(queue.isMaxHeightReached).toBe(false);
     });
   });
 
@@ -123,7 +146,20 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block2);
 
       const dequeuedBlock1 = await queue.dequeue();
-      expect(dequeuedBlock1).toBe(block1);
+      expect(dequeuedBlock1).toEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100, // Expected __size value
+      });
       expect(queue.length).toBe(1);
       expect(queue.lastHeight).toBe(1);
       expect(queue.currentSize).toBe(150);
@@ -131,7 +167,20 @@ describe('BlocksQueue', () => {
       expect(queue.isMaxHeightReached).toBe(false);
 
       const dequeuedBlock2 = await queue.dequeue();
-      expect(dequeuedBlock2).toBe(block2);
+      expect(dequeuedBlock2).toEqual({
+        height: 1,
+        hash: 'hash1',
+        tx: [
+          {
+            txid: 'txid150',
+            hash: 'hash150',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 150, // Expected __size value
+      });
       expect(queue.length).toBe(0);
       expect(queue.lastHeight).toBe(1); // Last height remains unchanged after dequeuing
       expect(queue.currentSize).toBe(0);
@@ -214,7 +263,20 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block2);
 
       const fetchedBlock = queue.fetchBlockFromInStack(0);
-      expect(fetchedBlock).toBe(block1);
+      expect(fetchedBlock).toEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100,
+      });
     });
 
     it('should return undefined if block is not found in inStack using binary search', async () => {
@@ -233,7 +295,20 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block2);
 
       const result = queue.fetchBlockFromOutStack(0);
-      expect(result).toBe(block1);
+      expect(result).toEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100,
+      });
     });
 
     it('should return undefined if block is not found in outStack using binary search', async () => {
@@ -257,8 +332,34 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block3);
 
       const foundBlocks = queue.findBlocks(new Set(['hash0', 'hash2']));
-      expect(foundBlocks).toContain(block1);
-      expect(foundBlocks).toContain(block3);
+      expect(foundBlocks).toContainEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100,
+      });
+      expect(foundBlocks).toContainEqual({
+        height: 2,
+        hash: 'hash2',
+        tx: [
+          {
+            txid: 'txid200',
+            hash: 'hash200',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 200,
+      });
       expect(foundBlocks.length).toBe(2);
     });
 
@@ -286,9 +387,48 @@ describe('BlocksQueue', () => {
       const secondYield = generator.next().value;
       const thirdYield = generator.next().value;
 
-      expect(firstYield).toEqual(block1);
-      expect(secondYield).toEqual(block2);
-      expect(thirdYield).toEqual(block3);
+      expect(firstYield).toEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100,
+      });
+      expect(secondYield).toEqual({
+        height: 1,
+        hash: 'hash1',
+        tx: [
+          {
+            txid: 'txid150',
+            hash: 'hash150',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 150,
+      });
+      expect(thirdYield).toEqual({
+        height: 2,
+        hash: 'hash2',
+        tx: [
+          {
+            txid: 'txid200',
+            hash: 'hash200',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 200,
+      });
       expect(generator.next().done).toBe(true);
     });
 
@@ -310,7 +450,7 @@ describe('BlocksQueue', () => {
 
       // Enqueue should throw an error because block size > maxQueueSize
       await expect(queue.enqueue(oversizedBlock)).rejects.toThrow(
-        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: false`
+        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: false, Current size + block size: 600`
       );
 
       expect(queue.length).toBe(0);
@@ -327,6 +467,84 @@ describe('BlocksQueue', () => {
     it('should return an empty array when queue is empty', async () => {
       const batch = await queue.getBatchUpToSize(500);
       expect(batch).toEqual([]);
+    });
+
+    it('should return correct batch when multiple blocks fit within maxSize', async () => {
+      const block1 = new TestBlock(0, [createTransaction(100)]); // 100 bytes
+      const block2 = new TestBlock(1, [createTransaction(150)]); // 150 bytes
+      const block3 = new TestBlock(2, [createTransaction(200)]); // 200 bytes
+
+      await queue.enqueue(block1);
+      await queue.enqueue(block2);
+      await queue.enqueue(block3);
+
+      const batch = await queue.getBatchUpToSize(300); // Should include block1 and block2
+      expect(batch).toContainEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid100',
+            hash: 'hash100',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 100,
+      });
+      expect(batch).toContainEqual({
+        height: 1,
+        hash: 'hash1',
+        tx: [
+          {
+            txid: 'txid150',
+            hash: 'hash150',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 150,
+      });
+      expect(batch.length).toBe(2);
+      expect(batch).not.toContainEqual({
+        height: 2,
+        hash: 'hash2',
+        tx: [
+          {
+            txid: 'txid200',
+            hash: 'hash200',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 200,
+      });
+    });
+
+    it('should include a single block if it exactly matches maxSize', async () => {
+      const block1 = new TestBlock(0, [createTransaction(300)]); // 300 bytes
+
+      await queue.enqueue(block1);
+
+      const batch = await queue.getBatchUpToSize(300); // Should include block1
+      expect(batch).toContainEqual({
+        height: 0,
+        hash: 'hash0',
+        tx: [
+          {
+            txid: 'txid300',
+            hash: 'hash300',
+            vin: [],
+            vout: [],
+            // hex was removed
+          },
+        ],
+        __size: 300,
+      });
+      expect(batch.length).toBe(1);
     });
   });
 });
