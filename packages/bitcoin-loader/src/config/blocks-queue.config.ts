@@ -11,21 +11,21 @@ enum BlocksQueueStrategy {
 
 @Injectable()
 export class BlocksQueueConfig {
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4))
   @IsNumber()
   @JSONSchema({
     description: 'Number of parallel requests for the Bitcoin loader queue.',
     default: 1,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 4;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1000))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 100 * 4 * 1024 * 1024))
   @IsNumber()
   @JSONSchema({
-    description: 'Maximum length of the Bitcoin loader blocks queue.',
-    default: 1000,
+    description: 'Maximum size in bytes of the Bitcoin loader blocks queue.',
+    default: 419430400,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_MAX_LENGTH: number = 1000;
+  BITCOIN_LOADER_BLOCKS_QUEUE_MAX_SIZE: number = 100 * 4 * 1024 * 1024;
 
   @Transform(({ value }) => (value !== undefined ? value : BlocksQueueStrategy.PULL_NETWORL_PROVIDER))
   @IsEnum(BlocksQueueStrategy)
@@ -40,10 +40,10 @@ export class BlocksQueueConfig {
   @IsNumber()
   @JSONSchema({
     description:
-      'Batch size of the blocks iterator in the loader. Should not be smaller than the size of a single block.',
-    default: 41943040,
+      'Batch size in bytes of the batch blocks iterator at one time. Should not be bigger than the size of a single block.',
+    default: 4194304,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 10 * 1024 * 1024;
+  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 1024 * 1024;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 25))
   @IsNumber()

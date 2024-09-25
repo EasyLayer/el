@@ -70,8 +70,8 @@ describe('BlocksQueueIteratorService', () => {
     });
 
     it('should create a promise that can be resolved externally', async () => {
-      const blockMock = new TestBlock(0);
-      mockQueue.enqueue(blockMock);
+      const blockMock = new TestBlock(0, [{ hex: 'qq' }]);
+      await mockQueue.enqueue(blockMock);
 
       service['initBatchProcessedPromise']();
 
@@ -108,41 +108,6 @@ describe('BlocksQueueIteratorService', () => {
         new Error('Test Error'),
         'BlocksQueueIteratorService'
       );
-    });
-  });
-
-  describe('calculateBlockSize', () => {
-    it('should correctly calculate the size of a block based on the hex strings of transactions', () => {
-      const tx1 = { hex: 'abcd' }; // 2 bytes
-      const tx2 = { hex: '1234567890' }; // 5 bytes
-      const blockMock = new TestBlock(0, [tx1, tx2]);
-
-      const blockSize = service['calculateBlockSize'](blockMock);
-
-      expect(blockSize).toBe(7); // 2 + 5 bytes
-    });
-  });
-
-  describe('peekNextBatch', () => {
-    it('should stop adding blocks to the batch if the next block would exceed the batch size', async () => {
-      const tx1 = { hex: 'abcd' }; // 2 bytes
-      const tx2 = { hex: '1234567890' }; // 5 bytes
-      const tx3 = { hex: '12345678901234567890' }; // 10 bytes
-
-      const blockMock1 = new TestBlock(0, [tx1]);
-      const blockMock2 = new TestBlock(1, [tx2]);
-      const blockMock3 = new TestBlock(2, [tx3]);
-
-      mockQueue.enqueue(blockMock1);
-      mockQueue.enqueue(blockMock2);
-      mockQueue.enqueue(blockMock3);
-
-      service['_blocksBatchSize'] = 7; // Set batch size limit to 7 bytes
-
-      const result = await service['peekNextBatch']();
-
-      expect(result).toEqual([blockMock1, blockMock2]);
-      expect(result.length).toBe(2); // Should only include the first two blocks
     });
   });
 

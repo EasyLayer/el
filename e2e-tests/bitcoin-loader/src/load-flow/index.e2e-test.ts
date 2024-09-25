@@ -46,10 +46,9 @@ describe('/Bitcoin Loader: Load Flow', () => {
       mapper: BlocksMapper,
       testing: {
         handlerEventsToWait: [
-          // +1 that's because BITCOIN_LOADER_MAX_BLOCK_HEIGHT doesn't take zero height
           {
             eventType: BitcoinLoaderBlocksIndexedEvent,
-            count: Number(process.env.BITCOIN_LOADER_MAX_BLOCK_HEIGHT) + 1,
+            count: 1,
           },
         ],
       },

@@ -6,19 +6,19 @@ import { IsNumber, IsString } from 'class-validator';
 export class BlocksQueueConfig {
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
+  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 3000))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 100 * 4 * 1024 * 1024))
   @IsNumber()
-  BITCOIN_INDEXER_BLOCKS_QUEUE_MAX_LENGTH: number = 3000;
+  BITCOIN_INDEXER_BLOCKS_QUEUE_MAX_SIZE: number = 100 * 4 * 1024 * 1024;
 
   @Transform(({ value }) => (value !== undefined ? value : 'pull-network-provider'))
   @IsString()
   BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: string = 'pull-network-provider';
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 200))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 200;
+  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 10;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()
