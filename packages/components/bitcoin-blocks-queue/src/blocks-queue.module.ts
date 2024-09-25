@@ -11,7 +11,7 @@ export interface BlocksQueueModuleOptions {
   blocksCommandExecutor: Type<BlocksCommandExecutor>;
   isTransportMode: boolean; // TODO: remove
   maxBlockHeight: number;
-  maxQueueLength: number;
+  maxQueueSize: number;
   queueLoaderStrategyName: string;
   queueLoaderConcurrencyNum: number;
   queueLoaderBlocksBatchLength: number;

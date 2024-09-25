@@ -28,7 +28,7 @@ export class BlocksQueueService {
 
   private initQueue(indexedHeight: string | number) {
     this._queue = new BlocksQueue<Block>(Number(indexedHeight));
-    this._queue.maxQueueLength = this.config.maxQueueLength;
+    this._queue.maxQueueSize = this.config.maxQueueSize;
     this._queue.maxBlockHeight = this.config.maxBlockHeight;
   }
 

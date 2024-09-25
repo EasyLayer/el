@@ -24,8 +24,8 @@ interface TestingOptions {
   handlerEventsToWait?: EventWaiter[];
 }
 
-interface EventWaiter {
-  eventType: any;
+interface EventWaiter<T = any> {
+  eventType: new (...args: any[]) => T;
   count: number;
 }
 

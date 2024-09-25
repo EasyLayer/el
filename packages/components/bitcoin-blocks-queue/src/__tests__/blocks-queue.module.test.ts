@@ -20,7 +20,7 @@ describe('BlocksQueueModule', () => {
     isTransportMode: false,
     maxBlockHeight: 1,
     queueLoaderConcurrencyNum: 1,
-    maxQueueLength: 2,
+    maxQueueSize: 1024,
     queueLoaderStrategyName: 'pull-network-provider',
     queueLoaderBlocksBatchLength: 1,
     queueLoaderIntervalMs: 500,

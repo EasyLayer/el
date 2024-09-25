@@ -65,7 +65,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
         await this.batchProcessedPromise;
 
         if (this._queue.length > 0) {
-          const batch = this.peekNextBatch();
+          const batch = await this.peekNextBatch();
           if (batch.length > 0) {
             await this.processBatch(batch);
             resetInterval();
@@ -98,76 +98,23 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
     }
   }
 
-  private peekNextBatch(): Block[] {
+  private async peekNextBatch(): Promise<Block[]> {
     this.log.debug('Iterator peeking next blocks batch...', {}, this.constructor.name);
 
     // Init the promise for the next wait
     this.initBatchProcessedPromise();
 
-    const batch: Block[] = [];
-    let currentBatchSize = 0;
+    // Maximum batch size in bytes
+    const maxBatchSize = this._blocksBatchSize;
 
-    const blocksIterator = this._queue.peekPrevBlock();
-
-    while (true) {
-      const { value: nextBlock, done } = blocksIterator.next();
-
-      if (done) {
-        this.log.debug('Queue is empty, stop iteration', {}, this.constructor.name);
-        // Stop iteration if there are no more blocks
-        break;
-      }
-
-      if (!nextBlock) {
-        this.log.error('Received undefined block from iterator', {}, this.constructor.name);
-        break;
-      }
-
-      const blockSize = this.calculateBlockSize(nextBlock);
-
-      // Check if adding this block would exceed the maximum batch size
-      if (currentBatchSize + blockSize > this._blocksBatchSize) {
-        if (batch.length === 0) {
-          this.log.error('Block size exceeds the minimum for adding to a batch', {}, this.constructor.name);
-        }
-
-        // Stop adding blocks if the next one would exceed the limit
-        break;
-      }
-
-      // Add block to the batch
-      batch.push(nextBlock);
-
-      // Update current batch size
-      currentBatchSize += blockSize;
-    }
+    const batch: Block[] = await this._queue.getBatchUpToSize(maxBatchSize).catch((error) => {
+      this.log.error('Iterator peek blocks error', error, this.constructor.name);
+      return [];
+    });
 
     this.log.debug('Iterator peeked blocks batch with length', { batchLength: batch.length }, this.constructor.name);
 
     return batch;
-  }
-
-  private calculateBlockSize(block: Block): number {
-    let totalSize = 0;
-
-    const { tx } = block;
-
-    if (!tx || tx.length === 0) {
-      throw new Error('No transactions found in block or transactions are empty');
-    }
-
-    // Sum up the sizes of all transactions in a block based on their hex representation
-    for (const t of tx) {
-      // Check that hex exists and is a string
-      if (!t.hex || typeof t.hex !== 'string') {
-        throw new Error(`Invalid hex in transaction hex: ${t?.hex}`);
-      }
-
-      // Divide by 2 since each byte is represented by two characters in hex
-      totalSize += t.hex.length / 2;
-    }
-
-    return totalSize;
   }
 
   private initBatchProcessedPromise(): void {

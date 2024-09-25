@@ -111,7 +111,9 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     await Promise.all(activeTasks);
 
     // Only after all requests have been processed, we try to insert blocks into the queue.
-    await this.enqueueBlocks();
+    if (this._loadedBlocks.length > 0) {
+      await this.enqueueBlocks();
+    }
   }
 
   private async assignWorker(startHeight: number, length: number): Promise<void> {
