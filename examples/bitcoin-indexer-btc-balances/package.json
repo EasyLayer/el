@@ -1,7 +1,7 @@
 {
   "name": "bitcoin-indexer-btc-balances",
   "private": true,
-  "version": "0.0.3-experimental.16",
+  "version": "0.0.3-experimental.17",
   "description": "This is an example app for development",
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
@@ -9,9 +9,9 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@easylayer/bitcoin-indexer": "0.0.3-experimental.16",
-    "@easylayer/common": "0.0.3-experimental.16",
-    "@easylayer/components": "0.0.3-experimental.16"
+    "@easylayer/bitcoin-indexer": "0.0.3-experimental.17",
+    "@easylayer/common": "0.0.3-experimental.17",
+    "@easylayer/components": "0.0.3-experimental.17"
   },
   "devDependencies": {
     "@types/node": "20.10.4",
