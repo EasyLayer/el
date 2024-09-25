@@ -70,6 +70,7 @@ describe('PullNetworkProviderStrategy', () => {
         height: Number(height),
         hash: `hash${height}`,
         tx: [],
+        __size: 0,
       })) as Block[];
       lastHeight = Math.max(lastHeight, ...heights.map(Number));
       return blocks;

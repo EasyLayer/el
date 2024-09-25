@@ -24,14 +24,15 @@ export interface Transaction {
   hash: string;
   vin: any;
   vout: any;
-  hex: string;
+  hex?: string;
   witness?: any;
 }
 // TODO: move to provider
 export interface Block {
   height: number;
   hash: string;
-  tx?: Transaction[];
+  tx: Transaction[];
+  __size: number; // size of all tx in Bytes
 }
 
 export interface BlocksCommandExecutor {

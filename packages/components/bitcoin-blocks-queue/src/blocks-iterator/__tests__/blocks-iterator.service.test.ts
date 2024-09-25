@@ -12,11 +12,13 @@ class TestBlock implements Block {
   height: number;
   hash: string;
   tx: any[];
+  __size: number;
 
   constructor(height: number, tx: any[] = []) {
     this.height = height;
     this.hash = '';
     this.tx = tx;
+    this.__size = 0;
   }
 }
 
