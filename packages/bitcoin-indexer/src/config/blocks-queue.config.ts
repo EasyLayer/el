@@ -16,9 +16,9 @@ export class BlocksQueueConfig {
   @IsString()
   BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: string = 'pull-network-provider';
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 200))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10))
   @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 200;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 10;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
   @IsNumber()

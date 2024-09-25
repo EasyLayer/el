@@ -79,7 +79,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
         }
       },
       {
-        interval: 150,
+        interval: 15,
         maxInterval: 3000,
         multiplier: 2,
       }

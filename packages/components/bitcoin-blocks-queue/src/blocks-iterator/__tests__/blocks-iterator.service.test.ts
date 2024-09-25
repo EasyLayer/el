@@ -133,13 +133,13 @@ describe('BlocksQueueIteratorService', () => {
       const blockMock2 = new TestBlock(1, [tx2]);
       const blockMock3 = new TestBlock(2, [tx3]);
 
-      mockQueue.enqueue(blockMock1);
-      mockQueue.enqueue(blockMock2);
-      mockQueue.enqueue(blockMock3);
+      await mockQueue.enqueue(blockMock1);
+      await mockQueue.enqueue(blockMock2);
+      await mockQueue.enqueue(blockMock3);
 
       service['_blocksBatchSize'] = 7; // Set batch size limit to 7 bytes
 
-      const result = await service['peekNextBatch']();
+      const result = service['peekNextBatch']();
 
       expect(result).toEqual([blockMock1, blockMock2]);
       expect(result.length).toBe(2); // Should only include the first two blocks

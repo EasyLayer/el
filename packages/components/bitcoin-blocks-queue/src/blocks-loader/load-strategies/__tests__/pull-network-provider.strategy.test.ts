@@ -75,7 +75,7 @@ describe('PullNetworkProviderStrategy', () => {
       return blocks;
     });
 
-    mockQueue.enqueue.mockImplementation(() => true);
+    mockQueue.enqueue.mockImplementation(() => Promise.resolve());
 
     await strategy.load(currentNetworkHeight);
 

@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { Mutex } from 'async-mutex';
 import { Block } from './interfaces';
 
 /**
@@ -11,6 +12,7 @@ export class BlocksQueue<T extends Block> {
   private _lastHeight: number;
   private _maxQueueLength: number = 100;
   private _maxBlockHeight: number = Number.MAX_SAFE_INTEGER;
+  private readonly mutex = new Mutex();
 
   constructor(lastHeight: number) {
     this._lastHeight = lastHeight;
@@ -60,11 +62,13 @@ export class BlocksQueue<T extends Block> {
    * Gets the first block in the queue without removing it.
    * @returns The first block in the queue or undefined if the queue is empty.
    */
-  public get firstBlock(): T | undefined {
-    if (this.outStack.length === 0) {
-      this.transferItems();
-    }
-    return this.outStack[this.outStack.length - 1];
+  public async firstBlock(): Promise<T | undefined> {
+    return this.mutex.runExclusive(async () => {
+      if (this.outStack.length === 0) {
+        this.transferItems();
+      }
+      return this.outStack[this.outStack.length - 1];
+    });
   }
 
   /**
@@ -84,6 +88,7 @@ export class BlocksQueue<T extends Block> {
    * @complexity O(log n)
    */
   public fetchBlockFromOutStack(height: number): T | undefined {
+    this.transferItems();
     return this.binarySearch(this.outStack, height, false);
   }
 
@@ -95,32 +100,34 @@ export class BlocksQueue<T extends Block> {
    */
   // TODO: remove BigInt when add Block constructor class in service.
   // This queue have to works only with Block interface
-  public enqueue(block: T): boolean {
-    if (this.isQueueFull || this.isMaxHeightReached) {
-      return false;
-    }
+  public async enqueue(block: T): Promise<void> {
+    await this.mutex.runExclusive(async () => {
+      if (this.isQueueFull || this.isMaxHeightReached) {
+        return false;
+      }
 
-    if (Number(block.height) !== this._lastHeight + 1) {
-      return false;
-    }
-    this.inStack.push(block);
-    this._lastHeight = Number(block.height);
+      if (Number(block.height) !== this._lastHeight + 1) {
+        return false;
+      }
+      this.inStack.push(block);
+      this._lastHeight = Number(block.height);
 
-    return true;
+      return true;
+    });
   }
 
   /**
    * Dequeues the first block from the queue.
    * @returns The dequeued block or undefined if the queue is empty.
    */
-  public dequeue(): T | undefined {
-    if (this.outStack.length === 0) {
-      this.transferItems();
-    }
+  public async dequeue(): Promise<T | undefined> {
+    return this.mutex.runExclusive(async () => {
+      if (this.outStack.length === 0) {
+        this.transferItems();
+      }
 
-    const block = this.outStack.pop();
-
-    return block;
+      return this.outStack.pop();
+    });
   }
 
   /**
@@ -128,14 +135,16 @@ export class BlocksQueue<T extends Block> {
    * @returns {T | null} The first block in the queue or null if the queue is empty.
    * @complexity O(1)
    */
-  public peekFirstBlock(): T | null {
-    if (this.outStack.length === 0) {
-      this.transferItems();
-    }
+  public async peekFirstBlock(): Promise<T | null> {
+    return this.mutex.runExclusive(async () => {
+      if (this.outStack.length === 0) {
+        this.transferItems();
+      }
 
-    // IMPORTANT: We make sure to clone the block so that modifications to the object
-    // later in the process cannot affect the block in the queue.
-    return this.outStack.length > 0 ? _.cloneDeep(this.outStack[this.outStack.length - 1]) : null;
+      // IMPORTANT: We make sure to clone the block so that modifications to the object
+      // later in the process cannot affect the block in the queue.
+      return this.outStack.length > 0 ? _.cloneDeep(this.outStack[this.outStack.length - 1]) : null;
+    });
   }
 
   /**
@@ -175,6 +184,8 @@ export class BlocksQueue<T extends Block> {
    */
   public findBlocks(hashSet: Set<string>): T[] {
     const blocks: T[] = [];
+
+    this.transferItems();
 
     // Iterate through the outStack in reverse order, starting from the last element
     for (let i = this.outStack.length - 1; i >= 0; i--) {

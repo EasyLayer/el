@@ -11,13 +11,13 @@ enum BlocksQueueStrategy {
 
 @Injectable()
 export class BlocksQueueConfig {
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4))
   @IsNumber()
   @JSONSchema({
     description: 'Number of parallel requests for the Bitcoin loader queue.',
     default: 1,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 1;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 4;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1000))
   @IsNumber()
@@ -40,10 +40,10 @@ export class BlocksQueueConfig {
   @IsNumber()
   @JSONSchema({
     description:
-      'Batch size of the blocks iterator in the loader. Should not be smaller than the size of a single block.',
-    default: 41943040,
+      'Batch size in of the blocks iterator in the loader. Should not be smaller than the size of a single block.',
+    default: 4194304,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 10 * 1024 * 1024;
+  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4 * 1024 * 1024;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 25))
   @IsNumber()

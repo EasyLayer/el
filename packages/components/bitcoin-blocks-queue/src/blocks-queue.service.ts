@@ -43,15 +43,15 @@ export class BlocksQueueService {
     this.log.info('Queue was clear to height: ', { newStartHeight }, this.constructor.name);
   }
 
-  @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
+  @RuntimeTracker({ showMemory: true, warningThresholdMs: 10, errorThresholdMs: 1000 })
   public async confirmProcessedBatch(blockHashes: string[]): Promise<Block[]> {
     const confirmedBlocks: Block[] = [];
 
     for (const hash of blockHashes) {
-      const block = this._queue.firstBlock;
+      const block = await this._queue.firstBlock();
 
       if (block && block.hash === hash) {
-        const dequeuedBlock = this._queue.dequeue();
+        const dequeuedBlock = await this._queue.dequeue();
 
         if (!dequeuedBlock) {
           throw new Error(`Block not found in the queue after dequeue: ${hash}`);

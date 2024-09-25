@@ -111,7 +111,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     await Promise.all(activeTasks);
 
     // Only after all requests have been processed, we try to insert blocks into the queue.
-    this.enqueueBlocks();
+    await this.enqueueBlocks();
   }
 
   private async assignWorker(startHeight: number, length: number): Promise<void> {
@@ -139,7 +139,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     }
   }
 
-  private enqueueBlocks(): void {
+  private async enqueueBlocks(): Promise<void> {
     // Sort blocks by height in descending order
     this._loadedBlocks.sort((a, b) => {
       if (a.height < b.height) return 1;
@@ -156,18 +156,18 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
       if (block) {
         if (block.height <= this.queue.lastHeight) {
-          this.log.debug('Skipping block with height less than or equal to lastHeight', {
+          this.log.error('Skipping block with height less than or equal to lastHeight', {
             blockHeight: block.height,
             lastHeight: this.queue.lastHeight,
           });
           continue;
         }
 
-        // Attempt to enqueue the block
-        if (!this.queue.enqueue(block)) {
-          // If unable to enqueue, return the block back to the array
+        try {
+          await this.queue.enqueue(block);
+        } catch (error) {
           this._loadedBlocks.push(block);
-          this.log.debug(
+          this.log.error(
             'Could not enqueue block. Returning block back to loadedBlocks.',
             { blockHeight: block.height },
             this.constructor.name
@@ -177,5 +177,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         }
       }
     }
+
+    this.log.debug('Blocks enqueued to queue', { blocksLength: initialLength }, this.constructor.name);
   }
 }
