@@ -1,4 +1,4 @@
-import _ from 'lodash';
+// import _ from 'lodash';
 import { Mutex } from 'async-mutex';
 import { Block } from './interfaces';
 
@@ -14,7 +14,7 @@ export class BlocksQueue<T extends Block> {
   private _lastHeight: number;
   private _maxQueueSize: number = 10 * 1024 * 1024; // Bytes
   private _size: number = 0; // Bytes
-
+  private _minTransferSize: number = 1 * 1024 * 1024; // Bytes
   private _maxBlockHeight: number = Number.MAX_SAFE_INTEGER;
   private readonly mutex = new Mutex();
 
@@ -109,6 +109,24 @@ export class BlocksQueue<T extends Block> {
   }
 
   /**
+   * Gets the minimum transfer size in bytes.
+   * @returns The minimum transfer size in bytes as a number.
+   * @complexity O(1)
+   */
+  public get minTransferSize(): number {
+    return this._minTransferSize;
+  }
+
+  /**
+   * Sets the minimum transfer size in bytes.
+   * @param size - The new minimum transfer size in bytes.
+   * @complexity O(1)
+   */
+  public set minTransferSize(size: number) {
+    this._minTransferSize = size;
+  }
+
+  /**
    * Retrieves the first block in the queue without removing it.
    * @returns A promise that resolves to the first block in the queue or `undefined` if the queue is empty.
    * @complexity O(1)
@@ -139,7 +157,9 @@ export class BlocksQueue<T extends Block> {
    * @complexity O(log n)
    */
   public fetchBlockFromOutStack(height: number): T | undefined {
-    this.transferItems();
+    if (this.outStack.length === 0) {
+      this.transferItems();
+    }
     return this.binarySearch(this.outStack, height, false);
   }
 
@@ -201,32 +221,11 @@ export class BlocksQueue<T extends Block> {
    */
   public async dequeue(): Promise<T | undefined> {
     return this.mutex.runExclusive(async () => {
-      if (this.outStack.length === 0) {
-        this.transferItems();
-      }
-
       const block = this.outStack.pop();
       if (block) {
         this._size -= block.__size;
       }
       return block;
-    });
-  }
-
-  /**
-   * Peeks at the first block in the queue without removing it.
-   * @returns A promise that resolves to the first block in the queue or `null` if the queue is empty.
-   * @complexity O(1)
-   */
-  public async peekFirstBlock(): Promise<T | null> {
-    return this.mutex.runExclusive(async () => {
-      if (this.outStack.length === 0) {
-        this.transferItems();
-      }
-
-      // IMPORTANT: We make sure to clone the block so that modifications to the object
-      // later in the process cannot affect the block in the queue.
-      return this.outStack.length > 0 ? _.cloneDeep(this.outStack[this.outStack.length - 1]) : null;
     });
   }
 
@@ -243,8 +242,9 @@ export class BlocksQueue<T extends Block> {
 
     for (let i = this.outStack.length - 1; i >= 0; i--) {
       // TODO: think about whether shallow copy is enough for us?
+      // yield { ...this.outStack[i] };
       // yield _.cloneDeep(this.outStack[i]);
-      yield { ...this.outStack[i] };
+      yield this.outStack[i];
     }
   }
 
@@ -312,8 +312,9 @@ export class BlocksQueue<T extends Block> {
    */
   public findBlocks(hashSet: Set<string>): T[] {
     const blocks: T[] = [];
-
-    this.transferItems();
+    if (this.outStack.length === 0) {
+      this.transferItems();
+    }
 
     // Iterate through the outStack in reverse order, starting from the last element
     for (let i = this.outStack.length - 1; i >= 0; i--) {
@@ -335,8 +336,13 @@ export class BlocksQueue<T extends Block> {
    * @complexity O(n)
    */
   private transferItems(): void {
-    while (this.inStack.length > 0) {
-      this.outStack.push(this.inStack.pop()!);
+    // IMPORTANT: This is necessary to specify the lower limit of the batch size.
+    // This value must be less than the minimum size of 1 current network block.
+    // (current real-time blockchain block size at the time the queue was started)
+    if (this._size > this._minTransferSize) {
+      while (this.inStack.length > 0) {
+        this.outStack.push(this.inStack.pop()!);
+      }
     }
   }
 

@@ -64,12 +64,11 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
         // we wait for the resolving of the promise of the previous batch (confirm batch method)
         await this.batchProcessedPromise;
 
-        if (this._queue.length > 0) {
-          const batch = await this.peekNextBatch();
-          if (batch.length > 0) {
-            await this.processBatch(batch);
-            resetInterval();
-          }
+        const batch = await this.peekNextBatch();
+
+        if (batch.length > 0) {
+          await this.processBatch(batch);
+          resetInterval();
         } else {
           this.log.debug(
             'Queue is empty. Waiting...',
@@ -87,6 +86,9 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
   }
 
   private async processBatch(batch: Block[]) {
+    // Init the promise for the next wait
+    this.initBatchProcessedPromise();
+
     try {
       await this.blocksCommandExecutor.handleBatch({ batch, requestId: uuidv4() });
     } catch (error) {
@@ -99,15 +101,12 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
   }
 
   private async peekNextBatch(): Promise<Block[]> {
-    this.log.debug('Iterator peeking next blocks batch...', {}, this.constructor.name);
+    // Minimum batch size in bytes
+    const minBatchSize = this._blocksBatchSize;
 
-    // Init the promise for the next wait
-    this.initBatchProcessedPromise();
-
-    // Maximum batch size in bytes
-    const maxBatchSize = this._blocksBatchSize;
-
-    const batch: Block[] = await this._queue.getBatchUpToSize(maxBatchSize).catch((error) => {
+    // Now we start processing blocks only in batches of the appropriate sizes.
+    // If there are few blocks in the queue, we will not take them out for now in order to unload other places.
+    const batch: Block[] = await this._queue.getBatchUpToSize(minBatchSize).catch((error) => {
       this.log.error('Iterator peek blocks error', error, this.constructor.name);
       return [];
     });

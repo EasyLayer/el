@@ -118,6 +118,7 @@ export class BitcoinLoaderModule {
           maxBlockHeight: businessConfig.BITCOIN_LOADER_MAX_BLOCK_HEIGHT,
           queueLoaderConcurrencyNum: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
           maxQueueSize: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MAX_SIZE,
+          minTransferSize: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MIN_TRANSFER_SIZE,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
           queueLoaderBlocksBatchLength: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH,
           queueLoaderIntervalMs: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_INTERVAL_MS,

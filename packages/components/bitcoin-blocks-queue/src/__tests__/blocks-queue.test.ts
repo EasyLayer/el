@@ -39,21 +39,25 @@ describe('BlocksQueue', () => {
   let queue: BlocksQueue<TestBlock>;
 
   beforeEach(() => {
+    // Initialize the queue with lastHeight = -1
     queue = new BlocksQueue<TestBlock>(-1);
+    // Set minTransferSize to 50 bytes for testing purposes
+    queue.minTransferSize = 50;
   });
 
   describe('Initialization', () => {
-    it('should initialize with empty queue', () => {
+    it('should initialize with an empty queue', () => {
       expect(queue.length).toBe(0);
       expect(queue.lastHeight).toBe(-1);
       expect(queue.currentSize).toBe(0);
       expect(queue.isQueueFull).toBe(false);
       expect(queue.isMaxHeightReached).toBe(false);
+      expect(queue.minTransferSize).toBe(50); // Confirm minTransferSize is set correctly
     });
   });
 
   describe('Enqueue Operation', () => {
-    it('should enqueue block with correct height and valid transactions', async () => {
+    it('should enqueue a block with the correct height and valid transactions', async () => {
       const tx = [createTransaction(100)]; // 100 bytes
       const block = new TestBlock(0, tx);
       await queue.enqueue(block);
@@ -65,7 +69,7 @@ describe('BlocksQueue', () => {
       expect(queue.isMaxHeightReached).toBe(false);
     });
 
-    it('should throw error when enqueueing block with incorrect height', async () => {
+    it('should throw an error when enqueueing a block with an incorrect height', async () => {
       const tx = [createTransaction(100)];
       const block = new TestBlock(1, tx); // Incorrect height; should be 0
 
@@ -92,7 +96,7 @@ describe('BlocksQueue', () => {
       expect(queue.isMaxHeightReached).toBe(false);
     });
 
-    it('should throw error when enqueueing block if maxBlockHeight is reached', async () => {
+    it('should throw an error when enqueueing a block if maxBlockHeight is reached', async () => {
       // Set maxBlockHeight to 1
       queue.maxBlockHeight = 1;
 
@@ -115,7 +119,7 @@ describe('BlocksQueue', () => {
       expect(queue.isMaxHeightReached).toBe(true);
     });
 
-    it('should throw error when enqueueing block that exceeds maxQueueSize', async () => {
+    it('should throw an error when enqueueing a block that exceeds maxQueueSize', async () => {
       // Set maxQueueSize to 500 bytes
       queue.maxQueueSize = 500;
 
@@ -138,12 +142,15 @@ describe('BlocksQueue', () => {
   });
 
   describe('Dequeue Operation', () => {
-    it('should dequeue block correctly and update queue state', async () => {
+    it('should dequeue a block correctly and update the queue state', async () => {
       const block1 = new TestBlock(0, [createTransaction(100)]);
       const block2 = new TestBlock(1, [createTransaction(150)]);
 
       await queue.enqueue(block1);
       await queue.enqueue(block2);
+
+      // Trigger transferItems by calling firstBlock
+      await queue.firstBlock();
 
       const dequeuedBlock1 = await queue.dequeue();
       expect(dequeuedBlock1).toEqual({
@@ -158,7 +165,7 @@ describe('BlocksQueue', () => {
             // hex was removed
           },
         ],
-        __size: 100, // Expected __size value
+        __size: 100,
       });
       expect(queue.length).toBe(1);
       expect(queue.lastHeight).toBe(1);
@@ -179,7 +186,7 @@ describe('BlocksQueue', () => {
             // hex was removed
           },
         ],
-        __size: 150, // Expected __size value
+        __size: 150,
       });
       expect(queue.length).toBe(0);
       expect(queue.lastHeight).toBe(1); // Last height remains unchanged after dequeuing
@@ -188,7 +195,7 @@ describe('BlocksQueue', () => {
       expect(queue.isMaxHeightReached).toBe(false);
     });
 
-    it('should return undefined when dequeuing from empty queue', async () => {
+    it('should return undefined when dequeuing from an empty queue', async () => {
       const dequeuedBlock = await queue.dequeue();
       expect(dequeuedBlock).toBeUndefined();
       expect(queue.length).toBe(0);
@@ -196,26 +203,6 @@ describe('BlocksQueue', () => {
       expect(queue.currentSize).toBe(0);
       expect(queue.isQueueFull).toBe(false);
       expect(queue.isMaxHeightReached).toBe(false);
-    });
-  });
-
-  describe('Peek Operation', () => {
-    it('should peek at the first block without removing it', async () => {
-      const tx = [createTransaction(100)];
-      const block1 = new TestBlock(0, tx);
-      await queue.enqueue(block1);
-
-      const firstBlock = await queue.peekFirstBlock();
-      expect(firstBlock?.height).toBe(0);
-      expect(queue.length).toBe(1); // Ensure the block is not removed
-      expect(queue.currentSize).toBe(100);
-    });
-
-    it('should return null when peeking an empty queue', async () => {
-      const firstBlock = await queue.peekFirstBlock();
-      expect(firstBlock).toBeNull();
-      expect(queue.length).toBe(0);
-      expect(queue.currentSize).toBe(0);
     });
   });
 
@@ -279,7 +266,7 @@ describe('BlocksQueue', () => {
       });
     });
 
-    it('should return undefined if block is not found in inStack using binary search', async () => {
+    it('should return undefined if a block is not found in inStack using binary search', async () => {
       const block = new TestBlock(0, [createTransaction(100)]);
       await queue.enqueue(block);
 
@@ -293,6 +280,7 @@ describe('BlocksQueue', () => {
 
       await queue.enqueue(block1);
       await queue.enqueue(block2);
+      await queue.firstBlock(); // Trigger transferItems
 
       const result = queue.fetchBlockFromOutStack(0);
       expect(result).toEqual({
@@ -311,10 +299,10 @@ describe('BlocksQueue', () => {
       });
     });
 
-    it('should return undefined if block is not found in outStack using binary search', async () => {
+    it('should return undefined if a block is not found in outStack using binary search', async () => {
       const block = new TestBlock(0, [createTransaction(100)]);
       await queue.enqueue(block);
-      await queue.dequeue(); // Transfer items to outStack
+      await queue.firstBlock(); // Trigger transferItems
 
       const result = queue.fetchBlockFromOutStack(1);
       expect(result).toBeUndefined();
@@ -330,6 +318,9 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block1);
       await queue.enqueue(block2);
       await queue.enqueue(block3);
+
+      // Trigger transferItems
+      await queue.firstBlock();
 
       const foundBlocks = queue.findBlocks(new Set(['hash0', 'hash2']));
       expect(foundBlocks).toContainEqual({
@@ -367,6 +358,9 @@ describe('BlocksQueue', () => {
       const block1 = new TestBlock(0, [createTransaction(100)]);
       await queue.enqueue(block1);
 
+      // Trigger transferItems
+      await queue.firstBlock();
+
       const foundBlocks = queue.findBlocks(new Set(['hash1']));
       expect(foundBlocks).toEqual([]);
     });
@@ -381,6 +375,9 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block1);
       await queue.enqueue(block2);
       await queue.enqueue(block3);
+
+      // Trigger transferItems
+      await queue.firstBlock();
 
       const generator = queue.peekPrevBlock();
       const firstYield = generator.next().value;
@@ -432,7 +429,7 @@ describe('BlocksQueue', () => {
       expect(generator.next().done).toBe(true);
     });
 
-    it('should return no yields when queue is empty', () => {
+    it('should return no yields when the queue is empty', () => {
       const generator = queue.peekPrevBlock();
       const result = generator.next();
       expect(result.done).toBe(true);
@@ -441,7 +438,7 @@ describe('BlocksQueue', () => {
   });
 
   describe('Get Batch Up To Size', () => {
-    it('should throw error when first block exceeds maxSize in getBatchUpToSize', async () => {
+    it('should throw an error when the first block exceeds maxSize in getBatchUpToSize', async () => {
       // Set maxQueueSize to 500 bytes
       queue.maxQueueSize = 500;
 
@@ -460,16 +457,19 @@ describe('BlocksQueue', () => {
       const validBlock = new TestBlock(0, [createTransaction(400)]); // 400 bytes
       await queue.enqueue(validBlock);
 
+      // Trigger transferItems
+      await queue.firstBlock();
+
       // Attempt to get batch with maxSize 300, which is less than validBlock's size
       await expect(queue.getBatchUpToSize(300)).rejects.toThrow('Block size exceeds the maximum batch size');
     });
 
-    it('should return an empty array when queue is empty', async () => {
+    it('should return an empty array when the queue is empty', async () => {
       const batch = await queue.getBatchUpToSize(500);
       expect(batch).toEqual([]);
     });
 
-    it('should return correct batch when multiple blocks fit within maxSize', async () => {
+    it('should return the correct batch when multiple blocks fit within maxSize', async () => {
       const block1 = new TestBlock(0, [createTransaction(100)]); // 100 bytes
       const block2 = new TestBlock(1, [createTransaction(150)]); // 150 bytes
       const block3 = new TestBlock(2, [createTransaction(200)]); // 200 bytes
@@ -477,6 +477,9 @@ describe('BlocksQueue', () => {
       await queue.enqueue(block1);
       await queue.enqueue(block2);
       await queue.enqueue(block3);
+
+      // Trigger transferItems
+      await queue.firstBlock();
 
       const batch = await queue.getBatchUpToSize(300); // Should include block1 and block2
       expect(batch).toContainEqual({
@@ -528,6 +531,9 @@ describe('BlocksQueue', () => {
       const block1 = new TestBlock(0, [createTransaction(300)]); // 300 bytes
 
       await queue.enqueue(block1);
+
+      // Trigger transferItems
+      await queue.firstBlock();
 
       const batch = await queue.getBatchUpToSize(300); // Should include block1
       expect(batch).toContainEqual({
