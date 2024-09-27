@@ -206,7 +206,7 @@ export class Indexer extends AggregateRoot {
       logger.info(
         'Blockchain reorganisation starting',
         {
-          reorganisationHeight: height.toString(),
+          reorganisationHeight: height,
           blocksLength: blocks.length,
           txLength: blocks.reduce((result: number, item: any) => result + item.tx.length, 0),
         },

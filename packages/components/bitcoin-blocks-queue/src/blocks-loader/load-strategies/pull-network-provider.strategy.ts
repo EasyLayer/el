@@ -158,7 +158,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
 
       if (block) {
         if (block.height <= this.queue.lastHeight) {
-          this.log.error('Skipping block with height less than or equal to lastHeight', {
+          this.log.debug('Skipping block with height less than or equal to lastHeight', {
             blockHeight: block.height,
             lastHeight: this.queue.lastHeight,
           });
@@ -171,7 +171,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
           this._loadedBlocks.push(block);
           this.log.error(
             'Could not enqueue block. Returning block back to loadedBlocks.',
-            { blockHeight: block.height },
+            error,
             this.constructor.name
           );
           // Exit the loop since subsequent blocks have lower heights
