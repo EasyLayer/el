@@ -53,6 +53,8 @@ export class Loader extends AggregateRoot {
       // Recovering links in Blockchain
       restoreChainLinks(this.chain.head);
     }
+
+    Object.setPrototypeOf(this, Loader.prototype);
   }
 
   // IMPORTANT: this method doing two things:
