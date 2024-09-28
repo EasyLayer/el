@@ -30,13 +30,14 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
         blocks.map((block: any) => block.hash)
       );
 
+      console.time('onLoad');
       for (const block of confirmedBlocks) {
         const results = await this.loaderMapper.onLoad(block);
         const models = Array.isArray(results) ? results : [results];
 
         this.viewsWriteRepository.process(models);
       }
-
+      console.timeEnd('onLoad');
       // Update System entity
       const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1]?.height;
       await this.viewsWriteRepository.update('system', {

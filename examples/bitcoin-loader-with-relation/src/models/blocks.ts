@@ -29,12 +29,6 @@ export const BlockSchema = new EntitySchema<IBlock>({
       default: false,
     },
   },
-  uniques: [
-    {
-      name: 'UQ__blocks__hash',
-      columns: ['hash'],
-    },
-  ],
   relations: {
     tx: {
       type: 'one-to-many',

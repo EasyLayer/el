@@ -249,7 +249,7 @@ export class Listener extends AggregateRoot {
         height: Number(block.height),
         hash: block.hash,
         previousblockhash: block?.previousblockhash || '',
-        tx: block.tx.map((t: any) => t.txid),
+        tx: block.tx.map((txid: any) => txid),
       }))
     );
   }

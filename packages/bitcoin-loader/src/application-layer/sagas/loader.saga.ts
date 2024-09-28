@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { Saga, ICommand, executeWithRetry } from '@easylayer/components/cqrs';
 import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
 import {
+  BitcoinLoaderInitializedEvent,
   BitcoinLoaderReorganisationStartedEvent,
   BitcoinLoaderReorganisationFinishedEvent,
 } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
@@ -15,6 +16,16 @@ export class LoaderSaga {
     private readonly loaderCommandFactory: LoaderCommandFactoryService,
     @Inject('BlocksQueueService') private readonly blocksQueueService: BlocksQueueService
   ) {}
+
+  @Saga()
+  onBitcoinLoaderInitializedEvent(events$: Observable<any>): Observable<ICommand> {
+    return events$.pipe(
+      executeWithRetry({
+        event: BitcoinLoaderInitializedEvent,
+        command: ({ payload }: BitcoinLoaderInitializedEvent) => this.blocksQueueService.start(payload.indexedHeight),
+      })
+    );
+  }
 
   @Saga()
   onBitcoinLoaderReorganisationStartedEvent(events$: Observable<any>): Observable<ICommand> {

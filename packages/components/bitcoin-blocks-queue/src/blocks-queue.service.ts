@@ -20,7 +20,7 @@ export class BlocksQueueService {
     return this._queue;
   }
 
-  start(indexedHeight: string | number) {
+  async start(indexedHeight: string | number) {
     this.initQueue(indexedHeight);
     this.blocksQueueLoader.startBlocksLoading(this._queue);
     this.blocksQueueIterator.startQueueIterating(this._queue);

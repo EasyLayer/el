@@ -37,17 +37,18 @@ export function restoreChainLinks(currentNode: Chain | null): void {
 
 /**
  * Blockchain class representing a doubly linked list of blocks.
- * Each block contains a height, hash, previous hash and tx ids. The blockchain has a fixed maximum size,
- * and automatically removes the oldest blocks when new blocks are added beyond this size.
+ * Each block contains a height, hash, previous hash, and transaction IDs.
+ * The blockchain has a fixed maximum size and automatically removes the oldest blocks
+ * when new blocks are added beyond this size.
  */
 export class Blockchain {
   private _head: Chain | null = null;
   private _tail: Chain | null = null;
   private _size: number = 0;
-  // NOTE: _maxSize - Maximum number of blocks allowed in the blockchain at any given time.
+  // _maxSize - Maximum number of blocks allowed in the blockchain at any given time.
   private _maxSize: number;
 
-  constructor({ maxSize = 100 }: { maxSize?: number }) {
+  constructor({ maxSize }: { maxSize: number }) {
     this._maxSize = maxSize;
   }
 
@@ -123,9 +124,10 @@ export class Blockchain {
 
   /**
    * Adds a block to the end of the chain.
-   * @param {string | number} height - The height of the new block.
+   * @param {number} height - The height of the new block.
    * @param {string} hash - The hash of the new block.
    * @param {string} previousblockhash - The hash of the previous block.
+   * @param {string[]} tx - The transaction IDs of the new block.
    * @returns {boolean} True if the block was added successfully, false otherwise.
    * Complexity: O(1)
    */
@@ -159,12 +161,12 @@ export class Blockchain {
 
   /**
    * Adds an array of blocks to the chain.
-   * @param {Array<LightBlock>} blocks - Array of blocks to add.
+   * @param {LightBlock[]} blocks - Array of blocks to add.
    * @returns {boolean} True if the blocks were added successfully, false otherwise.
    * Complexity: O(n), where n - is the number of blocks in the array
    */
   public addBlocks(blocks: LightBlock[]): boolean {
-    // Before adding a block, we validate it
+    // Before adding blocks, we validate the entire sequence
     if (!this.validateNextBlocks(blocks)) {
       return false;
     }
@@ -204,14 +206,14 @@ export class Blockchain {
 
   /**
    * Validates the next block to be added to the chain.
-   * @param {string | number} height - The height of the new block.
+   * @param {number} height - The height of the new block.
    * @param {string} previousblockhash - The hash of the previous block.
    * @returns {boolean} True if the block is valid, false otherwise.
    * Complexity: O(1)
    */
   public validateNextBlock(height: number, previousblockhash: string): boolean {
     if (!this._tail) {
-      // If there's no blocks in the chain, we assume this is the first block.
+      // If there are no blocks in the chain, any block can be added as the starting point
       return true;
     }
 
@@ -231,18 +233,18 @@ export class Blockchain {
   /**
    * Validates an array of blocks to be added to the chain.
    * Ensures that the blocks are in the correct order and can be added sequentially.
-   * @param {Array<any>} blocks - Array of blocks to validate.
+   * @param {LightBlock[]} blocks - Array of blocks to validate.
    * @returns {boolean} True if all blocks are valid and in the correct order, false otherwise.
    * Complexity: O(n), where n - is the number of blocks in the array
    */
-  public validateNextBlocks(blocks: any): boolean {
+  public validateNextBlocks(blocks: LightBlock[]): boolean {
     if (blocks.length === 0) {
       return false; // Empty array is invalid
     }
 
     // Check if the first block in the array can be added to the current chain
     const firstBlock = blocks[0];
-    if (!this.validateNextBlock(Number(firstBlock.height), firstBlock.previousblockhash)) {
+    if (!this.validateNextBlock(firstBlock.height, firstBlock.previousblockhash)) {
       return false; // First block doesn't fit into the current chain
     }
 
@@ -251,15 +253,96 @@ export class Blockchain {
       const prevBlock = blocks[i - 1];
       const currentBlock = blocks[i];
 
-      if (
-        Number(currentBlock.height) !== Number(prevBlock.height) + 1 ||
-        (currentBlock.previousblockhash && currentBlock.previousblockhash !== prevBlock.hash)
-      ) {
+      if (currentBlock.height !== prevBlock.height + 1 || currentBlock.previousblockhash !== prevBlock.hash) {
         return false; // Sequence or hash mismatch within the provided blocks
       }
     }
 
     return true; // All blocks are valid and in the correct order
+  }
+
+  /**
+   * Truncates the blockchain up to a specified block height (inclusive).
+   * The block with the given height becomes the new tail of the chain.
+   *
+   * @param {number} height - The height up to which the chain should be truncated.
+   *                          Passing `-1` will clear the entire chain.
+   * @returns {boolean} Returns `true` if truncation was successful or the chain is already in the desired state, `false` otherwise.
+   * Complexity O(n), where n is the number of blocks to check from the tail to the specified height.
+   */
+  public truncateToBlock(height: number): boolean {
+    if (height < -1) {
+      // Invalid height value
+      return false;
+    }
+
+    if (height === -1) {
+      // Special case: clearing the entire chain
+      if (this._head) {
+        this._head = null;
+        this._tail = null;
+        this._size = 0;
+        return true;
+      }
+      // Chain is already empty
+      return true;
+    }
+
+    if (!this._tail) {
+      // Chain is empty and height is not -1
+      // Cannot truncate to a specific height
+      return false;
+    }
+
+    // If the desired height is the current last block's height, no action needed
+    if (this._tail.block.height === height) {
+      return true;
+    }
+
+    let currentNode: Chain | null = this._tail;
+    let found = false;
+    let nodesRemoved = 0;
+
+    // Traverse from the tail to find the block with the given height
+    while (currentNode) {
+      if (currentNode.block.height === height) {
+        // Found the block to truncate to
+        found = true;
+        break;
+      }
+      nodesRemoved++;
+      currentNode = currentNode.prev;
+    }
+
+    if (!found) {
+      // Height not found
+      // If the specified height is less than the head's height, attempt to clear the chain
+      const currentHeadHeight = this._head?.block.height ?? Infinity;
+      if (height < currentHeadHeight) {
+        if (this._head) {
+          // Only clear the chain if it's not already empty
+          this._head = null;
+          this._tail = null;
+          this._size = 0;
+          return true;
+        }
+      }
+      // Height not found and does not require clearing
+      return false;
+    }
+
+    // At this point, currentNode is guaranteed to be a Chain (not null)
+    // Use a type assertion to inform TypeScript
+    this._tail = currentNode as Chain;
+    this._tail.next = null;
+    this._size -= nodesRemoved;
+
+    // Update the head if the chain size is now one
+    if (this._size === 1) {
+      this._head = this._tail;
+    }
+
+    return true;
   }
 
   /**
@@ -276,18 +359,22 @@ export class Blockchain {
     }
 
     while (current && current.next) {
-      // First check if the block heights increment by 1
-      if (current.next.block.height !== current.block.height + 1) {
+      const nextBlock = current.next.block;
+
+      // Check if the block heights increment by 1
+      if (nextBlock.height !== current.block.height + 1) {
         return false; // Height mismatch
       }
-      // Then check if the hashes match
-      if (current.next.block.previousblockhash !== current.block.hash) {
+
+      // Check if the previousblockhash matches the hash of the current block
+      if (nextBlock.previousblockhash !== current.block.hash) {
         return false; // Hash mismatch
       }
+
       current = current.next;
     }
 
-    // If the loop has finished and current points to the last block (this._tail)
+    // Ensure that the traversal ended at the tail
     return current === this._tail;
   }
 
@@ -303,7 +390,7 @@ export class Blockchain {
    */
   public validateLastBlock(height: number, hash: string, previousblockhash: string): boolean {
     if (!this._tail) {
-      // If there's no blocks in the chain, we assume this is the first block.
+      // If there are no blocks in the chain, any block can be considered a valid starting point
       return true;
     }
 
@@ -340,46 +427,6 @@ export class Blockchain {
       currentNode = currentNode.prev;
     }
     return null;
-  }
-
-  /**
-   * Truncates the blockchain just before a specified block height.
-   * @param {number} height - The height before which the chain should be truncated.
-   * @returns {boolean} Returns true if truncation was successful, false if the block was not found.
-   * Complexity: O(n), where n - is the number of blocks in the chain
-   */
-  public truncateToBlock(height: number): boolean {
-    let currentNode = this._tail;
-    let found = false;
-
-    // Iterate backwards from the last block
-    // until we find the block immediately before the given height
-    while (currentNode && currentNode.prev) {
-      if (currentNode.prev.block.height === height - 1) {
-        // Update the _tail to the block before the specified height
-        this._tail = currentNode.prev;
-
-        // Delete all blocks after the found block
-        this._tail.next = null;
-
-        // Update the size
-        this._size = this._tail.block.height + 1;
-
-        found = true;
-        break;
-      }
-      currentNode = currentNode.prev;
-    }
-
-    // Delete all blocks if the specified height is 1 (cut off the entire chain)
-    if (height === 0 && this._head) {
-      this._head = null;
-      this._tail = null;
-      this._size = 0;
-      found = true;
-    }
-
-    return found;
   }
 
   /**

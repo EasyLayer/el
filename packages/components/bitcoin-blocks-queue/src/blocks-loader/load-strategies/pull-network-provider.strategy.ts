@@ -169,7 +169,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
           await this.queue.enqueue(block);
         } catch (error) {
           this._loadedBlocks.push(block);
-          this.log.error(
+          this.log.debug(
             'Could not enqueue block. Returning block back to loadedBlocks.',
             error,
             this.constructor.name

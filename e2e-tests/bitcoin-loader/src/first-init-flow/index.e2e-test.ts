@@ -33,7 +33,7 @@ describe('/Bitcoin Loader: First Initializaton Flow', () => {
       schemas: [BlockSchema],
       mapper: BlocksMapper,
       testing: {
-        handlerEventsToWait: [
+        sagaEventsToWait: [
           {
             eventType: BitcoinLoaderInitializedEvent,
             count: 1,

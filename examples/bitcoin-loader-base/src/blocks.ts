@@ -24,12 +24,6 @@ export const BlockSchema = new EntitySchema({
       nullable: false,
     },
   },
-  uniques: [
-    {
-      name: 'UQ__blocks__hash',
-      columns: ['hash'],
-    },
-  ],
 });
 
 export const BlockModel = generateModelFromSchema(BlockSchema);

@@ -1,177 +1,447 @@
-import { Blockchain } from '../blockchain.structure';
+import { Blockchain, LightBlock } from '../blockchain.structure';
 
 describe('Blockchain', () => {
   let blockchain: Blockchain;
 
-  const maxSize = 100;
-
   beforeEach(() => {
-    blockchain = new Blockchain({ maxSize });
+    // Initialize a new Blockchain instance with a maxSize of 5 for testing
+    blockchain = new Blockchain({ maxSize: 5 });
   });
 
-  describe('Initialization', () => {
-    it('should initialize with size 0', () => {
-      expect(blockchain.size).toBe(0);
-    });
-  });
+  describe('addBlock and addBlocks', () => {
+    it('should add a single block successfully', () => {
+      const block: LightBlock = {
+        height: 0,
+        hash: 'hash0',
+        previousblockhash: '',
+        tx: ['tx0-1'],
+      };
 
-  describe('addBlock', () => {
-    it('should add a block successfully', () => {
-      const result = blockchain.addBlock(0, 'hash0', 'prevHash0', []);
+      const result = blockchain.addBlock(block.height, block.hash, block.previousblockhash, block.tx);
       expect(result).toBe(true);
       expect(blockchain.size).toBe(1);
+      expect(blockchain.head).toBe(blockchain.tail);
       expect(blockchain.lastBlockHeight).toBe(0);
-      expect(blockchain.lastBlockHash).toBe('hash0');
-    });
-
-    it('should not add a block with invalid height', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const result = blockchain.addBlock(2, 'hash2', 'hash0', []); // invalid height, should be 1
-      expect(result).toBe(false);
-      expect(blockchain.size).toBe(1);
-    });
-
-    it('should not add a block with invalid previous hash', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const result = blockchain.addBlock(1, 'hash1', 'invalidPrevHash', []); // invalid previous hash
-      expect(result).toBe(false);
-      expect(blockchain.size).toBe(1);
     });
 
     it('should add multiple blocks successfully', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      blockchain.addBlock(1, 'hash1', 'hash0', []);
-      blockchain.addBlock(2, 'hash2', 'hash1', []);
+      const blocks: LightBlock[] = [
+        {
+          height: 0,
+          hash: 'hash0',
+          previousblockhash: '',
+          tx: ['tx0-1'],
+        },
+        {
+          height: 1,
+          hash: 'hash1',
+          previousblockhash: 'hash0',
+          tx: ['tx1-1'],
+        },
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(true);
       expect(blockchain.size).toBe(3);
       expect(blockchain.lastBlockHeight).toBe(2);
-      expect(blockchain.lastBlockHash).toBe('hash2');
+      expect(blockchain.head?.block.hash).toBe('hash0');
+      expect(blockchain.tail?.block.hash).toBe('hash2');
     });
 
-    it('should remove the first block when max size is exceeded', () => {
-      for (let i = 0; i < maxSize + 1; i++) {
-        blockchain.addBlock(i, `hash${i}`, i === 0 ? 'prevHash0' : `hash${i - 1}`, []);
-      }
-      expect(blockchain.size).toBe(maxSize);
-      expect(blockchain.lastBlockHeight).toBe(maxSize);
-      expect(blockchain.findBlockByHeight(0)).toBe(null);
-    });
-  });
+    it('should add a block with non-zero starting height successfully', () => {
+      const block: LightBlock = {
+        height: 5,
+        hash: 'hash5',
+        previousblockhash: 'hash4',
+        tx: ['tx5-1'],
+      };
 
-  describe('validateNextBlock', () => {
-    it('should validate the first block correctly', () => {
-      const isValid = blockchain.validateNextBlock(0, 'prevHash0');
-      expect(isValid).toBe(true);
-    });
-
-    it('should not validate a block with invalid height', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const isValid = blockchain.validateNextBlock(2, 'hash0'); // invalid height, should be 1
-      expect(isValid).toBe(false);
+      // Since the chain is empty, it should allow adding any block as the starting point
+      const result = blockchain.addBlock(block.height, block.hash, block.previousblockhash, block.tx);
+      expect(result).toBe(true);
+      expect(blockchain.size).toBe(1);
+      expect(blockchain.head).toBe(blockchain.tail);
+      expect(blockchain.lastBlockHeight).toBe(5);
     });
 
-    it('should not validate a block with invalid previous hash', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const isValid = blockchain.validateNextBlock(1, 'invalidPrevHash'); // invalid previous hash
-      expect(isValid).toBe(false);
+    it('should not add a block with invalid sequence', () => {
+      const blocks: LightBlock[] = [
+        {
+          height: 0,
+          hash: 'hash0',
+          previousblockhash: '',
+          tx: ['tx0-1'],
+        },
+        {
+          height: 2, // Invalid height (should be 1)
+          hash: 'hash2',
+          previousblockhash: 'hash0',
+          tx: ['tx2-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(false);
+      expect(blockchain.size).toBe(0);
     });
 
-    it('should validate a correct block', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const isValid = blockchain.validateNextBlock(1, 'hash0');
-      expect(isValid).toBe(true);
-    });
-  });
+    it('should not add blocks with invalid sequence in multiple additions', () => {
+      const blocks1: LightBlock[] = [
+        {
+          height: 5,
+          hash: 'hash5',
+          previousblockhash: 'hash4',
+          tx: ['tx5-1'],
+        },
+      ];
 
-  describe('validateLastBlock', () => {
-    it('should validate the last block correctly', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const isValid = blockchain.validateLastBlock(0, 'hash0', 'prevHash0');
-      expect(isValid).toBe(true);
-    });
+      const blocks2: LightBlock[] = [
+        {
+          height: 6,
+          hash: 'hash6',
+          previousblockhash: 'hash5',
+          tx: ['tx6-1'],
+        },
+        {
+          height: 8, // Invalid height (should be 7)
+          hash: 'hash8',
+          previousblockhash: 'hash6',
+          tx: ['tx8-1'],
+        },
+      ];
 
-    it('should not validate an invalid last block', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const isValid = blockchain.validateLastBlock(1, 'hash1', 'hash0'); // invalid block data
-      expect(isValid).toBe(false);
-    });
-  });
+      const result1 = blockchain.addBlocks(blocks1);
+      expect(result1).toBe(true);
+      expect(blockchain.size).toBe(1);
 
-  describe('peekLast', () => {
-    it('should return null if the chain is empty', () => {
-      const lastBlock = blockchain.peekLast();
-      expect(lastBlock).toBeNull();
-    });
-
-    it('should peek the last block correctly', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const lastBlock = blockchain.peekLast();
-      expect(lastBlock).toEqual({
-        height: 0,
-        hash: 'hash0',
-        previousblockhash: 'prevHash0',
-        tx: [],
-      });
+      const result2 = blockchain.addBlocks(blocks2);
+      expect(result2).toBe(false);
+      expect(blockchain.size).toBe(1); // Size should remain unchanged
     });
   });
 
   describe('truncateToBlock', () => {
-    it('should truncate the blockchain correctly', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      blockchain.addBlock(1, 'hash1', 'hash0', []);
-      blockchain.addBlock(2, 'hash2', 'hash1', []);
-      const truncated = blockchain.truncateToBlock(2);
-      expect(truncated).toBe(true);
-      expect(blockchain.size).toBe(2);
-      expect(blockchain.lastBlockHeight).toBe(1);
+    beforeEach(() => {
+      // Add multiple blocks to the blockchain for truncation tests
+      const blocks: LightBlock[] = [
+        {
+          height: 0,
+          hash: 'hash0',
+          previousblockhash: '',
+          tx: ['tx0-1'],
+        },
+        {
+          height: 1,
+          hash: 'hash1',
+          previousblockhash: 'hash0',
+          tx: ['tx1-1'],
+        },
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+        {
+          height: 3,
+          hash: 'hash3',
+          previousblockhash: 'hash2',
+          tx: ['tx3-1'],
+        },
+        {
+          height: 4,
+          hash: 'hash4',
+          previousblockhash: 'hash3',
+          tx: ['tx4-1'],
+        },
+      ];
+
+      blockchain.addBlocks(blocks);
     });
 
-    it('should return false if the block was not found', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const truncated = blockchain.truncateToBlock(5);
-      expect(truncated).toBe(false);
+    it('should truncate the chain to a valid existing height', () => {
+      const truncateHeight = 2;
+      const result = blockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(true);
+      expect(blockchain.size).toBe(3);
+      expect(blockchain.lastBlockHeight).toBe(truncateHeight);
+      expect(blockchain.tail?.block.hash).toBe('hash2');
+      expect(blockchain.head?.block.hash).toBe('hash0');
+    });
+
+    it('should not truncate the chain if the height is less than -1', () => {
+      const truncateHeight = -2; // Invalid height
+      const result = blockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(false);
+      expect(blockchain.size).toBe(5); // No change
+    });
+
+    it('should truncate the entire chain when height is -1', () => {
+      const truncateHeight = -1; // Clear the chain
+      const result = blockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(true);
+      expect(blockchain.size).toBe(0);
+      expect(blockchain.head).toBeNull();
+      expect(blockchain.tail).toBeNull();
+      expect(blockchain.lastBlockHeight).toBe(-1);
+    });
+
+    it('should not truncate the chain if height is greater than the last block height', () => {
+      const truncateHeight = 10; // Height does not exist and is greater than last block's height
+      const result = blockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(false);
+      expect(blockchain.size).toBe(5); // No change
+      expect(blockchain.lastBlockHeight).toBe(4);
+    });
+
+    it('should truncate the chain to result in a size of 1', () => {
+      const truncateHeight = 0;
+      const result = blockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(true);
       expect(blockchain.size).toBe(1);
+      expect(blockchain.lastBlockHeight).toBe(0);
+      expect(blockchain.head?.block.hash).toBe('hash0');
+      expect(blockchain.tail?.block.hash).toBe('hash0');
+    });
+
+    it('should truncate a chain that starts from a non-genesis block', () => {
+      // Initialize a new blockchain starting from height 2
+      const newBlockchain = new Blockchain({ maxSize: 5 });
+      const blocks: LightBlock[] = [
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+        {
+          height: 3,
+          hash: 'hash3',
+          previousblockhash: 'hash2',
+          tx: ['tx3-1'],
+        },
+        {
+          height: 4,
+          hash: 'hash4',
+          previousblockhash: 'hash3',
+          tx: ['tx4-1'],
+        },
+      ];
+
+      const result1 = newBlockchain.addBlocks(blocks);
+      expect(result1).toBe(true);
+      expect(newBlockchain.size).toBe(3);
+      expect(newBlockchain.head?.block.hash).toBe('hash2');
+      expect(newBlockchain.tail?.block.hash).toBe('hash4');
+
+      // Truncate to height 3
+      const truncateHeight = 3;
+      const result = newBlockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(true);
+      expect(newBlockchain.size).toBe(2);
+      expect(newBlockchain.lastBlockHeight).toBe(3);
+      expect(newBlockchain.tail?.block.hash).toBe('hash3');
+      expect(newBlockchain.head?.block.hash).toBe('hash2');
+    });
+
+    it('should handle truncating an already empty chain gracefully', () => {
+      // Clear the chain first
+      blockchain.truncateToBlock(-1);
+      expect(blockchain.size).toBe(0);
+
+      // Attempt to truncate again
+      const result = blockchain.truncateToBlock(-1);
+      expect(result).toBe(true); // Should return true as the chain is already empty
+      expect(blockchain.size).toBe(0);
+      expect(blockchain.head).toBeNull();
+      expect(blockchain.tail).toBeNull();
+      expect(blockchain.lastBlockHeight).toBe(-1);
     });
   });
 
-  describe('removeOldestChain', () => {
-    it('should remove the first block correctly', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      blockchain.addBlock(1, 'hash1', 'hash0', []);
-      const removedBlock = blockchain['removeOldestChain']();
-      expect(removedBlock).toEqual({
-        height: 0,
-        hash: 'hash0',
-        previousblockhash: 'prevHash0',
-        tx: [],
-      });
-      expect(blockchain.size).toBe(1);
-      expect(blockchain.firstBlockHash).toBe('hash1');
+  describe('validateChain', () => {
+    it('should validate a correct chain', () => {
+      const blocks: LightBlock[] = [
+        {
+          height: 5,
+          hash: 'hash5',
+          previousblockhash: 'hash4',
+          tx: ['tx5-1'],
+        },
+        {
+          height: 6,
+          hash: 'hash6',
+          previousblockhash: 'hash5',
+          tx: ['tx6-1'],
+        },
+        {
+          height: 7,
+          hash: 'hash7',
+          previousblockhash: 'hash6',
+          tx: ['tx7-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(true);
+      expect(blockchain.validateChain()).toBe(true);
     });
 
-    it('should return null if the chain is empty', () => {
-      const removedBlock = blockchain['removeOldestChain']();
-      expect(removedBlock).toBeNull();
+    it('should invalidate a chain with incorrect heights', () => {
+      const blocks: LightBlock[] = [
+        {
+          height: 5,
+          hash: 'hash5',
+          previousblockhash: 'hash4',
+          tx: ['tx5-1'],
+        },
+        {
+          height: 7, // Incorrect height (should be 6)
+          hash: 'hash7',
+          previousblockhash: 'hash5',
+          tx: ['tx7-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(false); // Second block should not be added
+      expect(blockchain.validateChain()).toBe(true); // Remaining chain is valid
+    });
+
+    it('should invalidate a chain with incorrect previous hash', () => {
+      const blocks: LightBlock[] = [
+        {
+          height: 5,
+          hash: 'hash5',
+          previousblockhash: 'hash4',
+          tx: ['tx5-1'],
+        },
+        {
+          height: 6,
+          hash: 'hash6',
+          previousblockhash: 'hash_wrong', // Incorrect previous hash
+          tx: ['tx6-1'],
+        },
+      ];
+
+      const result1 = blockchain.addBlock(blocks[0].height, blocks[0].hash, blocks[0].previousblockhash, blocks[0].tx);
+      expect(result1).toBe(true);
+      expect(blockchain.size).toBe(1);
+
+      const result2 = blockchain.addBlock(blocks[1].height, blocks[1].hash, blocks[1].previousblockhash, blocks[1].tx);
+      expect(result2).toBe(false); // Second block should not be added
+      expect(blockchain.size).toBe(1); // Only first block exists
+      expect(blockchain.validateChain()).toBe(true); // Remaining chain is valid
+    });
+
+    it('should validate an empty chain', () => {
       expect(blockchain.size).toBe(0);
+      expect(blockchain.validateChain()).toBe(true); // An empty chain is considered valid
     });
   });
 
   describe('findBlockByHeight', () => {
     it('should find a block by its height', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      blockchain.addBlock(1, 'hash1', 'hash0', []);
-      const block = blockchain.findBlockByHeight(1);
-      expect(block).toEqual({
-        height: 1,
-        hash: 'hash1',
-        previousblockhash: 'hash0',
-        tx: [],
-      });
+      const blocks: LightBlock[] = [
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+        {
+          height: 3,
+          hash: 'hash3',
+          previousblockhash: 'hash2',
+          tx: ['tx3-1'],
+        },
+        {
+          height: 4,
+          hash: 'hash4',
+          previousblockhash: 'hash3',
+          tx: ['tx4-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(true);
+      expect(blockchain.size).toBe(3);
+
+      const foundBlock = blockchain.findBlockByHeight(3);
+      expect(foundBlock).toBeDefined();
+      expect(foundBlock?.hash).toBe('hash3');
     });
 
     it('should return null if the block is not found', () => {
-      blockchain.addBlock(0, 'hash0', 'prevHash0', []);
-      const block = blockchain.findBlockByHeight(1);
-      expect(block).toBeNull();
+      const blocks: LightBlock[] = [
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+        {
+          height: 3,
+          hash: 'hash3',
+          previousblockhash: 'hash2',
+          tx: ['tx3-1'],
+        },
+      ];
+
+      const result = blockchain.addBlocks(blocks);
+      expect(result).toBe(true);
+      expect(blockchain.size).toBe(2);
+
+      const foundBlock = blockchain.findBlockByHeight(5);
+      expect(foundBlock).toBeNull();
+    });
+  });
+
+  describe('truncateToBlock with non-genesis starting point', () => {
+    it('should truncate correctly when the chain starts from a non-genesis block', () => {
+      // Initialize a new blockchain starting from height 2
+      const newBlockchain = new Blockchain({ maxSize: 5 });
+      const blocks: LightBlock[] = [
+        {
+          height: 2,
+          hash: 'hash2',
+          previousblockhash: 'hash1',
+          tx: ['tx2-1'],
+        },
+        {
+          height: 3,
+          hash: 'hash3',
+          previousblockhash: 'hash2',
+          tx: ['tx3-1'],
+        },
+        {
+          height: 4,
+          hash: 'hash4',
+          previousblockhash: 'hash3',
+          tx: ['tx4-1'],
+        },
+      ];
+
+      const result1 = newBlockchain.addBlocks(blocks);
+      expect(result1).toBe(true);
+      expect(newBlockchain.size).toBe(3);
+      expect(newBlockchain.head?.block.hash).toBe('hash2');
+      expect(newBlockchain.tail?.block.hash).toBe('hash4');
+
+      // Truncate to height 3
+      const truncateHeight = 3;
+      const result = newBlockchain.truncateToBlock(truncateHeight);
+      expect(result).toBe(true);
+      expect(newBlockchain.size).toBe(2);
+      expect(newBlockchain.lastBlockHeight).toBe(3);
+      expect(newBlockchain.tail?.block.hash).toBe('hash3');
+      expect(newBlockchain.head?.block.hash).toBe('hash2');
     });
   });
 });

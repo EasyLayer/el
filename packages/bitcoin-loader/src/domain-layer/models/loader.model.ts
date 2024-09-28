@@ -19,15 +19,23 @@ enum LoaderStatuses {
 }
 
 export class Loader extends AggregateRoot {
+  private __maxSize!: number;
   // IMPORTANT: There must be only one Loader Aggregate in the module,
   // so we immediately give it aggregateId by which we can find it.
   public aggregateId: string = 'loader';
   public status: LoaderStatuses = LoaderStatuses.AWAITING;
-  // IMPORTANT: 'maxSize' must be NOT LESS than the number of blocks in a single batch when iterating over BlocksQueue.
-  // The number of blocks in a batch depends on the block size,
-  // so we must take the smallest blocks in the network,
-  // and make sure that they fit into a single batch less than the value of 'maxSize' .
-  public chain: Blockchain = new Blockchain({ maxSize: 3000 });
+  public chain: Blockchain;
+
+  constructor({ maxSize }: { maxSize: number }) {
+    super();
+
+    this.__maxSize = maxSize;
+    // IMPORTANT: 'maxSize' must be NOT LESS than the number of blocks in a single batch when iterating over BlocksQueue.
+    // The number of blocks in a batch depends on the block size,
+    // so we must take the smallest blocks in the network,
+    // and make sure that they fit into a single batch less than the value of 'maxSize' .
+    this.chain = new Blockchain({ maxSize });
+  }
 
   protected toJsonPayload(): any {
     return {
@@ -40,32 +48,22 @@ export class Loader extends AggregateRoot {
   protected fromSnapshot(state: any): void {
     this.status = state.status;
     if (state.chain && Array.isArray(state.chain)) {
-      this.chain = new Blockchain({ maxSize: 3000 });
+      this.chain = new Blockchain({ maxSize: this.__maxSize });
       this.chain.fromArray(state.chain);
       // Recovering links in Blockchain
       restoreChainLinks(this.chain.head);
     }
+
+    Object.setPrototypeOf(this, Loader.prototype);
   }
 
   // IMPORTANT: this method doing two things:
   // 1 - create Loader if it's first creation
-  // 2 - use already created params but still publish event
-  public async init({
-    requestId,
-    startHeight,
-    restoreBlocks,
-  }: {
-    requestId: string;
-    startHeight: string | number;
-    restoreBlocks: string[];
-  }) {
+  // 2 - truncate chain if chain last height bigger then startHeight
+  public async init({ requestId, indexedHeight }: { requestId: string; indexedHeight: number }) {
     const status = this.status || LoaderStatuses.AWAITING;
-    const lastBlockHeight = this.chain.lastBlockHeight;
-    // IMPORTANT: lastBlockHeight - is the last already indexed block and
-    // if it's start of blockchain where genesis block height is '0'
-    // so we indicate the last indexed block adjusted by -1.
-    // startHeight - is the height from which the user wants to index, it cannot be less than 0.
-    const height = lastBlockHeight + 1 > Number(startHeight) ? lastBlockHeight : Number(startHeight) - 1;
+
+    const height = this.chain.lastBlockHeight < indexedHeight ? this.chain.lastBlockHeight : indexedHeight;
 
     await this.apply(
       new BitcoinLoaderInitializedEvent({
@@ -73,7 +71,6 @@ export class Loader extends AggregateRoot {
         requestId,
         status,
         indexedHeight: height.toString(),
-        restoreBlocks,
       })
     );
   }
@@ -194,9 +191,13 @@ export class Loader extends AggregateRoot {
   }
 
   private onBitcoinLoaderInitializedEvent({ payload }: BitcoinLoaderInitializedEvent) {
-    const { aggregateId, status } = payload;
+    const { aggregateId, status, indexedHeight } = payload;
     this.aggregateId = aggregateId;
     this.status = status as LoaderStatuses;
+
+    // IMPORTANT: In cases of blockchain synchronization with the read state,
+    // we truncate the model to the precisely processed height.
+    this.chain.truncateToBlock(Number(indexedHeight));
   }
 
   private onBitcoinLoaderBlocksIndexedEvent({ payload }: BitcoinLoaderBlocksIndexedEvent) {
@@ -208,7 +209,7 @@ export class Loader extends AggregateRoot {
         height: Number(block.height),
         hash: block.hash,
         previousblockhash: block?.previousblockhash || '',
-        tx: block.tx.map((t: any) => t.txid),
+        tx: block.tx.map((txid: any) => txid),
       }))
     );
   }

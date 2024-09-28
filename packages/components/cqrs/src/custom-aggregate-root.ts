@@ -120,6 +120,11 @@ export abstract class CustomAggregateRoot<EventBase extends IEvent = IEvent> {
       this._version = deserializedPayload.version;
     }
 
+    // IMPORTANT: We don't need to restore the prototype and properties since loadFromSnapshot() is not a static method,
+    // but a method inside an instance of the base aggregate.
+    // const instance = Object.create(CustomAggregateRoot.prototype);
+    // Object.assign(this, instance);
+
     this.fromSnapshot(deserializedPayload);
   }
 
