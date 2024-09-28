@@ -1,7 +1,7 @@
 {
   "name": "bitcoin-wallet",
   "private": true,
-  "version": "0.0.3-experimental.19",
+  "version": "0.0.3-experimental.20",
   "description": "This is an example app for development",
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
@@ -9,7 +9,7 @@
     "start": "ts-node src/main.ts"
   },
   "dependencies": {
-    "@easylayer/bitcoin-wallet": "0.0.3-experimental.19"
+    "@easylayer/bitcoin-wallet": "0.0.3-experimental.20"
   },
   "devDependencies": {
     "@types/node": "20.10.4",
