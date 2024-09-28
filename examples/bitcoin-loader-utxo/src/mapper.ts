@@ -27,7 +27,7 @@ export class Mapper implements ILoaderMapper {
         const value = Money.fromDecimal(vout.value, currency).toCents();
         const outputModel = new OutputModel();
 
-        await outputModel.insert({
+        outputModel.insert({
           txid,
           script_hash: scriptHash,
           value,
@@ -41,7 +41,7 @@ export class Mapper implements ILoaderMapper {
         if (vin.txid && vin.vout) {
           const inputModel = new InputModel();
 
-          await inputModel.insert({
+          inputModel.insert({
             txid,
             output_txid: vin.txid,
             output_n: Number(vin.vout),

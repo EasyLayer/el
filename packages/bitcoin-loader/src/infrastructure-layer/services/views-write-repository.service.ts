@@ -5,6 +5,8 @@ import { ReadDatabaseConfig } from '../../config';
 
 @Injectable()
 export class ViewsWriteRepositoryService {
+  private isParallelSupport: boolean;
+
   // Queue of operations: stores entityName, method, and operation data
   private operations: Array<{ entityName: string; method: string; data: any[] }> = [];
 
@@ -13,7 +15,9 @@ export class ViewsWriteRepositoryService {
     private readonly datasource: DataSource,
     private readonly config: ReadDatabaseConfig,
     private readonly log: AppLogger
-  ) {}
+  ) {
+    this.isParallelSupport = this.datasource.manager.connection?.options?.type === 'postgres';
+  }
 
   /**
    * Retrieves the repository for a specific entity from the datasource
@@ -35,15 +39,22 @@ export class ViewsWriteRepositoryService {
    * Processes the models by extracting their operations history and adding those operations
    * to the internal queue (this.operations).
    */
-  public process(models: Array<{ getOperationsHistory: () => Array<{ method: string; params: any }> }> = []): void {
+  public process(
+    models: Array<{
+      getOperationsHistory: () => Array<{ method: string; params: any }>;
+      clearOperationsHistory: () => void;
+    }> = []
+  ): void {
     models.forEach((model) => {
       const entityName = model.constructor.name;
       const operationsHistory = model.getOperationsHistory();
-
       for (const operation of operationsHistory) {
         const { method, params } = operation;
         this.addOperation(entityName, method, params);
       }
+
+      // IMPORTANT: We clear the operations variable inside the model, manually for now
+      model.clearOperationsHistory();
     });
   }
 
@@ -103,8 +114,13 @@ export class ViewsWriteRepositoryService {
 
         if (method === 'insert' && data.length > batchSize) {
           const chunkedBatches = this.chunkArray(data, batchSize);
-          for (const chunk of chunkedBatches) {
-            await this.executeOperation(method, entityName, chunk);
+
+          if (this.isParallelSupport) {
+            await Promise.all(chunkedBatches.map((chunk) => this.executeOperation(method, entityName, chunk)));
+          } else {
+            for (const chunk of chunkedBatches) {
+              await this.executeOperation(method, entityName, chunk);
+            }
           }
         } else {
           await this.executeOperation(method, entityName, data);

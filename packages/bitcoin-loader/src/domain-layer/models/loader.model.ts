@@ -1,4 +1,5 @@
 import { AggregateRoot } from '@easylayer/components/cqrs';
+import { AppLogger } from '@easylayer/components/logger';
 import {
   NetworkProviderService,
   LightBlock,
@@ -61,8 +62,9 @@ export class Loader extends AggregateRoot {
   // 1 - create Loader if it's first creation
   // 2 - truncate chain if chain last height bigger then startHeight
   public async init({ requestId, indexedHeight }: { requestId: string; indexedHeight: number }) {
-    const status = this.status || LoaderStatuses.AWAITING;
-
+    // IMPORTANT: We always initialize the Loader with the awaiting status,
+    // if there was a reorganization status, then it will be processed at the next iteration.
+    const status = LoaderStatuses.AWAITING;
     const height = this.chain.lastBlockHeight < indexedHeight ? this.chain.lastBlockHeight : indexedHeight;
 
     await this.apply(
@@ -108,17 +110,25 @@ export class Loader extends AggregateRoot {
     blocks,
     height,
     requestId,
+    logger,
   }: {
     blocks: LightBlock[];
     height: string | number;
     requestId: string;
+    logger: AppLogger;
   }): Promise<void> {
     if (this.status !== LoaderStatuses.REORGANISATION) {
       throw new Error("processReorganisation() Reorganisation hasn't started yet");
     }
 
     if (Number(height) > this.chain.lastBlockHeight) {
-      throw new Error('Wrong block height');
+      // IMPORTANT: In this case we just skip + we can log this error
+      logger.warn(
+        "Reorganization height is higher than Loader's blockchain height",
+        { reorganisationHeight: height, lastBlockchainHeight: this.chain.lastBlockHeight },
+        this.constructor.name
+      );
+      return;
     }
 
     // TODO: Task SH-15

@@ -7,7 +7,7 @@ export class BlocksMapper implements ILoaderMapper {
 
         const model = new BlockModel();
 
-        await model.insert({
+        model.insert({
             hash, 
             height: Number(height),
             previousblockhash: previousblockhash ? previousblockhash : '000000000000000000',
@@ -22,7 +22,7 @@ export class BlocksMapper implements ILoaderMapper {
 
         const model = new BlockModel();
 
-        await model.update(
+        model.update(
             { is_suspended: true },
             { hash }
         );

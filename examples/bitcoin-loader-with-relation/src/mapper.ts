@@ -12,24 +12,24 @@ export class Mapper implements ILoaderMapper {
           throw new Error(`Tx length = 0`);
         }
 
-        tx.forEach((t: any) => {
+        for (const t of tx) {
             const { txid, vin, vout } = t;
-
+      
             const txsModel = new TransactionModel();
-
+      
             txsModel.insert({
-                txid,
-                vin,
-                vout,
-                block_hash: hash
+              txid,
+              vin,
+              vout,
+              block_hash: hash,
             });
-
+      
             txsModels.push(txsModel);
-        });
+        }
 
         const blockModel = new BlockModel();
 
-        await blockModel.insert({
+        blockModel.insert({
             hash, 
             height: Number(height),
             previousblockhash: previousblockhash ? previousblockhash : '000000000000000000'
@@ -45,7 +45,7 @@ export class Mapper implements ILoaderMapper {
 
         const blockModel = new BlockModel();
     
-        await blockModel.update(
+        blockModel.update(
             { is_suspended: true },
             { hash }
         );
