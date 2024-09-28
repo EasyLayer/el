@@ -1,10 +1,32 @@
 import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
 import { IBlock } from './blocks';
 
+
+export interface Vin {
+  txid?: string;
+  vout?: number;
+  scriptSig?: {
+    asm: string;
+  };
+  sequence?: number;
+  witness?: string[];
+  coinbase?: string;
+}
+export interface Vout {
+  value: number;
+  n: number;
+  scriptPubKey?: {
+    asm: string;
+    reqSigs?: number;
+    type: string;
+    addresses?: string[];
+  };
+}
+
 export interface ITransaction {
   txid: string;
-  vin: any;
-  vout: any;
+  vin: Vin[];
+  vout: Vout[];
   block_hash: string;
   block?: IBlock;
 }

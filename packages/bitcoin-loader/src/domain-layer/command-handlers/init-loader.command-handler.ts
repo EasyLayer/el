@@ -25,12 +25,12 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
 
       const loaderModel: Loader = await this.loaderModelFactory.initModel();
 
-      if (loaderModel.status === 'reorganisation') {
-        // IMPORTANT: In this case we have to republish events
-        this.log.info('Reorganisation of blocks was started...', null, this.constructor.name);
-        // Publish last Loader event to process reorganisation
-        await this.loaderModelFactory.publishLastEvent();
-      }
+      // if (loaderModel.status === 'reorganisation') {
+      //   // IMPORTANT: In this case we have to republish events
+      //   this.log.info('Reorganisation of blocks is starting...', null, this.constructor.name);
+      //   // Publish last Loader event to process reorganisation
+      //   await this.loaderModelFactory.publishLastEvent();
+      // }
 
       // IMPORTANT: We add -1 because we must specify the already indexed height
       // (if this is the beginning of the chain then it is -1, 0 is the first block)

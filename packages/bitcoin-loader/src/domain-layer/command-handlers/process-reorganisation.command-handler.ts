@@ -30,6 +30,7 @@ export class ProcessReorganisationCommandHandler implements ICommandHandler<Proc
         blocks,
         height,
         requestId,
+        logger: this.log,
       });
 
       await this.eventStore.save(loaderModel);

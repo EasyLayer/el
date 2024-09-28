@@ -44,8 +44,9 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
         values: new System({ last_block_height: lastBlockHeight }),
       });
 
+      console.time('commit');
       await this.viewsWriteRepository.commit();
-
+      console.timeEnd('commit');
       this.log.info(
         'Blocks successfull loaded',
         {

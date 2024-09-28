@@ -14,26 +14,17 @@ export const generateModelFromSchema = (entitySchema: EntitySchema) => {
       }
 
       this.insert = (values: Record<string, any>) => {
-        return new Promise((resolve) => {
-          operationsHistory.push({ method: 'insert', params: values });
-          Object.assign(this, values);
-          resolve();
-        });
+        operationsHistory.push({ method: 'insert', params: values });
+        Object.assign(this, values);
       };
 
       this.update = (values: Record<string, any>, conditions: Record<string, any>) => {
-        return new Promise((resolve) => {
-          operationsHistory.push({ method: 'update', params: { values, conditions } });
-          Object.assign(this, values);
-          resolve();
-        });
+        operationsHistory.push({ method: 'update', params: { values, conditions } });
+        Object.assign(this, values);
       };
 
       this.delete = (conditions: Record<string, any>) => {
-        return new Promise((resolve) => {
-          operationsHistory.push({ method: 'delete', params: conditions });
-          resolve();
-        });
+        operationsHistory.push({ method: 'delete', params: conditions });
       };
 
       this.getOperationsHistory = () => {
@@ -46,11 +37,11 @@ export const generateModelFromSchema = (entitySchema: EntitySchema) => {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async insert(values: Record<string, any>) {}
+    insert(values: Record<string, any>) {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async update(values: Record<string, any>, conditions: Record<string, any>) {}
+    update(values: Record<string, any>, conditions: Record<string, any>) {}
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    async delete(conditions: Record<string, any>) {}
+    delete(conditions: Record<string, any>) {}
     getOperationsHistory() {}
     clearOperationsHistory() {}
   }

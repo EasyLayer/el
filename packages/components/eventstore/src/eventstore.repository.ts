@@ -159,8 +159,8 @@ export class EventStoreRepository<T extends AggregateWithId = AggregateWithId> {
       // https://github.com/typeorm/typeorm/issues/4651
       await this.eventsRepository.createQueryBuilder().insert().values(events).updateEntity(false).execute();
 
-      // Update snapshot only when version is a multiple of 100
-      if (aggregate.version % 100 === 0) {
+      // Update snapshot only when version is a multiple of 50
+      if (aggregate.version % 50 === 0) {
         await this.updateSnapshot(aggregate);
       }
     } catch (error) {
