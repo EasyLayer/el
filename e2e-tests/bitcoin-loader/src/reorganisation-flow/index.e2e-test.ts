@@ -9,7 +9,6 @@ import { BlockSchema } from './blocks';
 import { BlocksMapper } from './mapper';
 import { mockFakeChainBlocks, mockRealChainBlocks } from './mocks/fake-and-real-blockschain';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 jest
   .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHeights')
   .mockImplementation(async (heights: (string | number)[]): Promise<any> => {

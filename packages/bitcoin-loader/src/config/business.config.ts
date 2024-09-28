@@ -20,4 +20,8 @@ export class BusinessConfig {
     default: 0,
   })
   BITCOIN_LOADER_START_BLOCK_HEIGHT: number = 0;
+
+  @Transform(({ value }) => (value ? parseInt(value, 10) : 1000))
+  @IsNumber()
+  BITCOIN_LOADER_MODEL_MAX_SIZE: number = 1000;
 }

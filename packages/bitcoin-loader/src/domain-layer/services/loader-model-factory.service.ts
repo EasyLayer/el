@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { EventPublisher } from '@easylayer/components/cqrs';
 import { EventStoreRepository } from '@easylayer/components/eventstore';
 import { Loader } from '../models/loader.model';
+import { BusinessConfig } from '../../config';
 
 @Injectable()
 export class LoaderModelFactoryService {
@@ -10,11 +11,16 @@ export class LoaderModelFactoryService {
 
   constructor(
     private readonly publisher: EventPublisher,
-    private readonly loaderRepository: EventStoreRepository<Loader>
+    private readonly loaderRepository: EventStoreRepository<Loader>,
+    private readonly businessConfig: BusinessConfig
   ) {}
 
   public createNewModel(): Loader {
-    return this.publisher.mergeObjectContext(new Loader());
+    return this.publisher.mergeObjectContext(
+      new Loader({
+        maxSize: this.businessConfig.BITCOIN_LOADER_MODEL_MAX_SIZE,
+      })
+    );
   }
 
   public async initModel(): Promise<Loader> {

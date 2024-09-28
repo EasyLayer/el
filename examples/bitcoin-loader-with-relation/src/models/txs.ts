@@ -30,12 +30,6 @@ export const TransactionSchema = new EntitySchema<ITransaction>({
       nullable: false,
     },
   },
-  uniques: [
-    {
-      name: 'UQ__txs__txid',
-      columns: ['txid'],
-    },
-  ],
   relations: {
     block: {
       type: 'many-to-one',

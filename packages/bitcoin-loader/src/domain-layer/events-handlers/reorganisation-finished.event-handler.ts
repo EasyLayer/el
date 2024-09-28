@@ -24,20 +24,22 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
     try {
       const { blocks: lightBlocks } = payload;
 
-      for (const block of lightBlocks) {
-        const results = await this.loaderMapper.onReorganisation(block);
-        const models = Array.isArray(results) ? results : [results];
-
-        this.viewsWriteRepository.process(models);
-      }
-
       // Update System entity
       const lastBlockHeight: number = lightBlocks[lightBlocks.length - 1]?.height;
       await this.viewsWriteRepository.update('system', {
         values: new System({ last_block_height: lastBlockHeight }),
       });
 
-      await this.viewsWriteRepository.commit();
+      if (Array.isArray(lightBlocks) && lightBlocks.length > 0) {
+        for (const block of lightBlocks) {
+          const results = await this.loaderMapper.onReorganisation(block);
+          const models = Array.isArray(results) ? results : [results];
+
+          this.viewsWriteRepository.process(models);
+        }
+
+        await this.viewsWriteRepository.commit();
+      }
 
       this.log.info(
         `Blockchain successfull reorganised to height`,

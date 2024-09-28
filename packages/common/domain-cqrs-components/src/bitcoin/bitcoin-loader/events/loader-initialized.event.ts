@@ -5,7 +5,6 @@ interface BitcoinLoaderInitializedEventPayload {
   requestId: string;
   status: string;
   indexedHeight: string;
-  restoreBlocks: string[];
 }
 
 export class BitcoinLoaderInitializedEvent implements BasicEvent<BitcoinLoaderInitializedEventPayload> {
