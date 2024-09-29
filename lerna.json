@@ -7,6 +7,6 @@
     "e2e-tests/*",
     "e2e-tests/*/*"
   ],
-  "version": "0.0.3-experimental.22",
+  "version": "0.0.3-experimental.23",
   "npmClient": "yarn"
 }
