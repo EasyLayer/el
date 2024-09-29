@@ -25,7 +25,7 @@ export interface BlocksQueueModuleOptions {
 @Module({})
 export class BlocksQueueModule {
   static async forRootAsync(config: BlocksQueueModuleOptions): Promise<DynamicModule> {
-    const { blocksCommandExecutor, maxBlockHeight, ...restConfig } = config;
+    const { blocksCommandExecutor, ...restConfig } = config;
 
     return {
       module: BlocksQueueModule,
@@ -39,8 +39,7 @@ export class BlocksQueueModule {
         },
         {
           provide: 'BlocksQueueService',
-          useFactory: (logger, iterator, loader) =>
-            new BlocksQueueService(logger, iterator, loader, { ...restConfig, maxBlockHeight }),
+          useFactory: (logger, iterator, loader) => new BlocksQueueService(logger, iterator, loader, { ...restConfig }),
           inject: [AppLogger, BlocksQueueIteratorService, BlocksQueueLoaderService],
         },
         {

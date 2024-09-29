@@ -116,15 +116,15 @@ export class CustomEventBus<EventBase extends IEvent = IEvent> extends EventBus<
 
     const subscription = stream$.pipe(filter((e) => !!e)).subscribe({
       next: (data) => {
-        this._newLogger.debug(`Saga result: ${data}`);
+        // this._newLogger.debug(`Saga result: ${data}`);
         this._sagaCompletionSubject$.next(data);
       },
       error: (error) => {
-        this._newLogger.error(`Saga has thrown an unhandled exception: ${error}`);
+        // this._newLogger.error(`Saga has thrown an unhandled exception: ${error}`);
         this._sagaCompletionSubject$.error(error);
       },
       complete: () => {
-        this._newLogger.debug('Saga processing completed.');
+        // this._newLogger.debug('Saga processing completed.');
         this._sagaCompletionSubject$.complete();
       },
     });

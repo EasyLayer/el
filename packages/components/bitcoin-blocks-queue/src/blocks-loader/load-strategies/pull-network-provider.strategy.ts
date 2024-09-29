@@ -180,6 +180,10 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       }
     }
 
-    this.log.debug('Blocks enqueued to queue', { blocksLength: initialLength }, this.constructor.name);
+    this.log.debug(
+      'Blocks enqueued to queue',
+      { blocksLength: initialLength - this._loadedBlocks.length },
+      this.constructor.name
+    );
   }
 }

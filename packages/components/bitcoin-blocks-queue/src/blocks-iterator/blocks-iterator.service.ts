@@ -106,10 +106,7 @@ export class BlocksQueueIteratorService implements OnModuleDestroy {
 
     // Now we start processing blocks only in batches of the appropriate sizes.
     // If there are few blocks in the queue, we will not take them out for now in order to unload other places.
-    const batch: Block[] = await this._queue.getBatchUpToSize(minBatchSize).catch((error) => {
-      this.log.error('Iterator peek blocks error', error, this.constructor.name);
-      return [];
-    });
+    const batch: Block[] = await this._queue.getBatchUpToSize(minBatchSize);
 
     this.log.debug('Iterator peeked blocks batch with length', { batchLength: batch.length }, this.constructor.name);
 

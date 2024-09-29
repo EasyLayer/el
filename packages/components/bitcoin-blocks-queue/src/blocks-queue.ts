@@ -269,8 +269,8 @@ export class BlocksQueue<T extends Block> {
       for (const block of iterator) {
         if (accumulatedSize + block.__size > maxSize) {
           if (batch.length === 0) {
-            // If the first block exceeds maxSize, throw an error
-            throw new Error('Block size exceeds the maximum batch size');
+            // If the first block exceeds maxSize, we guarantee to add at least one block for processing
+            batch.push(block);
           }
           break;
         }

@@ -44,14 +44,14 @@ export class BlocksQueueConfig {
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: BlocksQueueStrategy = BlocksQueueStrategy.PULL_NETWORL_PROVIDER;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 52428800))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4194304))
   @IsNumber()
   @JSONSchema({
     description:
       'Batch size in bytes of the batch blocks iterator at one time. Should not be bigger than the size of a single block.',
-    default: 52428800,
+    default: 4194304,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 52428800; // 50 MB;
+  BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4194304; // 4 MB
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10))
   @IsNumber()
