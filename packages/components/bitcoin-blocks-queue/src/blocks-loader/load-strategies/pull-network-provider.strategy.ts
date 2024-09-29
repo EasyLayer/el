@@ -40,39 +40,29 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     }
 
     this._isLoading = true;
-
     this._missedHeights = [];
     this._loadedBlocks = [];
 
     while (this._isLoading) {
       if (this.queue.isMaxHeightReached) {
-        this.log.info('Reached max block height', { lastQueueHeight: this.queue.lastHeight }, this.constructor.name);
-        break;
+        throw new Error(`Reached max block height, ${this.queue.lastHeight}`);
       }
 
       // Check if we have reached the current network height
       if (this.queue.lastHeight >= currentNetworkHeight) {
-        this.log.info(
-          'Reached current network height.',
-          { lastQueueHeight: this.queue.lastHeight },
-          this.constructor.name
-        );
-        break;
+        throw new Error(`Reached current network height, ${this.queue.lastHeight}`);
       }
 
       // Check if the queue is full
       if (this.queue.isQueueFull) {
-        this.log.debug('Queue is full. Waiting...', { queueLength: this.queue.length }, this.constructor.name);
-        // If the queue is full, we can easily wait even 2-3 seconds.
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        continue;
+        throw new Error(`Queue is full, ${this.queue.lastHeight}`);
       }
 
       await this.loadAndEnqueueBlocks(currentNetworkHeight);
     }
   }
 
-  public async destroy(): Promise<void> {
+  public async stop(): Promise<void> {
     this._isLoading = false;
     this._missedHeights = [];
     this._loadedBlocks = [];
@@ -94,8 +84,8 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       }
     }
 
-    // Only if the missed heights have been processed, then we can move on to new ones
-    if (this._missedHeights.length === 0) {
+    // Only if the activeTasks is empty after missed heights have been processed, then we can move on to new ones
+    if (activeTasks.length === 0) {
       for (let i = 0; i < this._concurrency; i++) {
         const nextStartHeight = this.queue.lastHeight + 1 + i * this._batchLength;
 
@@ -131,7 +121,11 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         this._loadedBlocks.push(...blocksBatch);
       });
     } catch (error) {
-      this.log.debug('AssignWorker encountered an error.', { error, startHeight }, this.constructor.name);
+      this.log.debug(
+        'Fetch blocks error, save missed heights',
+        { error, missedHeight: startHeight, missedHeightsLength: this._missedHeights.length },
+        this.constructor.name
+      );
 
       await this._mutex.runExclusive(async () => {
         if (!this._missedHeights.includes(startHeight)) {
@@ -174,7 +168,8 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
             error,
             this.constructor.name
           );
-          // Exit the loop since subsequent blocks have lower heights
+          // We exit the loop, because if the first block didn't pass,
+          // then the rest definitely won't pass
           break;
         }
       }

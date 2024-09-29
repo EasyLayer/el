@@ -60,6 +60,10 @@ export class ReadDatabaseModule {
           name,
           useFactory: (log: AppLogger) => ({
             ...dataSourceOptions,
+            extra: {
+              max: 20, // Максимальное количество соединений в пуле
+              // idleTimeoutMillis: 30000, // Время ожидания неактивного соединения
+            },
             log,
           }),
           inject: [AppLogger],

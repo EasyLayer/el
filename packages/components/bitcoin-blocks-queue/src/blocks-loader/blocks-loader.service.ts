@@ -23,7 +23,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    await this._loadingStrategy?.destroy();
+    await this._loadingStrategy?.stop();
     this._timer?.destroy();
     this._timer = null;
     this._loadingStrategy = null;
@@ -49,14 +49,15 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
           // IMPORTANT: every exponential tick we fetch current blockchain network height
           const currentNetworkHeight = await this.networkProviderService.getCurrentBlockHeight();
 
+          this.log.debug('Current blockchain network height', { height: currentNetworkHeight }, this.constructor.name);
+
           // IMPORTANT: We expect that strategy load all blocks to currentNetworkHeight for one method call
           await this._loadingStrategy?.load(currentNetworkHeight);
-        } catch (error) {
-          this.log.error('Loader strategy throw an error', error, this.constructor.name);
           resetInterval();
+        } catch (error) {
+          this.log.debug('Stop the loading strategy', error, this.constructor.name);
+          await this._loadingStrategy?.stop();
         }
-
-        this.log.debug('Load blocks waiting...', {}, this.constructor.name);
       },
       {
         interval: this.config.queueLoaderIntervalMs,
