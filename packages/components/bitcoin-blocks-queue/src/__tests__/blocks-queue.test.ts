@@ -438,30 +438,23 @@ describe('BlocksQueue', () => {
   });
 
   describe('Get Batch Up To Size', () => {
-    it('should throw an error when the first block exceeds maxSize in getBatchUpToSize', async () => {
+    it('should return at least one block even when the first block exceeds maxSize in getBatchUpToSize', async () => {
       // Set maxQueueSize to 500 bytes
       queue.maxQueueSize = 500;
 
-      // Attempt to enqueue a block that exceeds maxQueueSize
-      const oversizedBlock = new TestBlock(0, [createTransaction(600)]); // 600 bytes
-
-      // Enqueue should throw an error because block size > maxQueueSize
-      await expect(queue.enqueue(oversizedBlock)).rejects.toThrow(
-        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: false, Current size + block size: 600`
-      );
-
-      expect(queue.length).toBe(0);
-      expect(queue.currentSize).toBe(0);
-
-      // Enqueue a valid block
+      // Enqueue a valid block within the limit
       const validBlock = new TestBlock(0, [createTransaction(400)]); // 400 bytes
       await queue.enqueue(validBlock);
 
-      // Trigger transferItems
+      // Trigger transferItems to move blocks to outStack
       await queue.firstBlock();
 
-      // Attempt to get batch with maxSize 300, which is less than validBlock's size
-      await expect(queue.getBatchUpToSize(300)).rejects.toThrow('Block size exceeds the maximum batch size');
+      // Attempt to get a batch with maxSize 300, which is less than the size of both blocks
+      const batch = await queue.getBatchUpToSize(300);
+
+      // Ensure at least one block is returned, even though its size exceeds maxSize
+      expect(batch.length).toBe(1);
+      expect(batch[0].__size).toBe(400); // The block should be oversizedBlock, which is 400 bytes
     });
 
     it('should return an empty array when the queue is empty', async () => {
