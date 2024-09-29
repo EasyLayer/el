@@ -39,7 +39,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       // keepAlive - Allows reuse of TCP connections.
       httpAgent: new http.Agent({ keepAlive: true }),
       httpsAgent: new https.Agent({ keepAlive: true }),
-      timeout: 20000,
+      timeout: 5000,
     });
 
     const health = await this.healthcheck();
