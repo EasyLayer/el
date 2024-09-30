@@ -177,13 +177,23 @@ export class BlocksQueue<T extends Block> {
       // Calculate the total block size based on tx.hex without modifying the original block
       let totalBlockSize = 0;
 
-      for (const transaction of block.tx) {
-        if (transaction.hex && typeof transaction.hex === 'string') {
-          // Each byte is represented by two hex characters
-          const transactionSize = transaction.hex.length / 2;
-          totalBlockSize += transactionSize;
-        } else {
-          throw new Error(`Invalid hex in transaction: ${transaction?.hex}`);
+      if (block.size) {
+        totalBlockSize = Number(block.size);
+      } else {
+        totalBlockSize = 0;
+        for (const transaction of block.tx) {
+          if (transaction.size) {
+            totalBlockSize += Number(transaction.size);
+          } else if (transaction.hex) {
+            const transactionSize = transaction.hex.length / 2;
+            totalBlockSize += transactionSize;
+          } else {
+            throw new Error(
+              `Invalid transaction data. Either size or hex must be present. Transaction: ${JSON.stringify(
+                transaction
+              )}`
+            );
+          }
         }
       }
 
@@ -208,7 +218,7 @@ export class BlocksQueue<T extends Block> {
       }
 
       // Add the modified block to the inStack
-      this.inStack.push({ ...block, __size: totalBlockSize });
+      this.inStack.push(block);
       this._lastHeight = Number(block.height);
       this._size += totalBlockSize;
     });
@@ -223,7 +233,7 @@ export class BlocksQueue<T extends Block> {
     return this.mutex.runExclusive(async () => {
       const block = this.outStack.pop();
       if (block) {
-        this._size -= block.__size;
+        this._size -= block.size;
       }
       return block;
     });
@@ -267,7 +277,7 @@ export class BlocksQueue<T extends Block> {
       const iterator = this.peekPrevBlock();
 
       for (const block of iterator) {
-        if (accumulatedSize + block.__size > maxSize) {
+        if (accumulatedSize + block.size > maxSize) {
           if (batch.length === 0) {
             // If the first block exceeds maxSize, we guarantee to add at least one block for processing
             batch.push(block);
@@ -276,7 +286,7 @@ export class BlocksQueue<T extends Block> {
         }
 
         batch.push(block);
-        accumulatedSize += block.__size;
+        accumulatedSize += block.size;
       }
 
       return batch;
