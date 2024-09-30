@@ -1,3 +1,4 @@
+// import _ from 'lodash';
 import { BlocksQueue } from '../blocks-queue';
 import { Block, Transaction } from '../interfaces';
 
@@ -8,13 +9,14 @@ class TestBlock implements Block {
   height: number;
   hash: string;
   tx: Transaction[];
-  __size: number; // Mandatory property
+  size: number;
 
   constructor(height: number, tx: Transaction[] = []) {
     this.height = height;
     this.hash = `hash${height}`;
     this.tx = tx;
-    this.__size = 0; // Initialize __size
+    // Calculate the total size of the block based on its transactions
+    this.size = tx.reduce((acc, transaction) => acc + transaction.size, 0);
   }
 }
 
@@ -31,6 +33,7 @@ function createTransaction(hexSize: number): Transaction {
     vin: [], // Mock vin array; populate with mock data if necessary
     vout: [], // Mock vout array; populate with mock data if necessary
     hex: 'a'.repeat(hexSize * 2), // Each byte is represented by two hex characters
+    size: hexSize, // Explicitly set size for clarity
     // Add other properties if necessary
   };
 }
@@ -162,10 +165,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
       expect(queue.length).toBe(1);
       expect(queue.lastHeight).toBe(1);
@@ -183,10 +188,12 @@ describe('BlocksQueue', () => {
             hash: 'hash150',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 150,
           },
         ],
-        __size: 150,
+        size: 150,
       });
       expect(queue.length).toBe(0);
       expect(queue.lastHeight).toBe(1); // Last height remains unchanged after dequeuing
@@ -259,10 +266,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
     });
 
@@ -292,10 +301,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
     });
 
@@ -332,10 +343,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
       expect(foundBlocks).toContainEqual({
         height: 2,
@@ -346,10 +359,12 @@ describe('BlocksQueue', () => {
             hash: 'hash200',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 200,
           },
         ],
-        __size: 200,
+        size: 200,
       });
       expect(foundBlocks.length).toBe(2);
     });
@@ -393,10 +408,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
       expect(secondYield).toEqual({
         height: 1,
@@ -407,10 +424,12 @@ describe('BlocksQueue', () => {
             hash: 'hash150',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 150,
           },
         ],
-        __size: 150,
+        size: 150,
       });
       expect(thirdYield).toEqual({
         height: 2,
@@ -421,10 +440,12 @@ describe('BlocksQueue', () => {
             hash: 'hash200',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 200,
           },
         ],
-        __size: 200,
+        size: 200,
       });
       expect(generator.next().done).toBe(true);
     });
@@ -449,12 +470,12 @@ describe('BlocksQueue', () => {
       // Trigger transferItems to move blocks to outStack
       await queue.firstBlock();
 
-      // Attempt to get a batch with maxSize 300, which is less than the size of both blocks
+      // Attempt to get a batch with maxSize 300, which is less than the size of the block
       const batch = await queue.getBatchUpToSize(300);
 
       // Ensure at least one block is returned, even though its size exceeds maxSize
       expect(batch.length).toBe(1);
-      expect(batch[0].__size).toBe(400); // The block should be oversizedBlock, which is 400 bytes
+      expect(batch[0].size).toBe(400); // The block should be oversizedBlock, which is 400 bytes
     });
 
     it('should return an empty array when the queue is empty', async () => {
@@ -484,10 +505,12 @@ describe('BlocksQueue', () => {
             hash: 'hash100',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 100,
           },
         ],
-        __size: 100,
+        size: 100,
       });
       expect(batch).toContainEqual({
         height: 1,
@@ -498,10 +521,12 @@ describe('BlocksQueue', () => {
             hash: 'hash150',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 150,
           },
         ],
-        __size: 150,
+        size: 150,
       });
       expect(batch.length).toBe(2);
       expect(batch).not.toContainEqual({
@@ -513,10 +538,12 @@ describe('BlocksQueue', () => {
             hash: 'hash200',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 200,
           },
         ],
-        __size: 200,
+        size: 200,
       });
     });
 
@@ -538,10 +565,12 @@ describe('BlocksQueue', () => {
             hash: 'hash300',
             vin: [],
             vout: [],
-            // hex was removed
+            hex: undefined, // hex was removed
+            witness: undefined,
+            size: 300,
           },
         ],
-        __size: 300,
+        size: 300,
       });
       expect(batch.length).toBe(1);
     });

@@ -1,32 +1,11 @@
 import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
 import { IBlock } from './blocks';
 
-
-export interface Vin {
-  txid?: string;
-  vout?: number;
-  scriptSig?: {
-    asm: string;
-  };
-  sequence?: number;
-  witness?: string[];
-  coinbase?: string;
-}
-export interface Vout {
-  value: number;
-  n: number;
-  scriptPubKey?: {
-    asm: string;
-    reqSigs?: number;
-    type: string;
-    addresses?: string[];
-  };
-}
-
 export interface ITransaction {
   txid: string;
-  vin: Vin[];
-  vout: Vout[];
+  hex: string;
+  vin: string;
+  vout: string;
   block_hash: string;
   block?: IBlock;
 }
@@ -40,11 +19,11 @@ export const TransactionSchema = new EntitySchema<ITransaction>({
       primary: true,
     },
     vin: {
-      type: 'json',
+      type: 'text',
       nullable: false,
     },
     vout: {
-      type: 'json',
+      type: 'text',
       nullable: false,
     },
     block_hash: {

@@ -26,13 +26,14 @@ export interface Transaction {
   vout: any;
   hex?: string;
   witness?: any;
+  size: number;
 }
 // TODO: move to provider
 export interface Block {
   height: number;
   hash: string;
   tx: Transaction[];
-  __size: number; // size of all tx in Bytes
+  size: number; // size in Bytes
 }
 
 export interface BlocksCommandExecutor {

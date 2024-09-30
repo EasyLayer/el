@@ -76,7 +76,7 @@ describe('PullNetworkProviderStrategy', () => {
         height: Number(height),
         hash: `hash${height}`,
         tx: [],
-        __size: 0,
+        size: 0,
       })) as Block[];
 
       // Update lastHeight to trigger the stopping condition
@@ -114,7 +114,7 @@ describe('PullNetworkProviderStrategy', () => {
         height: Number(height),
         hash: `hash${height}`,
         tx: [],
-        __size: 0,
+        size: 0,
       })) as Block[];
 
       // Update lastHeight based on the fetched blocks
