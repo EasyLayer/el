@@ -11,13 +11,13 @@ enum BlocksQueueStrategy {
 
 @Injectable()
 export class BlocksQueueConfig {
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 4))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10485760))
   @IsNumber()
   @JSONSchema({
-    description: 'Number of parallel requests for the Bitcoin loader queue.',
-    default: 1,
+    description: 'Maximum size in bytes of the rpc blocks batch request',
+    default: 10485760,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM: number = 4;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE: number = 10 * 1024 * 1024; // 10 MB;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 119430400))
   @IsNumber()
@@ -52,20 +52,4 @@ export class BlocksQueueConfig {
     default: 4194304,
   })
   BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 4194304; // 4 MB
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10))
-  @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 10;
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
-  @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_INTERVAL_MS: number = 500;
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10 * 60 * 1000))
-  @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS: number = 10 * 60 * 1000;
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 2))
-  @IsNumber()
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER: number = 2;
 }

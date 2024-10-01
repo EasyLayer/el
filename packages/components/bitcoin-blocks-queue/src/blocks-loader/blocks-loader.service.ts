@@ -60,9 +60,9 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
         }
       },
       {
-        interval: this.config.queueLoaderIntervalMs,
-        maxInterval: this.config.queueLoaderMaxIntervalMs,
-        multiplier: this.config.queueLoaderMaxIntervalMultiplier,
+        interval: 15,
+        maxInterval: 3000,
+        multiplier: 2,
       }
     );
   }
@@ -73,8 +73,8 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
     switch (name) {
       case StrategyNames.PULL_NETWORL_PROVIDER:
         this._loadingStrategy = new PullNetworkProviderStrategy(this.log, this.networkProviderService, queue, {
-          concurrency: this.config.queueLoaderConcurrencyNum,
-          batchLength: this.config.queueLoaderBlocksBatchLength,
+          maxRequestBlocksBatchSize: this.config.queueLoaderRequestBlocksBatchSize,
+          isTest: this.config.isTest,
         });
         break;
       default:

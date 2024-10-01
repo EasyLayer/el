@@ -98,15 +98,11 @@ export class BitcoinIndexerModule {
           blocksCommandExecutor: BlocksCommandFactoryService,
           isTransportMode: appConfig.BITCOIN_INDEXER_IS_TRANSPORT_MODE,
           maxBlockHeight: businessConfig.BITCOIN_INDEXER_MAX_BLOCK_HEIGHT,
-          queueLoaderConcurrencyNum: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
+          queueLoaderRequestBlocksBatchSize:
+            blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE,
           maxQueueSize: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
           minTransferSize: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_MIN_TRANSFER_SIZE,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
-          queueLoaderBlocksBatchLength: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH,
-          queueLoaderIntervalMs: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_INTERVAL_MS,
-          queueLoaderMaxIntervalMs: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS,
-          queueLoaderMaxIntervalMultiplier:
-            blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER,
           queueIteratorBlocksBatchSize: blocksQueueConfig.BITCOIN_INDEXER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
         }),
         ViewsKeyValueDatabaseModule.forRootAsync({

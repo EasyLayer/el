@@ -58,6 +58,16 @@ export class NetworkProviderService {
     }
   }
 
+  public async getManyBlocksStatsByHeights(heights: string[] | number[]): Promise<any> {
+    try {
+      const provider = await this._connectionManager.getActiveProvider();
+      return await provider.getManyBlocksStatsByHeights(heights.map((item) => Number(item)));
+    } catch (error) {
+      this.log.error('getManyBlocksStatsByHeights()', error, this.constructor.name);
+      throw error;
+    }
+  }
+
   public async getOneBlockByHash(hash: string | Hash, verbosity?: number): Promise<any> {
     try {
       const provider = await this._connectionManager.getActiveProvider();
