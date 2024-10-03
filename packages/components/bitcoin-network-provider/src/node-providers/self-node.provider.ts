@@ -71,7 +71,12 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
     }
   }
 
-  public async disconnect() {}
+  public async disconnect() {
+    if (this._httpClient) {
+      (this._httpClient.defaults.httpAgent as http.Agent)?.destroy();
+      (this._httpClient.defaults.httpsAgent as https.Agent)?.destroy();
+    }
+  }
 
   public async getBlockHeight(): Promise<number> {
     try {
@@ -316,8 +321,37 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
   }
 
   public async getManyBlocksStatsByHeights(heights: number[]): Promise<any> {
-    const blocksHashes = await this.getManyHashesByHeights(heights);
-    const blocks = await this.getManyBlocksStatsByHashes(blocksHashes);
-    return blocks.filter((block: any) => block);
+    const genesisHeight = 0;
+    // Check if genesis block is included in the request
+    const hasGenesis = heights.includes(genesisHeight);
+
+    if (hasGenesis) {
+      // Dynamically fetch the genesis block hash using height 0
+      const genesisHash = await this.getOneBlockHashByHeight(genesisHeight);
+
+      const filteredHeights = heights.filter((height) => height !== genesisHeight);
+      const blocksHashes = await this.getManyHashesByHeights(filteredHeights);
+      const blocks = await this.getManyBlocksStatsByHashes(blocksHashes);
+
+      // Create a mock object for the genesis block with required fields
+      const genesisMock = {
+        blockhash: genesisHash,
+        total_size: 0,
+        height: genesisHeight,
+      };
+
+      return [genesisMock, ...blocks.filter((block: any) => block)];
+    } else {
+      // If genesis block is not included, process all heights normally
+
+      // Fetch hashes for all requested heights
+      const blocksHashes = await this.getManyHashesByHeights(heights);
+
+      // Fetch stats for all fetched hashes
+      const blocks = await this.getManyBlocksStatsByHashes(blocksHashes);
+
+      // Filter out any undefined or null block stats
+      return blocks.filter((block: any) => block);
+    }
   }
 }
