@@ -94,13 +94,12 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     let lastHeight: number = this.queue.lastHeight;
     let lastSize: number = 0;
     let lastCount: number = 0;
-    const maxSize = this.isTest ? 1 : 10000; // Keep this value as is
+    const maxSize = this.isTest ? 1 : 1000; // Keep this value as is
     const maxRequestBlocksBatchSize = this._maxRequestBlocksBatchSize;
-
     // Load as many blocks as possible until reaching the size limit or the current network height
     while (lastCount <= maxSize && lastSize <= maxRequestBlocksBatchSize && lastHeight <= currentNetworkHeight) {
       const heights: number[] = [];
-      const batchSize = this.isTest ? 1 : 1000; // Keep it here; we don't want to fetch more than 1000 at a time
+      const batchSize = this.isTest ? 1 : 100; // Keep it here; we don't want to fetch more than 100 at a time
 
       for (let i = 0; i < batchSize; i++) {
         heights.push(lastHeight + 1 + i);
@@ -114,8 +113,8 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
         // }
 
         this._hashes.push(blockhash);
-        lastSize += total_size;
-        lastHeight = height;
+        lastSize += Number(total_size);
+        lastHeight = Number(height);
         lastCount += 1;
 
         if (lastCount >= maxSize) {
