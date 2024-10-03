@@ -10,15 +10,12 @@ import { BlocksCommandExecutor } from './interfaces';
 export interface BlocksQueueModuleOptions {
   blocksCommandExecutor: Type<BlocksCommandExecutor>;
   isTransportMode: boolean; // TODO: remove
+  isTest?: boolean;
   maxBlockHeight: number;
   maxQueueSize: number;
   minTransferSize: number;
   queueLoaderStrategyName: string;
-  queueLoaderConcurrencyNum: number;
-  queueLoaderBlocksBatchLength: number;
-  queueLoaderIntervalMs: number;
-  queueLoaderMaxIntervalMs: number;
-  queueLoaderMaxIntervalMultiplier: number;
+  queueLoaderRequestBlocksBatchSize: number;
   queueIteratorBlocksBatchSize: number;
 }
 

@@ -10,6 +10,7 @@ import { Hash, NodeProviderTypes } from './interfaces';
 
 export interface QuickNodeProviderOptions extends BaseNodeProviderOptions {
   baseUrl: string;
+  maxContentLength?: number;
 }
 
 export const createQuickNodeProvider = (options: QuickNodeProviderOptions): QuickNodeProvider => {
@@ -18,13 +19,16 @@ export const createQuickNodeProvider = (options: QuickNodeProviderOptions): Quic
 
 export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions> {
   private _httpClient!: AxiosInstance;
-
   readonly type: NodeProviderTypes = 'quicknode';
   baseUrl!: string;
+  maxContentLength: number = 200 * 1024 * 1024; // TODO: move to envs
 
   constructor(options: QuickNodeProviderOptions) {
     super(options);
     this.baseUrl = options.baseUrl;
+    if (options.maxContentLength) {
+      this.maxContentLength = options.maxContentLength;
+    }
   }
 
   get connectionOptions() {
@@ -297,6 +301,61 @@ export class QuickNodeProvider extends BaseNodeProvider<QuickNodeProviderOptions
 
       throw error;
     }
+  }
+
+  public async getManyBlocksStatsByHashes(hashes: string[]): Promise<any> {
+    try {
+      const requests = hashes.map((hash, index) => ({
+        jsonrpc: '2.0',
+        method: 'getblockstats',
+        params: [hash],
+        id: index,
+      }));
+
+      const response = await this._httpClient.post('/', requests);
+
+      if (!response || !response.data || !Array.isArray(response.data)) {
+        throw new Error('Invalid response structure: response data is missing or not an array');
+      }
+
+      const results = response.data.map((item: any) => {
+        if (!item) {
+          throw new Error(`Invalid response item: ${JSON.stringify(item)}`);
+        }
+
+        if (item.error) {
+          throw new Error(`Invalid result: ${JSON.stringify(item.error)}`);
+        }
+
+        if (item.result === null) {
+          throw new Error(`Null result for item: ${JSON.stringify(item)}`);
+        }
+
+        return item.result;
+      });
+
+      return results;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          throw new Error(
+            `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
+          );
+        } else if (error.request) {
+          throw new Error('No response received from server');
+        } else {
+          throw new Error(`Error during request setup: ${error.message}`);
+        }
+      }
+
+      throw error;
+    }
+  }
+
+  public async getManyBlocksStatsByHeights(heights: number[]): Promise<any> {
+    const blocksHashes = await this.getManyHashesByHeights(heights);
+    const blocks = await this.getManyBlocksStatsByHashes(blocksHashes);
+    return blocks.filter((block: any) => block);
   }
 
   public async getManyBlocksByHeights(heights: number[], verbosity?: number): Promise<any> {

@@ -12,11 +12,22 @@ import { BlockSchema } from './blocks';
 import { BlocksMapper } from './mapper';
 import { mockBlocks } from './mocks/blocks';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 jest
-  .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHeights')
+  .spyOn(NetworkProviderService.prototype, 'getManyBlocksStatsByHeights')
   .mockImplementation(async (heights: (string | number)[]): Promise<any> => {
-    return mockBlocks.filter((block) => heights.includes(block.height));
+    return mockBlocks
+      .filter((block) => heights.includes(block.height))
+      .map((block) => ({
+        blockhash: block.hash,
+        total_size: 1,
+        height: block.height,
+      }));
+  });
+
+jest
+  .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHashes')
+  .mockImplementation(async (hashes: string[]): Promise<any> => {
+    return mockBlocks.filter((block) => hashes.includes(block.hash));
   });
 
 describe('/Bitcoin Loader: Load Flow', () => {
@@ -129,7 +140,7 @@ describe('/Bitcoin Loader: Load Flow', () => {
     `);
 
     // Compare blocks fetched from DB with mock blocks
-    expect(blocksWithTransactions.length).toBe(mockBlocks.length);
+    expect(blocksWithTransactions.length).toBe(2);
 
     blocksWithTransactions.forEach((block, index) => {
       const mockBlock = mockBlocks[index];

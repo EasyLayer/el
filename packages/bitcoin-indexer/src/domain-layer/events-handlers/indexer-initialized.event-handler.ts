@@ -19,8 +19,7 @@ export class BitcoinIndexerInitializedEventHandler implements IEventHandler<Bitc
   @RuntimeTracker({ showMemory: true })
   async handle({ payload }: BitcoinIndexerInitializedEvent) {
     try {
-      const { restoreBlocks, indexedHeight } = payload;
-      console.log(restoreBlocks);
+      const { indexedHeight } = payload;
       // IMPORTANT: We will only start loading to the blocks queue after the restoration of the Read State
       // TODO: move it from here
       this.blocksQueueService.start(indexedHeight);

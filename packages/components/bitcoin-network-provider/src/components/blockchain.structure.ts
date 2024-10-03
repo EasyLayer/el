@@ -62,8 +62,8 @@ export class Blockchain {
 
   // Gets the hash of the first block in the chain.
   // Complexity: O(1)
-  get firstBlockHash(): string {
-    return this._head ? this._head.block.hash : '';
+  get firstBlockHash(): string | undefined {
+    return this._head ? this._head.block.hash : undefined;
   }
 
   get lastBlock(): LightBlock | undefined {
@@ -77,11 +77,9 @@ export class Blockchain {
    * @returns {string} The previous hash of the last block, or an empty string if the chain is empty.
    * Complexity: O(1)
    */
-  get lastPrevBlockHash(): string {
+  get lastPrevBlockHash(): string | undefined {
     if (this._tail) {
       return this._tail.block.previousblockhash;
-    } else {
-      return '';
     }
   }
 
@@ -90,11 +88,9 @@ export class Blockchain {
    * @returns {string} The hash of the last block, or an empty string if the chain is empty.
    * Complexity: O(1)
    */
-  get lastBlockHash(): string {
+  get lastBlockHash(): string | undefined {
     if (this._tail) {
       return this._tail.block.hash;
-    } else {
-      return '';
     }
   }
 
@@ -103,13 +99,9 @@ export class Blockchain {
    * @returns {number} The height of the last block, or -1 if the chain is empty.
    * Complexity: O(1)
    */
-  get lastBlockHeight(): number {
+  get lastBlockHeight(): number | undefined {
     if (this._tail) {
       return this._tail.block.height;
-    } else {
-      // IMPORTANT: the blockchain starts from block 0,
-      // so if there are no blocks at all, we use -1
-      return -1;
     }
   }
 

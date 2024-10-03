@@ -105,15 +105,11 @@ export class BitcoinListenerModule {
           blocksCommandExecutor: BlocksCommandFactoryService,
           isTransportMode: false,
           maxBlockHeight: businessConfig.BITCOIN_LISTENER_MAX_BLOCK_HEIGHT,
-          queueLoaderConcurrencyNum: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
+          queueLoaderRequestBlocksBatchSize:
+            blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE,
           maxQueueSize: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
           minTransferSize: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_MIN_TRANSFER_SIZE,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
-          queueLoaderBlocksBatchLength: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH,
-          queueLoaderIntervalMs: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_INTERVAL_MS,
-          queueLoaderMaxIntervalMs: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS,
-          queueLoaderMaxIntervalMultiplier:
-            blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER,
           queueIteratorBlocksBatchSize: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
         }),
       ],

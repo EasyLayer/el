@@ -20,11 +20,11 @@ export class IndexerService implements OnModuleInit {
     this.log.info('Initialization Bitcoin Balances Indexer systems');
 
     try {
-      const lastReadStateHeight = -1; //await this.outputsReadService.getLastOutput();
+      const indexedHeight = -1; //await this.outputsReadService.getLastOutput();
 
       await this.indexerCommandFactory.init({
         requestId: uuidv4(),
-        lastReadStateHeight,
+        indexedHeight,
       });
     } catch (error) {
       this.log.error('initialization()', error, this.constructor.name);

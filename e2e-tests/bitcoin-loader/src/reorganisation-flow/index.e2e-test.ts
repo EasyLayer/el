@@ -10,14 +10,20 @@ import { BlocksMapper } from './mapper';
 import { mockFakeChainBlocks, mockRealChainBlocks } from './mocks/fake-and-real-blockschain';
 
 jest
-  .spyOn(NetworkProviderService.prototype, 'getManyBlocksByHeights')
+  .spyOn(NetworkProviderService.prototype, 'getManyBlocksStatsByHeights')
   .mockImplementation(async (heights: (string | number)[]): Promise<any> => {
-    return mockFakeChainBlocks.filter((block) => heights.includes(block.height));
+    return mockFakeChainBlocks
+      .filter((block) => heights.includes(block.height))
+      .map((block) => ({
+        blockhash: block.hash,
+        total_size: 1,
+        height: block.height,
+      }));
   });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 jest.spyOn(NetworkProviderService.prototype, 'getManyBlocksByHashes').mockImplementation(async (hashes, verbosity) => {
-  return mockRealChainBlocks;
+  return mockFakeChainBlocks;
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

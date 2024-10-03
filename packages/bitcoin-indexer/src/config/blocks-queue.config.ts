@@ -20,23 +20,11 @@ export class BlocksQueueConfig {
   @IsString()
   BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME: string = 'pull-network-provider';
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10))
-  @IsNumber()
-  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH: number = 10;
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 500))
-  @IsNumber()
-  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_INTERVAL_MS: number = 500;
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10 * 60 * 1000))
-  @IsNumber()
-  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS: number = 10 * 60 * 1000; // Bitcoin block time
-
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
-  @IsNumber()
-  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER: number = 1;
-
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1 * 1024 * 1024))
   @IsNumber()
   BITCOIN_INDEXER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE: number = 1 * 1024 * 1024;
+
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10 * 1024 * 1024))
+  @IsNumber()
+  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE: number = 10 * 1024 * 1024; // 10 MB;
 }

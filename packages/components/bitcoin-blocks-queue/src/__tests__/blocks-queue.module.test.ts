@@ -19,14 +19,10 @@ describe('BlocksQueueModule', () => {
     blocksCommandExecutor: mockBlocksCommandExecutor,
     isTransportMode: false,
     maxBlockHeight: 1,
-    queueLoaderConcurrencyNum: 1,
+    queueLoaderRequestBlocksBatchSize: 10 * 1024 * 1024,
     maxQueueSize: 1024,
     minTransferSize: 1024,
     queueLoaderStrategyName: 'pull-network-provider',
-    queueLoaderBlocksBatchLength: 1,
-    queueLoaderIntervalMs: 500,
-    queueLoaderMaxIntervalMs: 10 * 60 * 1000,
-    queueLoaderMaxIntervalMultiplier: 10,
     queueIteratorBlocksBatchSize: 2,
   };
 

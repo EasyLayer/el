@@ -9,7 +9,7 @@ describe('PullNetworkProviderStrategy', () => {
   let mockLogger: jest.Mocked<AppLogger>;
   let mockNetworkProvider: jest.Mocked<NetworkProviderService>;
   let mockQueue: jest.Mocked<BlocksQueue<Block>>;
-  let config: { concurrency: number; batchLength: number };
+  let config: { maxRequestBlocksBatchSize: number; isTest: boolean };
 
   beforeEach(() => {
     // Initialize mock logger with jest.fn() for all methods
@@ -23,6 +23,7 @@ describe('PullNetworkProviderStrategy', () => {
     // Initialize mock network provider with jest.fn() for getManyBlocksByHeights
     mockNetworkProvider = {
       getManyBlocksByHeights: jest.fn(),
+      getManyBlocksStatsByHeights: jest.fn(() => []),
     } as any;
 
     // Initialize mock queue with necessary properties and methods
@@ -35,8 +36,7 @@ describe('PullNetworkProviderStrategy', () => {
       // Add other necessary properties and methods as needed
     } as any;
 
-    // Define configuration for the strategy
-    config = { concurrency: 2, batchLength: 5 };
+    config = { maxRequestBlocksBatchSize: 10 * 1024 * 1024, isTest: true }; // 10 MB
 
     // Instantiate the strategy with mocked dependencies
     strategy = new PullNetworkProviderStrategy(mockLogger, mockNetworkProvider, mockQueue, config);
@@ -45,55 +45,6 @@ describe('PullNetworkProviderStrategy', () => {
   afterEach(() => {
     // Clear all mock calls and instances after each test to ensure isolation
     jest.clearAllMocks();
-  });
-
-  it('should not start loading if already loading', async () => {
-    // Manually set the _isLoading flag to true to simulate an ongoing loading process
-    (strategy as any)._isLoading = true;
-
-    // Attempt to start loading blocks
-    await strategy.load(10);
-
-    // Verify that the network provider's getManyBlocksByHeights method was never called since loading was already in progress
-    expect(mockNetworkProvider.getManyBlocksByHeights).not.toHaveBeenCalled();
-  });
-
-  it('should stop loading when current network height is reached', async () => {
-    const currentNetworkHeight = 5;
-
-    // Initialize lastHeight to simulate progress
-    let lastHeight = 0;
-    Object.defineProperty(mockQueue, 'lastHeight', {
-      get: () => lastHeight,
-      set: (value) => {
-        lastHeight = value;
-      },
-    });
-
-    // Mock the getManyBlocksByHeights method to return blocks and update lastHeight accordingly
-    mockNetworkProvider.getManyBlocksByHeights.mockImplementation(async (heights: (string | number)[]) => {
-      const blocks = heights.map((height) => ({
-        height: Number(height),
-        hash: `hash${height}`,
-        tx: [],
-        size: 0,
-      })) as Block[];
-
-      // Update lastHeight to trigger the stopping condition
-      lastHeight = Math.max(lastHeight, ...heights.map(Number), currentNetworkHeight);
-      return blocks;
-    });
-
-    // Mock enqueue to always resolve successfully
-    mockQueue.enqueue.mockImplementation(() => Promise.resolve());
-
-    // Expect the load method to throw an error when currentNetworkHeight is reached
-    await expect(strategy.load(currentNetworkHeight)).rejects.toThrow(
-      `Reached current network height, ${currentNetworkHeight}`
-    );
-
-    // Ensure that lastHeight has reached or exceeded the current network height
-    expect(mockQueue.lastHeight).toBeGreaterThanOrEqual(currentNetworkHeight);
   });
 
   it('should handle queue being full by throwing an error', async () => {

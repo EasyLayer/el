@@ -31,7 +31,7 @@ import {
   ProvidersConfig,
 } from './config';
 import { MapperType, EntitySchema } from './protocol';
-import { System } from './infrastructure-layer/view-models';
+import { SystemSchema } from './infrastructure-layer/view-models';
 
 interface LoaderModuleOptions {
   appName: string;
@@ -97,7 +97,7 @@ export class BitcoinLoaderModule {
           name: 'loader-views',
           logging: readdatabaseConfig.isLogging(),
           type: readdatabaseConfig.BITCOIN_LOADER_READ_DB_TYPE,
-          entities: [System, ...schemas],
+          entities: [SystemSchema, ...schemas],
           database: readdatabaseConfig.BITCOIN_LOADER_READ_DB_NAME,
           ...(readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST && {
             host: readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST,
@@ -116,16 +116,13 @@ export class BitcoinLoaderModule {
           isTransportMode: false,
           blocksCommandExecutor: BlocksCommandFactoryService,
           maxBlockHeight: businessConfig.BITCOIN_LOADER_MAX_BLOCK_HEIGHT,
-          queueLoaderConcurrencyNum: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_CONCURRENCY_NUM,
+          queueLoaderRequestBlocksBatchSize:
+            blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE,
           maxQueueSize: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MAX_SIZE,
           minTransferSize: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_MIN_TRANSFER_SIZE,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
-          queueLoaderBlocksBatchLength: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_BLOCKS_BATCH_LENGTH,
-          queueLoaderIntervalMs: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_INTERVAL_MS,
-          queueLoaderMaxIntervalMs: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MS,
-          queueLoaderMaxIntervalMultiplier:
-            blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_MAX_INTERVAL_MULTIPLIER,
           queueIteratorBlocksBatchSize: blocksQueueConfig.BITCOIN_LOADER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
+          isTest: appConfig.isTEST(),
         }),
       ],
       providers: [

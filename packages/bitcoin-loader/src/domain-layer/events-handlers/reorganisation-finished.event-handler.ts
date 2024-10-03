@@ -1,11 +1,11 @@
 import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
 import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
-import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
+import { QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderReorganisationFinishedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
-import { System } from '../../infrastructure-layer/view-models';
+import { SystemModel } from '../../infrastructure-layer/view-models';
 
 @EventsHandler(BitcoinLoaderReorganisationFinishedEvent)
 export class BitcoinLoaderReorganisationFinishedEventHandler
@@ -18,28 +18,31 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
     private readonly loaderMapper: ILoaderMapper
   ) {}
 
-  @Transactional({ connectionName: 'loader-views' })
+  // @Transactional({ connectionName: 'loader-views' })
   @RuntimeTracker({ showMemory: false })
   async handle({ payload }: BitcoinLoaderReorganisationFinishedEvent) {
     try {
       const { blocks: lightBlocks } = payload;
 
+      const models = [];
+
       // Update System entity
       const lastBlockHeight: number = lightBlocks[lightBlocks.length - 1]?.height;
-      await this.viewsWriteRepository.update('system', {
-        values: new System({ last_block_height: lastBlockHeight }),
-      });
+      const systemModel = new SystemModel();
+      systemModel.update({ last_block_height: lastBlockHeight }, { id: 1 });
+
+      models.push(systemModel);
 
       if (Array.isArray(lightBlocks) && lightBlocks.length > 0) {
         for (const block of lightBlocks) {
           const results = await this.loaderMapper.onReorganisation(block);
-          const models = Array.isArray(results) ? results : [results];
-
-          this.viewsWriteRepository.process(models);
+          models.push(...(Array.isArray(results) ? results : [results]));
         }
-
-        await this.viewsWriteRepository.commit();
       }
+
+      this.viewsWriteRepository.process(models);
+
+      await this.viewsWriteRepository.commit();
 
       this.log.info(
         `Blockchain successfull reorganised to height`,

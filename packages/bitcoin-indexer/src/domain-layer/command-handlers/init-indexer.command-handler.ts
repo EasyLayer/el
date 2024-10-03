@@ -17,9 +17,7 @@ export class InitIndexerCommandHandler implements ICommandHandler<InitIndexerCom
   @RuntimeTracker({ showMemory: true })
   async execute({ payload }: InitIndexerCommand) {
     try {
-      const { requestId, lastReadStateHeight } = payload;
-
-      const restoreBlocks: string[] = [];
+      const { requestId, indexedHeight } = payload;
 
       this.log.info('Init Indexer Aggregate...', null, this.constructor.name);
 
@@ -27,39 +25,12 @@ export class InitIndexerCommandHandler implements ICommandHandler<InitIndexerCom
 
       this.log.info('Indexer Aggregate successfully initialized.', null, this.constructor.name);
 
-      if (indexerModel.status === 'awaiting' && lastReadStateHeight !== undefined) {
-        const restoreBlocksCount = indexerModel.chain.lastBlockHeight - lastReadStateHeight;
-
-        this.log.info(
-          'Synchronization of blocks between write and read states starting...',
-          { restoreBlocksCount },
-          this.constructor.name
-        );
-
-        // NOTE: We want to restore events one block more than the difference between write and read state.
-        const blocks = indexerModel.chain.getLastNBlocks(restoreBlocksCount + 1);
-
-        this.log.info(
-          'Synchronization of blocks between write and read states was finished',
-          null,
-          this.constructor.name
-        );
-
-        // For restore block in read state we publish indexer with blocks hashes
-        blocks.forEach((item) => restoreBlocks.push(item.hash));
-      }
-
-      if (indexerModel.status === 'reorganisation') {
-        this.log.info('Reorganisation of blocks was started...', null, this.constructor.name);
-        // Publish last indexer event to process reorganisation
-        await this.indexerModelFactory.publishLastEvent();
-
-        this.log.info('Reorganisation of blocks was finished.', null, this.constructor.name);
-      }
-
       await indexerModel.init({
         requestId,
-        restoreBlocks,
+        indexedHeight,
+        // indexedHeight < this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
+        //   ? this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
+        //   : indexedHeight,
       });
 
       await this.eventStore.save(indexerModel);

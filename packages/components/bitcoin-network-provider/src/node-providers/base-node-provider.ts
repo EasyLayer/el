@@ -45,6 +45,11 @@ export abstract class BaseNodeProvider<T extends BaseNodeProviderOptions = BaseN
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getManyBlocksStatsByHeights(heights: number[]): Promise<any> {
+    throw new Error('Method getManyBlocksStatsByHeights() is not supported by this provider');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async getOneBlockByHash(hash: Hash, verbosity?: number): Promise<any> {
     throw new Error('Method getOneBlockByHash() is not supported by this provider');
   }

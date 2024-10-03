@@ -32,7 +32,8 @@ export class Mapper implements ILoaderMapper {
         blockModel.insert({
             hash, 
             height: Number(height),
-            previousblockhash: previousblockhash ? previousblockhash : '000000000000000000'
+            previousblockhash: previousblockhash ? previousblockhash : '000000000000000000',
+            is_suspended: false
         });
         
         blockModels.push(blockModel);
