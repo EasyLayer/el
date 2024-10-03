@@ -20,4 +20,11 @@ export class ProvidersConfig {
     description: 'Multiple QuickNode node URLs can be entered, separated by commas.',
   })
   BITCOIN_LOADER_NETWORK_PROVIDER_QUICK_NODE_URLS?: string[];
+
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 200 * 1024 * 1024))
+  @JSONSchema({
+    description: 'Size in bytes of the max request content data length.',
+    default: 209715200,
+  })
+  BITCOIN_LOADER_NETWORK_PROVIDER_MAX_REQUEST_CONTENT_LENGTH: number = 200 * 1024 * 1024;
 }

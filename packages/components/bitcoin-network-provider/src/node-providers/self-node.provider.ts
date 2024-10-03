@@ -6,7 +6,7 @@ import { NodeProviderTypes, Hash } from './interfaces';
 
 export interface SelfNodeProviderOptions extends BaseNodeProviderOptions {
   baseUrl: string;
-  maxContentLength?: number;
+  maxRequestContentLength?: number;
 }
 
 export const createSelfNodeProvider = (options: SelfNodeProviderOptions): SelfNodeProvider => {
@@ -16,14 +16,14 @@ export const createSelfNodeProvider = (options: SelfNodeProviderOptions): SelfNo
 export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> {
   readonly type: NodeProviderTypes = 'selfnode';
   private _httpClient: any;
-  baseUrl: string;
-  maxContentLength: number = 200 * 1024 * 1024; // TODO: move to envs
+  private baseUrl: string;
+  private maxRequestContentLength: number = 200 * 1024 * 1024;
 
   constructor(options: SelfNodeProviderOptions) {
     super(options);
     this.baseUrl = options.baseUrl;
-    if (options.maxContentLength) {
-      this.maxContentLength = options.maxContentLength;
+    if (options.maxRequestContentLength) {
+      this.maxRequestContentLength = options.maxRequestContentLength;
     }
   }
 
@@ -32,7 +32,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       type: this.type,
       uniqName: this.uniqName,
       baseUrl: this.baseUrl,
-      maxContentLength: this.maxContentLength,
+      maxRequestContentLength: this.maxRequestContentLength,
     };
   }
 
@@ -47,7 +47,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       httpsAgent: new https.Agent({ keepAlive: true }),
       timeout: 5000,
       maxRedirects: 0,
-      maxContentLength: this.maxContentLength,
+      maxContentLength: this.maxRequestContentLength,
     });
 
     const health = await this.healthcheck();

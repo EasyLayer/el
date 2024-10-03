@@ -12,12 +12,13 @@ export interface NetworkProviderModuleOptions {
   isGlobal?: boolean;
   quickNodesUrls?: string[];
   selfNodesUrl?: string;
+  maxRequestContentLength?: number;
 }
 
 @Module({})
 export class NetworkProviderModule {
   static async forRootAsync(options: NetworkProviderModuleOptions): Promise<DynamicModule> {
-    const { providers, isGlobal, quickNodesUrls, selfNodesUrl } = options;
+    const { providers, isGlobal, quickNodesUrls, selfNodesUrl, ...restOptions } = options;
 
     // Create QuickNode providers
     const quickNodeProviders: ProviderOptions[] = [];
@@ -26,8 +27,9 @@ export class NetworkProviderModule {
         quickNodeProviders.push({
           useFactory: () =>
             new QuickNodeProvider({
-              uniqName: uuidv4(),
+              uniqName: `QuickNodeProvider_${uuidv4()}`,
               baseUrl: quickNodeProviderOption,
+              ...restOptions,
             }),
         });
       }
@@ -39,8 +41,9 @@ export class NetworkProviderModule {
       selfNodeProviders.push({
         useFactory: () =>
           new SelfNodeProvider({
-            uniqName: uuidv4(),
+            uniqName: `SelfNodeProvider_${uuidv4()}`,
             baseUrl: selfNodesUrl,
+            ...restOptions,
           }),
       });
     }
