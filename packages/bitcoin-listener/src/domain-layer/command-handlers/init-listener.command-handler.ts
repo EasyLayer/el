@@ -17,9 +17,7 @@ export class InitListenerCommandHandler implements ICommandHandler<InitListenerC
   @RuntimeTracker({ showMemory: true })
   async execute({ payload }: InitListenerCommand) {
     try {
-      const { requestId, startHeight, lastReadStateHeight } = payload;
-
-      const restoreBlocks: string[] = [];
+      const { requestId, indexedHeight } = payload;
 
       this.log.info('Init Listener Aggregate...', null, this.constructor.name);
 
@@ -27,40 +25,12 @@ export class InitListenerCommandHandler implements ICommandHandler<InitListenerC
 
       this.log.info('Listener Aggregate successfully initialized.', null, this.constructor.name);
 
-      if (listenerModel.status === 'awaiting' && listenerModel.chain.lastBlockHeight !== lastReadStateHeight) {
-        const restoreBlocksCount = listenerModel.chain.lastBlockHeight - lastReadStateHeight;
-
-        this.log.info(
-          'Synchronization of blocks between write and read states starting...',
-          { restoreBlocksCount },
-          this.constructor.name
-        );
-
-        // NOTE: We want to restore events one block more than the difference between write and read state.
-        const blocks = listenerModel.chain.getLastNBlocks(restoreBlocksCount + 1);
-
-        this.log.info(
-          'Synchronization of blocks between write and read states was finished',
-          null,
-          this.constructor.name
-        );
-
-        // For restore block in read state we publish indexer with blocks hashes
-        blocks.forEach((item) => restoreBlocks.push(item.hash));
-      }
-
-      if (listenerModel.status === 'reorganisation') {
-        this.log.info('Reorganisation of blocks was started...', null, this.constructor.name);
-        // Publish last indexer event to process reorganisation
-        await this.listenerModelFactory.publishLastEvent();
-
-        this.log.info('Reorganisation of blocks was finished.', null, this.constructor.name);
-      }
-
       await listenerModel.init({
         requestId,
-        startHeight,
-        restoreBlocks,
+        indexedHeight,
+        // indexedHeight < this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
+        //   ? this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
+        //   : indexedHeight,
       });
 
       await this.eventStore.save(listenerModel);

@@ -1,7 +1,7 @@
 import { Module, DynamicModule } from '@nestjs/common';
 import { TypeOrmModule, TypeOrmModuleOptions, getDataSourceToken } from '@nestjs/typeorm';
-import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
-import { DataSource, DataSourceOptions, EntitySchema } from 'typeorm';
+import { RdbmsSchemaBuilder } from 'typeorm/schema-builder/RdbmsSchemaBuilder';
+import { DataSource, DataSourceOptions, EntitySchema, QueryRunner } from 'typeorm';
 import { LoggerModule, AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseService } from './read-database.service';
 
@@ -17,9 +17,6 @@ type ReadDatabaseModuleConfig = TypeOrmModuleOptions & {
 export class ReadDatabaseModule {
   static async forRootAsync(config: ReadDatabaseModuleConfig): Promise<DynamicModule> {
     const { name, entities = [], database, ...restOptions } = config;
-
-    // Initialize transactional context before setting up the database connections
-    initializeTransactionalContext();
 
     const dataSourceOptions = {
       ...restOptions,
@@ -44,6 +41,26 @@ export class ReadDatabaseModule {
       if (!hasTables) {
         // If any table is missing, enable synchronization
         dataSourceOptions.synchronize = true;
+
+        // IMPORTANT: In case of Postgres we use UNLOGGED tables to improve performance.
+        // To do this, we dynamically read the schemes that the developer passed on and change them.
+        if (restOptions.type === 'postgres') {
+          const sqlQueries = await getSQLFromEntitySchema(tempDataSource);
+
+          // Modifying queries to add UNLOGGED
+          const unloggedSqlQueries = sqlQueries.map((query) => {
+            if (query.query.startsWith('CREATE TABLE')) {
+              return query.query.replace('CREATE TABLE', 'CREATE UNLOGGED TABLE');
+            }
+            // We do not change other queries
+            return query.query;
+          });
+
+          // Executing modified SQL queries
+          for (const sql of unloggedSqlQueries) {
+            await queryRunner.query(sql);
+          }
+        }
       }
 
       await tempDataSource.destroy();
@@ -60,10 +77,7 @@ export class ReadDatabaseModule {
           name,
           useFactory: (log: AppLogger) => ({
             ...dataSourceOptions,
-            extra: {
-              max: 20, // Максимальное количество соединений в пуле
-              // idleTimeoutMillis: 30000, // Время ожидания неактивного соединения
-            },
+            ...(restOptions.type === 'postgres' ? { pollSize: 30 } : {}),
             log,
           }),
           inject: [AppLogger],
@@ -92,11 +106,6 @@ export class ReadDatabaseModule {
               // await dataSource.query('PRAGMA wal_checkpoint(TRUNCATE);');
             }
 
-            addTransactionalDataSource({
-              name,
-              dataSource,
-            });
-
             options.log?.info(`Successfully connected to views database.`, {}, this.constructor.name);
 
             return dataSource;
@@ -115,5 +124,23 @@ export class ReadDatabaseModule {
       ],
       exports: [TypeOrmModule, ReadDatabaseService],
     };
+  }
+}
+
+async function getSQLFromEntitySchema(dataSource: DataSource): Promise<any[]> {
+  const queryRunner: QueryRunner = dataSource.createQueryRunner();
+
+  try {
+    await queryRunner.connect();
+
+    // Using SchemaBuilder to Generate SQL
+    const schemaBuilder = new RdbmsSchemaBuilder(dataSource);
+
+    const sqlQueries = await schemaBuilder.log();
+    return sqlQueries.upQueries;
+  } catch (error) {
+    throw error;
+  } finally {
+    await queryRunner.release();
   }
 }

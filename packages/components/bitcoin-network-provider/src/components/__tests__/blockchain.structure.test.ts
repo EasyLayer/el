@@ -189,7 +189,7 @@ describe('Blockchain', () => {
       expect(blockchain.size).toBe(0);
       expect(blockchain.head).toBeNull();
       expect(blockchain.tail).toBeNull();
-      expect(blockchain.lastBlockHeight).toBe(-1);
+      expect(blockchain.lastBlockHeight).toBeUndefined();
     });
 
     it('should not truncate the chain if height is greater than the last block height', () => {
@@ -261,7 +261,7 @@ describe('Blockchain', () => {
       expect(blockchain.size).toBe(0);
       expect(blockchain.head).toBeNull();
       expect(blockchain.tail).toBeNull();
-      expect(blockchain.lastBlockHeight).toBe(-1);
+      expect(blockchain.lastBlockHeight).toBeUndefined();
     });
   });
 

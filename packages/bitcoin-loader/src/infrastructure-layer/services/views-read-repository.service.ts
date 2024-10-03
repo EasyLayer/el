@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, DataSource, Repository } from '@easylayer/components/views-rdbms-db';
 import { AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseConfig } from '../../config';
-import { System } from '../view-models';
+import { ISystem } from '../view-models';
 
 @Injectable()
 export class ViewsReadRepositoryService {
@@ -26,12 +26,12 @@ export class ViewsReadRepositoryService {
   }
 
   public async getLastBlock(): Promise<number> {
-    const repo = this.getRepository<System>('system');
+    const repo = this.getRepository<ISystem>('system');
 
     let model = await repo.findOneBy({ id: 1 });
 
     if (!model) {
-      model = new System({ last_block_height: -1 });
+      model = { id: 1, last_block_height: -1 };
       await repo.save(model);
     }
 

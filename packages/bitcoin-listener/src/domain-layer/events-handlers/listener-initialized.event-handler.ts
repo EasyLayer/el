@@ -18,11 +18,7 @@ export class BitcoinListenerInitializedEventHandler implements IEventHandler<Bit
   @RuntimeTracker({ showMemory: true })
   async handle({ payload }: BitcoinListenerInitializedEvent) {
     try {
-      const { restoreBlocks, indexedHeight } = payload;
-      console.log(restoreBlocks);
-      // Тут мы скорее всего должны что? пропущенные блоки восстановить и достать с них ивенты и сохранить в базу
-      // А также опубликовать их.
-
+      const { indexedHeight } = payload;
       // IMPORTANT: We will only start loading to the blocks queue after the restoration of the Read State
       // TODO: move it from here
       this.blocksQueueService.start(indexedHeight);

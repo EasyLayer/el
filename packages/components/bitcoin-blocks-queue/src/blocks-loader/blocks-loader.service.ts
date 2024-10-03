@@ -60,7 +60,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
         }
       },
       {
-        interval: 15,
+        interval: 1,
         maxInterval: 3000,
         multiplier: 2,
       }

@@ -74,9 +74,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
    * @throws Will throw an error if fetching blocks fails after maximum retries.
    */
   private async loadAndEnqueueBlocks(): Promise<void> {
-    console.time('fetchblocks');
     const blocks: Block[] = await this.retryFetchBlocks(this._hashes, 3);
-    console.timeEnd('fetchblocks');
 
     for (const block of blocks) {
       await this.queue.enqueue(block);
@@ -158,7 +156,7 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
           );
           throw error;
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
     throw new Error('Failed to fetch blocks batch after maximum retries.');

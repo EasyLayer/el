@@ -31,7 +31,7 @@ import {
   ProvidersConfig,
 } from './config';
 import { MapperType, EntitySchema } from './protocol';
-import { System } from './infrastructure-layer/view-models';
+import { SystemSchema } from './infrastructure-layer/view-models';
 
 interface LoaderModuleOptions {
   appName: string;
@@ -97,7 +97,7 @@ export class BitcoinLoaderModule {
           name: 'loader-views',
           logging: readdatabaseConfig.isLogging(),
           type: readdatabaseConfig.BITCOIN_LOADER_READ_DB_TYPE,
-          entities: [System, ...schemas],
+          entities: [SystemSchema, ...schemas],
           database: readdatabaseConfig.BITCOIN_LOADER_READ_DB_NAME,
           ...(readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST && {
             host: readdatabaseConfig.BITCOIN_LOADER_READ_DB_HOST,

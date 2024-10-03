@@ -50,22 +50,17 @@ export class Listener extends AggregateRoot {
   // IMPORTANT: this method doing two things:
   // 1 - create Listener if it's first creation
   // 2 - use already created params but still publish event
-  public async init({
-    requestId,
-    startHeight,
-    restoreBlocks,
-  }: {
-    requestId: string;
-    startHeight: string | number;
-    restoreBlocks: string[];
-  }) {
-    const status = this.status || ListenerStatuses.AWAITING;
-    const lastBlockHeight = this.chain.lastBlockHeight;
-    // NOTE: lastBlockHeight - is the last already handle block and
-    // if it's start of blockchain where genesis block height is '0'
-    // so we indicate the last indexed block adjusted by -1.
-    // startHeight - is the height from which the user wants to index, it cannot be less than 0.
-    const height = lastBlockHeight + 1 > Number(startHeight) ? lastBlockHeight : Number(startHeight) - 1;
+  public async init({ requestId, indexedHeight }: { requestId: string; indexedHeight: number }) {
+    // IMPORTANT: We always initialize the Loader with the awaiting status,
+    // if there was a reorganization status, then it will be processed at the next iteration.
+    const status = ListenerStatuses.AWAITING;
+
+    const height =
+      this.chain.lastBlockHeight !== undefined
+        ? indexedHeight < this.chain.lastBlockHeight
+          ? indexedHeight
+          : this.chain.lastBlockHeight
+        : indexedHeight;
 
     await this.apply(
       new BitcoinListenerInitializedEvent({
@@ -73,7 +68,6 @@ export class Listener extends AggregateRoot {
         requestId,
         status,
         indexedHeight: height.toString(),
-        restoreBlocks,
       })
     );
   }
@@ -97,7 +91,7 @@ export class Listener extends AggregateRoot {
 
     if (!isValid) {
       return await this.startReorganisation({
-        height: this.chain.lastBlockHeight,
+        height: this.chain.lastBlockHeight!,
         requestId,
         service,
         logger,
@@ -133,7 +127,7 @@ export class Listener extends AggregateRoot {
       throw new Error("processReorganisation() Reorganisation hasn't started yet");
     }
 
-    if (Number(height) > this.chain.lastBlockHeight) {
+    if (Number(height) > this.chain.lastBlockHeight!) {
       throw new Error('Wrong block height');
     }
 

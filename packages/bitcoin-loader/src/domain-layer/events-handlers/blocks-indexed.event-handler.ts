@@ -2,11 +2,11 @@ import { Inject } from '@nestjs/common';
 import { EventsHandler, IEventHandler } from '@easylayer/components/cqrs';
 import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { BlocksQueueService } from '@easylayer/components/bitcoin-blocks-queue';
-import { Transactional, QueryFailedError } from '@easylayer/components/views-rdbms-db';
+import { QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderBlocksIndexedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
-import { System } from '../../infrastructure-layer/view-models';
+import { SystemModel } from '../../infrastructure-layer/view-models';
 
 @EventsHandler(BitcoinLoaderBlocksIndexedEvent)
 export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<BitcoinLoaderBlocksIndexedEvent> {
@@ -19,7 +19,6 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
     private readonly loaderMapper: ILoaderMapper
   ) {}
 
-  @Transactional({ connectionName: 'loader-views' })
   @RuntimeTracker({ showMemory: false, warningThresholdMs: 10, errorThresholdMs: 1000 })
   async handle({ payload }: BitcoinLoaderBlocksIndexedEvent) {
     try {
@@ -30,23 +29,29 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
         blocks.map((block: any) => block.hash)
       );
 
+      const models = [];
+
       console.time('onLoad');
       for (const block of confirmedBlocks) {
         const results = await this.loaderMapper.onLoad(block);
-        const models = Array.isArray(results) ? results : [results];
-
-        this.viewsWriteRepository.process(models);
+        models.push(...(Array.isArray(results) ? results : [results]));
       }
       console.timeEnd('onLoad');
+
       // Update System entity
-      const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1]?.height;
-      await this.viewsWriteRepository.update('system', {
-        values: new System({ last_block_height: lastBlockHeight }),
-      });
+      const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1].height;
+
+      const systemModel = new SystemModel();
+      systemModel.update({ last_block_height: lastBlockHeight }, { id: 1 });
+
+      models.push(systemModel);
+
+      this.viewsWriteRepository.process(models);
 
       console.time('commit');
       await this.viewsWriteRepository.commit();
       console.timeEnd('commit');
+
       this.log.info(
         'Blocks successfull loaded',
         {

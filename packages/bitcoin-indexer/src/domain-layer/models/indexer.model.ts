@@ -50,16 +50,24 @@ export class Indexer extends AggregateRoot {
   // IMPORTANT: this method doing two things:
   // 1 - create Indexer if it's first creation
   // 2 - use already created params but still publish event
-  public async init({ requestId, restoreBlocks }: { requestId: string; restoreBlocks: string[] }) {
-    const status = this.status || IndexerStatuses.AWAITING;
+  public async init({ requestId, indexedHeight }: { requestId: string; indexedHeight: number }) {
+    // IMPORTANT: We always initialize the Loader with the awaiting status,
+    // if there was a reorganization status, then it will be processed at the next iteration.
+    const status = IndexerStatuses.AWAITING;
+
+    const height =
+      this.chain.lastBlockHeight !== undefined
+        ? indexedHeight < this.chain.lastBlockHeight
+          ? indexedHeight
+          : this.chain.lastBlockHeight
+        : indexedHeight;
 
     await this.apply(
       new BitcoinIndexerInitializedEvent({
         aggregateId: this.aggregateId,
         requestId,
         status,
-        indexedHeight: this.chain.lastBlockHeight.toString(),
-        restoreBlocks,
+        indexedHeight: height.toString(),
       })
     );
   }
@@ -83,7 +91,7 @@ export class Indexer extends AggregateRoot {
 
     if (!isValid) {
       return await this.startReorganisation({
-        height: this.chain.lastBlockHeight,
+        height: this.chain.lastBlockHeight!,
         requestId,
         service,
         logger,
@@ -133,7 +141,7 @@ export class Indexer extends AggregateRoot {
       throw new Error("processReorganisation() Reorganisation hasn't started yet");
     }
 
-    if (Number(height) > this.chain.lastBlockHeight) {
+    if (Number(height) > this.chain.lastBlockHeight!) {
       throw new Error('Wrong block height');
     }
 

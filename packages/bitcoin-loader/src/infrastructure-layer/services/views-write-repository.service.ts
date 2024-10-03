@@ -1,5 +1,14 @@
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
+import { from as copyFrom } from 'pg-copy-streams';
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, DataSource, Repository } from '@easylayer/components/views-rdbms-db';
+import {
+  InjectDataSource,
+  DataSource,
+  Repository,
+  PostgresQueryRunner,
+  QueryRunner,
+} from '@easylayer/components/views-rdbms-db';
 import { AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseConfig } from '../../config';
 
@@ -99,70 +108,138 @@ export class ViewsWriteRepositoryService {
 
   /**
    * Commits all queued operations to the database.
-   * Supports batch inserts and handles each operation sequentially.
+   * Supports stream and batch inserts and handles each operation sequentially.
    */
   public async commit(): Promise<void> {
     if (this.operations.length === 0) {
       throw new Error('No operations to commit');
     }
 
-    const batchSize = this.config.BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT;
+    const queryRunner = this.datasource.createQueryRunner();
+
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
       for (const operation of this.operations) {
         const { entityName, method, data } = operation;
 
-        if (method === 'insert' && data.length > batchSize) {
-          const chunkedBatches = this.chunkArray(data, batchSize);
+        switch (method) {
+          case 'insert':
+            await this.handleInsert(queryRunner, entityName, data);
+            break;
 
-          if (this.isParallelSupport) {
-            await Promise.all(chunkedBatches.map((chunk) => this.executeOperation(method, entityName, chunk)));
-          } else {
-            for (const chunk of chunkedBatches) {
-              await this.executeOperation(method, entityName, chunk);
-            }
-          }
-        } else {
-          await this.executeOperation(method, entityName, data);
+          case 'update':
+            await this.handleUpdate(queryRunner, entityName, data);
+            break;
+
+          case 'delete':
+            await this.handleDelete(queryRunner, entityName, data);
+            break;
+
+          default:
+            throw new Error(`Unsupported method: ${method}`);
         }
       }
 
+      await queryRunner.commitTransaction();
       this.clearOperations();
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       this.clearOperations();
-      throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
-  /**
-   * Executes a specific operation (insert, update, delete) for the given entity.
-   * Handles batch operations for insert, and executes individual updates and deletes based on conditions.
-   */
-  public async executeOperation(method: string, entityName: string, data: any[]): Promise<void> {
-    switch (method) {
-      case 'insert':
-        await this.insert(entityName, data);
-        break;
-      case 'update':
-        for (const update of data) {
-          await this.update(entityName, update); // Each update has grouped values and conditions
+  private async handleInsert(queryRunner: QueryRunner, entityName: string, data: any[]): Promise<void> {
+    const batchSize = this.config.BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT;
+
+    if (this.isParallelSupport) {
+      if (data.length > batchSize) {
+        const chunkedBatches = this.chunkArray(data, batchSize);
+        await Promise.all(chunkedBatches.map((chunk) => this.insert(queryRunner, entityName, chunk)));
+      } else {
+        await this.insertWithCopy(queryRunner, entityName, data);
+      }
+    } else {
+      if (data.length > batchSize) {
+        const chunkedBatches = this.chunkArray(data, batchSize);
+        for (const chunk of chunkedBatches) {
+          await this.insert(queryRunner, entityName, chunk);
         }
-        break;
-      case 'delete':
-        await this.delete(entityName, data); // For delete, handle batch deletion with accumulated conditions
-        break;
-      default:
-        throw new Error(`Unknown method: ${method}`);
+      } else {
+        await this.insert(queryRunner, entityName, data);
+      }
     }
+  }
+
+  private async handleUpdate(queryRunner: QueryRunner, entityName: string, updates: any[]): Promise<void> {
+    for (const update of updates) {
+      await this.update(queryRunner, entityName, update);
+    }
+  }
+
+  private async handleDelete(queryRunner: QueryRunner, entityName: string, data: any): Promise<void> {
+    await this.delete(queryRunner, entityName, data);
   }
 
   /**
    * Inserts data into the repository in bulk.
    * Uses 'orIgnore' to avoid conflicts and prevent duplicate records.
    */
-  public async insert(entityName: string, values: any[]): Promise<void> {
-    const repo = this.getRepository(entityName);
+  public async insert(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
+    const repo = queryRunner.manager.getRepository(entityName);
     await repo.createQueryBuilder().insert().values(values).orIgnore().updateEntity(false).execute();
+  }
+
+  public async insertWithCopy(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
+    const repo = this.getRepository(entityName);
+    const entityMetadata = repo.metadata;
+    const tableName = `"${entityMetadata.tableName}"`;
+    const columns = entityMetadata.columns.map((col) => `"${col.databaseName}"`).join(', ');
+
+    // Convert the values ​​to a format suitable for COPY (tab-delimited table)
+    const readableStream = new Readable({
+      read() {
+        // Проходим по данным построчно
+        values.forEach((row) => {
+          const formattedRow = entityMetadata.columns
+            .map((col) => {
+              const value = row[col.propertyName];
+              if (value === null || value === undefined) {
+                return '\\N'; // NULL в формате COPY
+              }
+              if (typeof value === 'string') {
+                return value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n');
+              }
+              return value;
+            })
+            .join('\t');
+
+          this.push(formattedRow + '\n');
+        });
+        this.push(null); // Окончание потока
+      },
+    });
+
+    const query = `COPY ${tableName} (${columns}) FROM STDIN WITH (FORMAT text)`;
+
+    try {
+      // https://github.com/typeorm/typeorm/issues/4839
+      // Getting a low-level PostgreSQL client
+      const rawClient = await (<PostgresQueryRunner>queryRunner).connect();
+      if (!rawClient) {
+        throw new Error('Failed to get PostgreSQL low-level client from TypeORM.');
+      }
+
+      const copyStream = rawClient.query(copyFrom(query));
+
+      // IMPORTANT: Using pipeline to handle async streams correctly
+      await pipeline(readableStream, copyStream);
+    } catch (error) {
+      throw error;
+    }
   }
 
   /**
@@ -170,10 +247,12 @@ export class ViewsWriteRepositoryService {
    * Groups conditions for the same values and applies them in a single query.
    */
   public async update(
+    queryRunner: QueryRunner,
     entityName: string,
     params: { values: Record<string, any>; conditions?: Record<string, any>[] }
   ): Promise<any> {
-    const repo = this.getRepository(entityName);
+    // const repo = this.getRepository(entityName);
+    const repo = queryRunner.manager.getRepository(entityName);
     const queryBuilder = repo.createQueryBuilder().update().set(params.values);
 
     if (params.conditions) {
@@ -192,8 +271,13 @@ export class ViewsWriteRepositoryService {
    * Deletes records from the repository based on conditions.
    * Supports multiple conditions and combines them into a single query.
    */
-  public async delete(entityName: string, conditionsArray: Record<string, any>[]): Promise<void> {
-    const repo = this.getRepository(entityName);
+  public async delete(
+    queryRunner: QueryRunner,
+    entityName: string,
+    conditionsArray: Record<string, any>[]
+  ): Promise<void> {
+    // const repo = this.getRepository(entityName);
+    const repo = queryRunner.manager.getRepository(entityName);
     const queryBuilder = repo.createQueryBuilder().delete();
 
     // Combine multiple conditions for batch deletion using OR

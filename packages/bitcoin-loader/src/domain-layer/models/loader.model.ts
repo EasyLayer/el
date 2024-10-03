@@ -65,7 +65,13 @@ export class Loader extends AggregateRoot {
     // IMPORTANT: We always initialize the Loader with the awaiting status,
     // if there was a reorganization status, then it will be processed at the next iteration.
     const status = LoaderStatuses.AWAITING;
-    const height = this.chain.lastBlockHeight < indexedHeight ? this.chain.lastBlockHeight : indexedHeight;
+
+    const height =
+      this.chain.lastBlockHeight !== undefined
+        ? indexedHeight < this.chain.lastBlockHeight
+          ? indexedHeight
+          : this.chain.lastBlockHeight
+        : indexedHeight;
 
     await this.apply(
       new BitcoinLoaderInitializedEvent({
@@ -86,7 +92,7 @@ export class Loader extends AggregateRoot {
 
     if (!isValid) {
       return await this.startReorganisation({
-        height: this.chain.lastBlockHeight,
+        height: this.chain.lastBlockHeight!,
         requestId,
         service,
         blocks: [],
@@ -121,7 +127,7 @@ export class Loader extends AggregateRoot {
       throw new Error("processReorganisation() Reorganisation hasn't started yet");
     }
 
-    if (Number(height) > this.chain.lastBlockHeight) {
+    if (Number(height) > this.chain.lastBlockHeight!) {
       // IMPORTANT: In this case we just skip + we can log this error
       logger.warn(
         "Reorganization height is higher than Loader's blockchain height",
