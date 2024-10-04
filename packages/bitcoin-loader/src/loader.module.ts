@@ -75,6 +75,7 @@ export class BitcoinLoaderModule {
           quickNodesUrls: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_QUICK_NODE_URLS,
           selfNodesUrl: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_SELF_NODE_URL,
           maxRequestContentLength: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_MAX_REQUEST_CONTENT_LENGTH,
+          responseTimeout: providersConfig.BITCOIN_LOADER_NETWORK_PROVIDER_REQUEST_TIMEOUT,
         }),
         EventStoreModule.forRootAsync({
           name: 'loader-eventstore',
