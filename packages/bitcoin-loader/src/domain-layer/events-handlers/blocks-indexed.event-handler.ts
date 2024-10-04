@@ -29,14 +29,31 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
         blocks.map((block: any) => block.hash)
       );
 
+      const stats = {
+        blocksHeight: confirmedBlocks[confirmedBlocks.length - 1].height,
+        blocksLength: confirmedBlocks.length,
+        blocksSize: confirmedBlocks.reduce((result: number, item: any) => (result += item.size), 0) / 1048576,
+        txLength: confirmedBlocks.reduce((result: number, item: any) => (result += item.tx.length), 0),
+        vinLength: confirmedBlocks.reduce(
+          (result: number, block: any) =>
+            (result += block.tx.reduce((result: number, tx: any) => (result += tx.vin.length), 0)),
+          0
+        ),
+        voutLength: confirmedBlocks.reduce(
+          (result: number, block: any) =>
+            (result += block.tx.reduce((result: number, tx: any) => (result += tx.vout.length), 0)),
+          0
+        ),
+      };
+
       const models = [];
 
-      console.time('onLoad');
+      console.time('protocol');
       for (const block of confirmedBlocks) {
         const results = await this.loaderMapper.onLoad(block);
         models.push(...(Array.isArray(results) ? results : [results]));
       }
-      console.timeEnd('onLoad');
+      console.timeEnd('protocol');
 
       // Update System entity
       const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1].height;
@@ -52,15 +69,7 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
       await this.viewsWriteRepository.commit();
       console.timeEnd('commit');
 
-      this.log.info(
-        'Blocks successfull loaded',
-        {
-          blocksHeight: lastBlockHeight,
-          blocksLength: confirmedBlocks.length,
-          txLength: confirmedBlocks.reduce((result: number, item: any) => result + item.tx.length, 0),
-        },
-        this.constructor.name
-      );
+      this.log.info('Blocks successfull loaded', { ...stats }, this.constructor.name);
     } catch (error) {
       this.viewsWriteRepository.clearOperations();
 

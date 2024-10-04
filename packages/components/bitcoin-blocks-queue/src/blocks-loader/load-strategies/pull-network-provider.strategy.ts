@@ -94,12 +94,12 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
     let lastHeight: number = this.queue.lastHeight;
     let lastSize: number = 0;
     let lastCount: number = 0;
-    const maxSize = this.isTest ? 1 : 1000; // Keep this value as is
+    const maxSize = this.isTest ? 1 : 3000; // Keep this value as is
     const maxRequestBlocksBatchSize = this._maxRequestBlocksBatchSize;
     // Load as many blocks as possible until reaching the size limit or the current network height
     while (lastCount <= maxSize && lastSize <= maxRequestBlocksBatchSize && lastHeight <= currentNetworkHeight) {
       const heights: number[] = [];
-      const batchSize = this.isTest ? 1 : 100; // Keep it here; we don't want to fetch more than 100 at a time
+      const batchSize = this.isTest ? 1 : 30; // Keep it here; we don't want to fetch more than 30 at a time
 
       for (let i = 0; i < batchSize; i++) {
         heights.push(lastHeight + 1 + i);
@@ -108,22 +108,21 @@ export class PullNetworkProviderStrategy implements BlocksLoadingStrategy {
       const blocksStats = await this.networkProvider.getManyBlocksStatsByHeights(heights);
 
       for (const { blockhash, total_size, height } of blocksStats) {
-        // if (!blockhash || !total_size || !height) {
-        //   throw new Error('Block stats params is missed');
-        // }
+        if (
+          blockhash === undefined ||
+          blockhash === null ||
+          total_size === undefined ||
+          total_size === null ||
+          height === undefined ||
+          height === null
+        ) {
+          throw new Error('Block stats params is missed');
+        }
 
         this._hashes.push(blockhash);
         lastSize += Number(total_size);
         lastHeight = Number(height);
         lastCount += 1;
-
-        if (lastCount >= maxSize) {
-          break;
-        }
-
-        if (lastHeight >= currentNetworkHeight) {
-          break;
-        }
 
         if (lastSize + total_size >= Number(maxRequestBlocksBatchSize)) {
           break; // Reached the maximum request size
