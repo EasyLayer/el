@@ -13,6 +13,7 @@ export interface NetworkProviderModuleOptions {
   quickNodesUrls?: string[];
   selfNodesUrl?: string;
   maxRequestContentLength?: number;
+  responseTimeout?: number;
 }
 
 @Module({})

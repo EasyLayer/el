@@ -7,6 +7,7 @@ import { NodeProviderTypes, Hash } from './interfaces';
 export interface SelfNodeProviderOptions extends BaseNodeProviderOptions {
   baseUrl: string;
   maxRequestContentLength?: number;
+  responseTimeout?: number;
 }
 
 export const createSelfNodeProvider = (options: SelfNodeProviderOptions): SelfNodeProvider => {
@@ -18,12 +19,16 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
   private _httpClient: any;
   private baseUrl: string;
   private maxRequestContentLength: number = 200 * 1024 * 1024;
+  private responseTimeout: number = 5000;
 
   constructor(options: SelfNodeProviderOptions) {
     super(options);
     this.baseUrl = options.baseUrl;
     if (options.maxRequestContentLength) {
       this.maxRequestContentLength = options.maxRequestContentLength;
+    }
+    if (options.responseTimeout) {
+      this.responseTimeout = options.responseTimeout;
     }
   }
 
@@ -45,7 +50,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       // keepAlive - Allows reuse of TCP connections.
       httpAgent: new http.Agent({ keepAlive: true }),
       httpsAgent: new https.Agent({ keepAlive: true }),
-      timeout: 5000,
+      timeout: this.responseTimeout,
       maxRedirects: 0,
       maxContentLength: this.maxRequestContentLength,
     });
@@ -89,6 +94,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return blockHeight;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(`Error: ${error.response.data}`);
         } else if (error.request) {
@@ -115,6 +124,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return blockHash;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(
             `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
@@ -143,6 +156,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return block;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(
             `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
@@ -201,6 +218,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(
             `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
@@ -250,6 +271,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(
             `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
@@ -299,6 +324,10 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       return results;
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error(`The request timed out: ${error.message}`);
+        }
+
         if (error.response) {
           throw new Error(
             `Server responded with status ${error.response.status}: ${JSON.stringify(error.response.data)}`
