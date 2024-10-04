@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
-import { IsString, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsNumber } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
 @Injectable()
@@ -26,8 +26,10 @@ export class ProvidersConfig {
     description: 'Size in bytes of the max request content data length.',
     default: Number.MAX_SAFE_INTEGER,
   })
+  @IsNumber()
   BITCOIN_LOADER_NETWORK_PROVIDER_MAX_REQUEST_CONTENT_LENGTH: number = Number.MAX_SAFE_INTEGER; //200 * 1024 * 1024;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 5000))
+  @IsNumber()
   BITCOIN_LOADER_NETWORK_PROVIDER_REQUEST_TIMEOUT: number = 5000;
 }
