@@ -6,7 +6,7 @@
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
     "clear:node_modules": "rimraf node_module",
-    "start": "ts-node src/main.ts"
+    "start": "node --inspect -r ts-node/register src/main.ts"
   },
   "dependencies": {
     "@easylayer/bitcoin-listener": "0.0.3-experimental.0",
