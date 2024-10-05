@@ -38,6 +38,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       uniqName: this.uniqName,
       baseUrl: this.baseUrl,
       maxRequestContentLength: this.maxRequestContentLength,
+      responseTimeout: this.responseTimeout,
     };
   }
 
