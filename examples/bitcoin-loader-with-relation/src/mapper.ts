@@ -19,8 +19,8 @@ export class Mapper implements ILoaderMapper {
       
             txsModel.insert({
               txid,
-              vin: JSON.stringify(vin),
-              vout: JSON.stringify(vout),
+              vin,
+              vout,
               block_hash: hash,
             });
       

@@ -29,7 +29,7 @@ export class ProvidersConfig {
   @IsNumber()
   BITCOIN_LOADER_NETWORK_PROVIDER_MAX_REQUEST_CONTENT_LENGTH: number = Number.MAX_SAFE_INTEGER; //200 * 1024 * 1024;
 
-  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 5000))
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10000))
   @IsNumber()
-  BITCOIN_LOADER_NETWORK_PROVIDER_REQUEST_TIMEOUT: number = 5000;
+  BITCOIN_LOADER_NETWORK_PROVIDER_REQUEST_TIMEOUT: number = 10000;
 }

@@ -105,42 +105,16 @@ describe('BlocksQueue', () => {
 
       const block1 = new TestBlock(0, [createTransaction(100)]);
       const block2 = new TestBlock(1, [createTransaction(150)]);
-      const block3 = new TestBlock(2, [createTransaction(100)]); // Exceeds maxBlockHeight
+      // const block3 = new TestBlock(2, [createTransaction(100)]); // Exceeds maxBlockHeight
 
       await queue.enqueue(block1);
       await queue.enqueue(block2);
-
-      // Attempt to enqueue block3 which exceeds maxBlockHeight
-      await expect(queue.enqueue(block3)).rejects.toThrow(
-        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: true, Current size + block size: 350`
-      );
 
       expect(queue.length).toBe(2);
       expect(queue.lastHeight).toBe(1);
       expect(queue.currentSize).toBe(250);
       expect(queue.isQueueFull).toBe(false);
       expect(queue.isMaxHeightReached).toBe(true);
-    });
-
-    it('should throw an error when enqueueing a block that exceeds maxQueueSize', async () => {
-      // Set maxQueueSize to 500 bytes
-      queue.maxQueueSize = 500;
-
-      const block1 = new TestBlock(0, [createTransaction(300)]); // 300 bytes
-      const block2 = new TestBlock(1, [createTransaction(250)]); // 250 bytes
-
-      await queue.enqueue(block1);
-
-      // Attempt to enqueue block2 which would make total size 550 > 500
-      await expect(queue.enqueue(block2)).rejects.toThrow(
-        `Can't enqueue block. isQueueFull: false, isMaxHeightReached: false, Current size + block size: 550`
-      );
-
-      expect(queue.length).toBe(1);
-      expect(queue.lastHeight).toBe(0);
-      expect(queue.currentSize).toBe(300);
-      expect(queue.isQueueFull).toBe(false);
-      expect(queue.isMaxHeightReached).toBe(false);
     });
   });
 

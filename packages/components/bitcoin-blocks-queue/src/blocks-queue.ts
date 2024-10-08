@@ -36,6 +36,11 @@ export class BlocksQueue<T extends Block> {
     return this._size >= this._maxQueueSize;
   }
 
+  public isQueueOverloaded(additionalSize: number): boolean {
+    const projectedSize = this.currentSize + additionalSize;
+    return projectedSize > this.maxQueueSize;
+  }
+
   /**
    * Determines whether the queue has reached the maximum allowed block height.
    * @returns `true` if the last block's height is greater than or equal to the maximum block height; otherwise, `false`.
@@ -198,11 +203,10 @@ export class BlocksQueue<T extends Block> {
       }
 
       // Check if adding this block would exceed the maximum queue size
-      if (this.isQueueFull || this.isMaxHeightReached || this._size + totalBlockSize > this._maxQueueSize) {
+      // IMORTANT: We still add the last block when the size already exceeds the maximum queue size.
+      if (this.isQueueFull || this.isMaxHeightReached) {
         throw new Error(
-          `Can't enqueue block. isQueueFull: ${this.isQueueFull}, isMaxHeightReached: ${
-            this.isMaxHeightReached
-          }, Current size + block size: ${this._size + totalBlockSize}`
+          `Can't enqueue block. isQueueFull: ${this.isQueueFull}, isMaxHeightReached: ${this.isMaxHeightReached}`
         );
       }
 

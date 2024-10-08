@@ -1,6 +1,8 @@
 import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
 import { IBlock } from './blocks';
 
+const isPostgres = process.env.BITCOIN_LOADER_READ_DB_TYPE === 'postgres';
+
 export interface ITransaction {
   txid: string;
   hex: string;
@@ -19,11 +21,11 @@ export const TransactionSchema = new EntitySchema<ITransaction>({
       primary: true,
     },
     vin: {
-      type: 'text',
+      type: isPostgres ? 'jsonb' : 'simple-json',
       nullable: false,
     },
     vout: {
-      type: 'text',
+      type: isPostgres ? 'jsonb' : 'simple-json',
       nullable: false,
     },
     block_hash: {
