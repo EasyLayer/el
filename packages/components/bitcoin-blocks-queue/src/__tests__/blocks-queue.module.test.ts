@@ -24,6 +24,7 @@ describe('BlocksQueueModule', () => {
     minTransferSize: 1024,
     queueLoaderStrategyName: 'pull-network-provider',
     queueIteratorBlocksBatchSize: 2,
+    queueLoaderConcurrency: 1,
   };
 
   beforeEach(async () => {

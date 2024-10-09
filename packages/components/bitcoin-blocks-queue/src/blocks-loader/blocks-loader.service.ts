@@ -55,12 +55,12 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
           await this._loadingStrategy?.load(currentNetworkHeight);
           resetInterval();
         } catch (error) {
-          this.log.debug('Stop the loading strategy', error, this.constructor.name);
+          this.log.error('Loading strategy error', error, this.constructor.name);
           await this._loadingStrategy?.stop();
         }
       },
       {
-        interval: 1,
+        interval: 500,
         maxInterval: 3000,
         multiplier: 2,
       }
@@ -71,9 +71,10 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
     const name = this.config.queueLoaderStrategyName;
 
     switch (name) {
-      case StrategyNames.PULL_NETWORL_PROVIDER:
+      case StrategyNames.PULL_NETWORK_PROVIDER:
         this._loadingStrategy = new PullNetworkProviderStrategy(this.log, this.networkProviderService, queue, {
           maxRequestBlocksBatchSize: this.config.queueLoaderRequestBlocksBatchSize,
+          concurrency: this.config.queueLoaderConcurrency,
           isTest: this.config.isTest,
         });
         break;

@@ -16,6 +16,7 @@ export interface BlocksQueueModuleOptions {
   minTransferSize: number;
   queueLoaderStrategyName: string;
   queueLoaderRequestBlocksBatchSize: number;
+  queueLoaderConcurrency: number;
   queueIteratorBlocksBatchSize: number;
 }
 

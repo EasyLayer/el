@@ -27,4 +27,8 @@ export class BlocksQueueConfig {
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 10 * 1024 * 1024))
   @IsNumber()
   BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE: number = 10 * 1024 * 1024; // 10 MB;
+
+  @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 1))
+  @IsNumber()
+  BITCOIN_INDEXER_BLOCKS_QUEUE_LOADER_CONCURRENCY_COUNT: number = 1;
 }

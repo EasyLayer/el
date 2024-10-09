@@ -111,6 +111,7 @@ export class BitcoinListenerModule {
           minTransferSize: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_MIN_TRANSFER_SIZE,
           queueLoaderStrategyName: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_STRATEGY_NAME,
           queueIteratorBlocksBatchSize: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_ITERATOR_BLOCKS_BATCH_SIZE,
+          queueLoaderConcurrency: blocksQueueConfig.BITCOIN_LISTENER_BLOCKS_QUEUE_LOADER_CONCURRENCY_COUNT,
         }),
       ],
       providers: [

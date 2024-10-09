@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { from as copyFrom } from 'pg-copy-streams';
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import {
   InjectDataSource,
   DataSource,
@@ -13,7 +13,7 @@ import { AppLogger } from '@easylayer/components/logger';
 import { ReadDatabaseConfig } from '../../config';
 
 @Injectable()
-export class ViewsWriteRepositoryService {
+export class ViewsWriteRepositoryService implements OnModuleDestroy {
   private isParallelSupport: boolean;
 
   // Queue of operations: stores entityName, method, and operation data
@@ -26,6 +26,16 @@ export class ViewsWriteRepositoryService {
     private readonly log: AppLogger
   ) {
     this.isParallelSupport = this.datasource.manager.connection?.options?.type === 'postgres';
+  }
+
+  async onModuleDestroy() {
+    if (this.operations.length > 0) {
+      try {
+        await this.commit();
+      } catch (error) {}
+    }
+
+    this.clearOperations();
   }
 
   /**
@@ -156,12 +166,7 @@ export class ViewsWriteRepositoryService {
     const batchSize = this.config.BITCOIN_LOADER_READ_DB_INSERT_CHANKS_LIMIT;
 
     if (this.isParallelSupport) {
-      if (data.length > batchSize) {
-        const chunkedBatches = this.chunkArray(data, batchSize);
-        await Promise.all(chunkedBatches.map((chunk) => this.insert(queryRunner, entityName, chunk)));
-      } else {
-        await this.insertWithCopy(queryRunner, entityName, data);
-      }
+      await this.insertWithCopy(queryRunner, entityName, data);
     } else {
       if (data.length > batchSize) {
         const chunkedBatches = this.chunkArray(data, batchSize);

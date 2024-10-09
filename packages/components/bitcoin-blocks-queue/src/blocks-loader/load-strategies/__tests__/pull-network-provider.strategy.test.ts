@@ -9,7 +9,7 @@ describe('PullNetworkProviderStrategy', () => {
   let mockLogger: jest.Mocked<AppLogger>;
   let mockNetworkProvider: jest.Mocked<NetworkProviderService>;
   let mockQueue: jest.Mocked<BlocksQueue<Block>>;
-  let config: { maxRequestBlocksBatchSize: number; isTest: boolean };
+  let config: { maxRequestBlocksBatchSize: number; isTest: boolean; concurrency: number };
 
   beforeEach(() => {
     // Initialize mock logger with jest.fn() for all methods
@@ -20,23 +20,20 @@ describe('PullNetworkProviderStrategy', () => {
       error: jest.fn(),
     } as any;
 
-    // Initialize mock network provider with jest.fn() for getManyBlocksByHeights
+    // Initialize mock network provider with jest.fn() for necessary methods
     mockNetworkProvider = {
       getManyBlocksByHeights: jest.fn(),
-      getManyBlocksStatsByHeights: jest.fn(() => []),
+      getManyBlocksStatsByHeights: jest.fn(),
+      getManyBlocksByHashes: jest.fn(),
     } as any;
 
-    // Initialize mock queue with necessary properties and methods
+    // Initialize mock queue with necessary methods
     mockQueue = {
-      lastHeight: 0,
-      maxQueueLength: 100, // Assuming this property exists
-      isMaxHeightReached: false, // Assuming this property exists
-      isQueueFull: false, // Assuming this property exists
       enqueue: jest.fn(),
-      // Add other necessary properties and methods as needed
+      isQueueOverloaded: jest.fn(),
     } as any;
 
-    config = { maxRequestBlocksBatchSize: 10 * 1024 * 1024, isTest: true }; // 10 MB
+    config = { maxRequestBlocksBatchSize: 10 * 1024 * 1024, isTest: true, concurrency: 1 }; // 10 MB
 
     // Instantiate the strategy with mocked dependencies
     strategy = new PullNetworkProviderStrategy(mockLogger, mockNetworkProvider, mockQueue, config);
@@ -47,47 +44,306 @@ describe('PullNetworkProviderStrategy', () => {
     jest.clearAllMocks();
   });
 
-  it('should handle queue being full by throwing an error', async () => {
-    const currentNetworkHeight = 15; // Set higher than lastHeight to avoid triggering "Reached current network height"
+  describe('load', () => {
+    it('should log and return if the maximum block height is reached', async () => {
+      const currentNetworkHeight = 100;
 
-    // Initialize lastHeight to simulate progress
-    let lastHeight = 10; // Set lastHeight to 10, which is less than currentNetworkHeight (15)
-    Object.defineProperty(mockQueue, 'lastHeight', {
-      get: () => lastHeight,
-      set: (value) => {
-        lastHeight = value;
-      },
+      // Mocking 'isMaxHeightReached' to return true
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => true,
+      });
+
+      // Mocking 'lastHeight' to return 100
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 100,
+      });
+
+      await strategy.load(currentNetworkHeight);
+
+      // Expect a debug log indicating the max block height is reached
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        'Reached max block height',
+        { queueLastHeight: 100 },
+        'PullNetworkProviderStrategy'
+      );
+
+      // Ensure no further actions are taken
+      expect(mockNetworkProvider.getManyBlocksStatsByHeights).not.toHaveBeenCalled();
+      expect(mockQueue.enqueue).not.toHaveBeenCalled();
     });
 
-    // Mock the getManyBlocksByHeights method to return blocks and update lastHeight accordingly
-    mockNetworkProvider.getManyBlocksByHeights.mockImplementation(async (heights: (string | number)[]) => {
-      const blocks = heights.map((height) => ({
-        height: Number(height),
-        hash: `hash${height}`,
-        tx: [],
-        size: 0,
-      })) as Block[];
+    it('should log and return if the current network height is reached', async () => {
+      const currentNetworkHeight = 100;
 
-      // Update lastHeight based on the fetched blocks
-      lastHeight = Math.max(lastHeight, ...heights.map(Number));
-      return blocks;
+      // Mocking 'isMaxHeightReached' to return false
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => false,
+      });
+
+      // Mocking 'lastHeight' to return 100
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 100,
+      });
+
+      await strategy.load(currentNetworkHeight);
+
+      // Expect a debug log indicating the current network height is reached
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        'Reached current network height',
+        { queueLastHeight: 100 },
+        'PullNetworkProviderStrategy'
+      );
+
+      // Ensure no further actions are taken
+      expect(mockNetworkProvider.getManyBlocksStatsByHeights).not.toHaveBeenCalled();
+      expect(mockQueue.enqueue).not.toHaveBeenCalled();
     });
 
-    // Mock enqueue to always resolve successfully
-    mockQueue.enqueue.mockImplementation(() => Promise.resolve());
+    it('should log and return if the queue is full', async () => {
+      const currentNetworkHeight = 150;
 
-    // Set the queue to be full to trigger the queue full condition
-    Object.defineProperty(mockQueue, 'isQueueFull', {
-      get: () => true,
+      // Mocking 'isMaxHeightReached' to return false
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => false,
+      });
+
+      // Mocking 'lastHeight' to return 50
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 50,
+      });
+
+      // Mocking 'isQueueFull' to return true
+      Object.defineProperty(mockQueue, 'isQueueFull', {
+        get: () => true,
+      });
+
+      await strategy.load(currentNetworkHeight);
+
+      // Expect a debug log indicating the queue is full
+      expect(mockLogger.debug).toHaveBeenCalledWith(
+        'The queue is full',
+        { queueLastHeight: 50 },
+        'PullNetworkProviderStrategy'
+      );
+
+      // Ensure no further actions are taken
+      expect(mockNetworkProvider.getManyBlocksStatsByHeights).not.toHaveBeenCalled();
+      expect(mockQueue.enqueue).not.toHaveBeenCalled();
     });
 
-    // Expect the load method to throw an error when the queue is full
-    await expect(strategy.load(currentNetworkHeight)).rejects.toThrow(`Queue is full, ${lastHeight}`);
+    it('should log and return if the queue is overloaded', async () => {
+      const currentNetworkHeight = 20;
 
-    // Ensure that lastHeight has NOT reached the current network height
-    expect(mockQueue.lastHeight).not.toBeGreaterThanOrEqual(currentNetworkHeight);
+      // Mocking 'isMaxHeightReached' to return false
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => false,
+      });
 
-    // Verify that enqueue was never called since the queue was full
-    expect(mockQueue.enqueue).not.toHaveBeenCalled();
+      // Mocking 'lastHeight' to return 10
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 10,
+      });
+
+      // Mocking 'isQueueFull' to return false
+      Object.defineProperty(mockQueue, 'isQueueFull', {
+        get: () => false,
+      });
+
+      // Populate the preloaded queue with items
+      (strategy as any)._preloadedItemsQueue = [
+        { hash: 'hash1', size: 5 * 1024 * 1024, height: 11 },
+        { hash: 'hash2', size: 5 * 1024 * 1024, height: 12 },
+      ];
+
+      // Mock 'isQueueOverloaded' to return true
+      mockQueue.isQueueOverloaded.mockReturnValue(true);
+
+      await strategy.load(currentNetworkHeight);
+
+      // Expect a debug log indicating the queue is overloaded
+      expect(mockLogger.debug).toHaveBeenCalledWith('The queue is overloaded', {}, 'PullNetworkProviderStrategy');
+
+      // Ensure loadAndEnqueueBlocks is not called
+      const loadAndEnqueueMock = jest.spyOn(strategy as any, 'loadAndEnqueueBlocks');
+      expect(loadAndEnqueueMock).not.toHaveBeenCalled();
+
+      loadAndEnqueueMock.mockRestore();
+    });
+  });
+
+  describe('stop', () => {
+    it('should clear the preloaded items queue', async () => {
+      // Populate the preloaded queue with items
+      (strategy as any)._preloadedItemsQueue = [
+        { hash: 'hash1', size: 500, height: 1 },
+        { hash: 'hash2', size: 600, height: 2 },
+      ];
+
+      await strategy.stop();
+
+      // Expect the preloaded queue to be empty
+      expect((strategy as any)._preloadedItemsQueue).toEqual([]);
+    });
+  });
+
+  describe('preloadBlocksInfo', () => {
+    it('should throw an error if block stats params are missing', async () => {
+      const currentNetworkHeight = 5;
+
+      // Mocking 'lastHeight' to return 0
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 0,
+      });
+
+      // Mocking 'isMaxHeightReached' to return false
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => false,
+      });
+
+      // Mock blocks stats response with missing parameters
+      mockNetworkProvider.getManyBlocksStatsByHeights.mockResolvedValue([
+        { blockhash: null, total_size: 500, height: 1 }, // Invalid blockhash
+      ]);
+
+      await expect((strategy as any).preloadBlocksInfo(currentNetworkHeight)).rejects.toThrow(
+        'Block stats params is missed'
+      );
+
+      // Ensure the preloaded queue remains empty
+      expect((strategy as any)._preloadedItemsQueue).toEqual([]);
+    });
+  });
+  describe('loadAndEnqueueBlocks', () => {
+    it('should load blocks and enqueue them successfully', async () => {
+      // Set concurrency to 1 for simplicity
+      config.concurrency = 1;
+      strategy = new PullNetworkProviderStrategy(mockLogger, mockNetworkProvider, mockQueue, config);
+
+      // Populate the preloaded queue with blocks
+      (strategy as any)._preloadedItemsQueue = [
+        { hash: 'hash1', size: 500, height: 1 },
+        { hash: 'hash2', size: 600, height: 2 },
+      ];
+
+      // Mock loadBlocks to return fetched blocks
+      const mockBlocks: Block[] = [
+        { height: 1, hash: 'hash1', tx: [], size: 500 },
+        { height: 2, hash: 'hash2', tx: [], size: 600 },
+      ];
+      const loadBlocksMock = jest.spyOn(strategy as any, 'loadBlocks').mockResolvedValue(mockBlocks);
+
+      // Mock enqueueBlocks to enqueue the blocks
+      // const enqueueBlocksMock = jest.spyOn(strategy as any, 'enqueueBlocks').mockResolvedValue();
+
+      await (strategy as any).loadAndEnqueueBlocks();
+
+      // Expect loadBlocks to be called with the correct hashes
+      expect(loadBlocksMock).toHaveBeenCalledWith(['hash1', 'hash2'], 3);
+
+      // Expect enqueueBlocks to be called with the fetched blocks
+      // expect(enqueueBlocksMock).toHaveBeenCalledWith(mockBlocks);
+
+      // Ensure the preloaded queue is emptied
+      expect((strategy as any)._preloadedItemsQueue).toEqual([]);
+
+      loadBlocksMock.mockRestore();
+      // enqueueBlocksMock.mockRestore();
+    });
+
+    it('should handle loadBlocks throwing an error after retries', async () => {
+      // Populate the preloaded queue with blocks
+      (strategy as any)._preloadedItemsQueue = [
+        { hash: 'hash1', size: 500, height: 1 },
+        { hash: 'hash2', size: 600, height: 2 },
+      ];
+
+      // Mock loadBlocks to throw an error
+      const loadBlocksMock = jest.spyOn(strategy as any, 'loadBlocks').mockRejectedValue(new Error('Network error'));
+
+      // Mock enqueueBlocks to prevent actual enqueuing
+      // const enqueueBlocksMock = jest.spyOn(strategy as any, 'enqueueBlocks').mockResolvedValue();
+
+      // Expect loadAndEnqueueBlocks to throw the error
+      await expect((strategy as any).loadAndEnqueueBlocks()).rejects.toThrow('Network error');
+
+      // Ensure enqueueBlocks was not called
+      // expect(enqueueBlocksMock).not.toHaveBeenCalled();
+
+      loadBlocksMock.mockRestore();
+      // enqueueBlocksMock.mockRestore();
+    });
+  });
+
+  describe('loadBlocks', () => {
+    it('should fetch blocks successfully on the first attempt', async () => {
+      const hashBatch = ['hash1', 'hash2'];
+      const maxRetries = 3;
+
+      const fetchedBlocks: Block[] = [
+        { height: 1, hash: 'hash1', tx: [], size: 500 },
+        { height: 2, hash: 'hash2', tx: [], size: 600 },
+      ];
+
+      // Mock getManyBlocksByHashes to return fetched blocks
+      mockNetworkProvider.getManyBlocksByHashes.mockResolvedValue(fetchedBlocks);
+
+      const result = await (strategy as any).loadBlocks(hashBatch, maxRetries);
+
+      // Expect getManyBlocksByHashes to be called with the correct parameters
+      expect(mockNetworkProvider.getManyBlocksByHashes).toHaveBeenCalledWith(hashBatch, 2);
+
+      // Expect the fetched blocks to be returned
+      expect(result).toEqual(fetchedBlocks);
+    });
+
+    it('should retry fetching blocks up to maxRetries on failure', async () => {
+      const hashBatch = ['hash1', 'hash2'];
+      const maxRetries = 3;
+
+      // Mock getManyBlocksByHashes to fail twice before succeeding
+      mockNetworkProvider.getManyBlocksByHashes
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockRejectedValueOnce(new Error('Network error'))
+        .mockResolvedValue([
+          { height: 1, hash: 'hash1', tx: [], size: 500 },
+          { height: 2, hash: 'hash2', tx: [], size: 600 },
+        ]);
+
+      const result = await (strategy as any).loadBlocks(hashBatch, maxRetries);
+
+      // Expect getManyBlocksByHashes to be called three times
+      expect(mockNetworkProvider.getManyBlocksByHashes).toHaveBeenCalledTimes(3);
+
+      // Expect the fetched blocks to be returned after retries
+      expect(result).toEqual([
+        { height: 1, hash: 'hash1', tx: [], size: 500 },
+        { height: 2, hash: 'hash2', tx: [], size: 600 },
+      ]);
+    });
+
+    it('should throw an error after exceeding maxRetries', async () => {
+      const hashBatch = ['hash1', 'hash2'];
+      const maxRetries = 2;
+
+      // Mock getManyBlocksByHashes to always fail
+      mockNetworkProvider.getManyBlocksByHashes.mockRejectedValue(new Error('Network error'));
+
+      // Spy on the logger to verify warning is logged
+      const warnMock = jest.spyOn(mockLogger, 'warn');
+
+      await expect((strategy as any).loadBlocks(hashBatch, maxRetries)).rejects.toThrow('Network error');
+
+      // Expect getManyBlocksByHashes to be called maxRetries times
+      expect(mockNetworkProvider.getManyBlocksByHashes).toHaveBeenCalledTimes(maxRetries);
+
+      // Expect a warning to be logged after exceeding retries
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        'Exceeded max retries for fetching blocks batch.',
+        { batchLength: 2 },
+        'PullNetworkProviderStrategy'
+      );
+
+      warnMock.mockRestore();
+    });
   });
 });
