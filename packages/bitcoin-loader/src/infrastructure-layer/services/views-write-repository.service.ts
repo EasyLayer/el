@@ -193,12 +193,12 @@ export class ViewsWriteRepositoryService implements OnModuleDestroy {
    * Inserts data into the repository in bulk.
    * Uses 'orIgnore' to avoid conflicts and prevent duplicate records.
    */
-  public async insert(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
+  private async insert(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
     const repo = queryRunner.manager.getRepository(entityName);
     await repo.createQueryBuilder().insert().values(values).orIgnore().updateEntity(false).execute();
   }
 
-  public async insertWithCopy(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
+  private async insertWithCopy(queryRunner: QueryRunner, entityName: string, values: any[]): Promise<void> {
     const repo = this.getRepository(entityName);
     const entityMetadata = repo.metadata;
     const tableName = `"${entityMetadata.tableName}"`;
@@ -207,24 +207,33 @@ export class ViewsWriteRepositoryService implements OnModuleDestroy {
     // Convert the values ​​to a format suitable for COPY (tab-delimited table)
     const readableStream = new Readable({
       read() {
-        // Проходим по данным построчно
         values.forEach((row) => {
           const formattedRow = entityMetadata.columns
             .map((col) => {
               const value = row[col.propertyName];
               if (value === null || value === undefined) {
-                return '\\N'; // NULL в формате COPY
+                return '\\N';
               }
               if (typeof value === 'string') {
                 return value.replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n');
               }
-              return value;
+              if (typeof value === 'number') {
+                return value.toString();
+              }
+              if (typeof value === 'boolean') {
+                return value ? '1' : '0';
+              }
+              if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                return JSON.stringify(value).replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n');
+              }
+
+              return value.toString().replace(/\\/g, '\\\\').replace(/\t/g, '\\t').replace(/\n/g, '\\n');
             })
             .join('\t');
 
           this.push(formattedRow + '\n');
         });
-        this.push(null); // Окончание потока
+        this.push(null);
       },
     });
 
@@ -251,7 +260,7 @@ export class ViewsWriteRepositoryService implements OnModuleDestroy {
    * Updates records in the repository based on conditions.
    * Groups conditions for the same values and applies them in a single query.
    */
-  public async update(
+  private async update(
     queryRunner: QueryRunner,
     entityName: string,
     params: { values: Record<string, any>; conditions?: Record<string, any>[] }
@@ -276,7 +285,7 @@ export class ViewsWriteRepositoryService implements OnModuleDestroy {
    * Deletes records from the repository based on conditions.
    * Supports multiple conditions and combines them into a single query.
    */
-  public async delete(
+  private async delete(
     queryRunner: QueryRunner,
     entityName: string,
     conditionsArray: Record<string, any>[]

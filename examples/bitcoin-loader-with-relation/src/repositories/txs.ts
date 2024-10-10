@@ -1,4 +1,4 @@
-import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
+import { EntitySchema, generateRepositoryFromSchema } from '@easylayer/bitcoin-loader';
 import { IBlock } from './blocks';
 
 const isPostgres = process.env.BITCOIN_LOADER_READ_DB_TYPE === 'postgres';
@@ -46,4 +46,4 @@ export const TransactionSchema = new EntitySchema<ITransaction>({
   },
 });
 
-export const TransactionModel = generateModelFromSchema(TransactionSchema);
+export const TransactionsRepository = generateRepositoryFromSchema(TransactionSchema);

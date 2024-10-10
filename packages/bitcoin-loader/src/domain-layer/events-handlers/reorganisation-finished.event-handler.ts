@@ -5,7 +5,7 @@ import { QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderReorganisationFinishedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
-import { SystemModel } from '../../infrastructure-layer/view-models';
+import { SystemsRepository } from '../../infrastructure-layer/view-models';
 
 @EventsHandler(BitcoinLoaderReorganisationFinishedEvent)
 export class BitcoinLoaderReorganisationFinishedEventHandler
@@ -24,23 +24,23 @@ export class BitcoinLoaderReorganisationFinishedEventHandler
     try {
       const { blocks: lightBlocks } = payload;
 
-      const models = [];
+      const repositories = [];
 
       // Update System entity
       const lastBlockHeight: number = lightBlocks[lightBlocks.length - 1]?.height;
-      const systemModel = new SystemModel();
-      systemModel.update({ last_block_height: lastBlockHeight }, { id: 1 });
+      const systemModel = new SystemsRepository();
+      systemModel.update({ id: 1 }, { last_block_height: lastBlockHeight });
 
-      models.push(systemModel);
+      repositories.push(systemModel);
 
       if (Array.isArray(lightBlocks) && lightBlocks.length > 0) {
         for (const block of lightBlocks) {
           const results = await this.loaderMapper.onReorganisation(block);
-          models.push(...(Array.isArray(results) ? results : [results]));
+          repositories.push(...(Array.isArray(results) ? results : [results]));
         }
       }
 
-      this.viewsWriteRepository.process(models);
+      this.viewsWriteRepository.process(repositories);
 
       await this.viewsWriteRepository.commit();
 

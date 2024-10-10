@@ -1,4 +1,4 @@
-import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
+import { EntitySchema, generateRepositoryFromSchema } from '@easylayer/bitcoin-loader';
 import { ITransaction } from './txs';
 
 export interface IBlock {
@@ -39,4 +39,4 @@ export const BlockSchema = new EntitySchema<IBlock>({
   },
 });
 
-export const BlockModel = generateModelFromSchema(BlockSchema);
+export const BlocksRepository = generateRepositoryFromSchema(BlockSchema);

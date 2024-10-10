@@ -1,4 +1,4 @@
-import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
+import { EntitySchema, generateRepositoryFromSchema } from '@easylayer/bitcoin-loader';
 
 export interface IOutput {
     script_hash: string | null;
@@ -48,5 +48,5 @@ export const OutputSchema = new EntitySchema<IOutput>({
     ],
 });
 
-export const OutputModel = generateModelFromSchema(OutputSchema);
+export const OutputsRepository = generateRepositoryFromSchema(OutputSchema);
   
