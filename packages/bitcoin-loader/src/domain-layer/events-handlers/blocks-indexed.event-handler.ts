@@ -6,7 +6,7 @@ import { QueryFailedError } from '@easylayer/components/views-rdbms-db';
 import { BitcoinLoaderBlocksIndexedEvent } from '@easylayer/common/domain-cqrs-components/bitcoin-loader';
 import { ViewsWriteRepositoryService } from '../../infrastructure-layer/services';
 import { ILoaderMapper } from '../../protocol';
-import { SystemModel } from '../../infrastructure-layer/view-models';
+import { SystemsRepository } from '../../infrastructure-layer/view-models';
 
 @EventsHandler(BitcoinLoaderBlocksIndexedEvent)
 export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<BitcoinLoaderBlocksIndexedEvent> {
@@ -46,24 +46,24 @@ export class BitcoinLoaderBlocksIndexedEventHandler implements IEventHandler<Bit
         ),
       };
 
-      const models = [];
+      const repositories = [];
 
       console.time('protocol');
       for (const block of confirmedBlocks) {
         const results = await this.loaderMapper.onLoad(block);
-        models.push(...(Array.isArray(results) ? results : [results]));
+        repositories.push(...(Array.isArray(results) ? results : [results]));
       }
       console.timeEnd('protocol');
 
       // Update System entity
       const lastBlockHeight: number = confirmedBlocks[confirmedBlocks.length - 1].height;
 
-      const systemModel = new SystemModel();
-      systemModel.update({ last_block_height: lastBlockHeight }, { id: 1 });
+      const systemsRepo = new SystemsRepository();
+      systemsRepo.update({ id: 1 }, { last_block_height: lastBlockHeight });
 
-      models.push(systemModel);
+      repositories.push(systemsRepo);
 
-      this.viewsWriteRepository.process(models);
+      this.viewsWriteRepository.process(repositories);
 
       console.time('commit');
       await this.viewsWriteRepository.commit();

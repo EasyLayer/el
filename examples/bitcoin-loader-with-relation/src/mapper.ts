@@ -1,12 +1,12 @@
 import { ILoaderMapper } from '@easylayer/bitcoin-loader';
-import { BlockModel, TransactionModel } from './models';
+import { BlocksRepository, TransactionsRepository } from './repositories';
 
 export class Mapper implements ILoaderMapper {
     public async onLoad(block: any) {
         const { height, hash, previousblockhash, tx } = block;
 
-        const blockModels: InstanceType<typeof BlockModel>[] = [];
-        const txsModels: InstanceType<typeof TransactionModel>[] = [];
+        const blockRepos: InstanceType<typeof BlocksRepository>[] = [];
+        const txsRepos: InstanceType<typeof TransactionsRepository>[] = [];
 
         if (!tx || tx.length === 0) {
           throw new Error(`Tx length = 0`);
@@ -15,42 +15,42 @@ export class Mapper implements ILoaderMapper {
         for (const t of tx) {
             const { txid, vin, vout } = t;
       
-            const txsModel = new TransactionModel();
+            const txsRepo = new TransactionsRepository();
       
-            txsModel.insert({
+            txsRepo.insert({
               txid,
               vin,
               vout,
               block_hash: hash,
             });
       
-            txsModels.push(txsModel);
+            txsRepos.push(txsRepo);
         }
 
-        const blockModel = new BlockModel();
+        const blockRepo = new BlocksRepository();
 
-        blockModel.insert({
+        blockRepo.insert({
             hash, 
             height: Number(height),
             previousblockhash: previousblockhash ? previousblockhash : '000000000000000000',
             is_suspended: false
         });
         
-        blockModels.push(blockModel);
+        blockRepos.push(blockRepo);
 
-        return [...blockModels, ...txsModels];
+        return [...blockRepos, ...txsRepos];
     }
 
     public async onReorganisation(lightBlock: any) {
         const { hash } = lightBlock;
 
-        const blockModel = new BlockModel();
+        const blockRepo = new BlocksRepository();
     
-        blockModel.update(
+        blockRepo.update(
+            { hash },
             { is_suspended: true },
-            { hash }
         );
 
-        return blockModel;
+        return blockRepo;
     }
 }

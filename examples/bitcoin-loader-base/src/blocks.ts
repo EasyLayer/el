@@ -1,4 +1,4 @@
-import { EntitySchema, generateModelFromSchema } from '@easylayer/bitcoin-loader';
+import { EntitySchema, generateRepositoryFromSchema } from '@easylayer/bitcoin-loader';
 
 export const BlockSchema = new EntitySchema({
   name: 'blocks',
@@ -26,4 +26,4 @@ export const BlockSchema = new EntitySchema({
   },
 });
 
-export const BlockModel = generateModelFromSchema(BlockSchema);
+export const BlocksRepository = generateRepositoryFromSchema(BlockSchema);

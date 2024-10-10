@@ -1,5 +1,5 @@
 import { bootstrap } from '@easylayer/bitcoin-loader';
-import { BlockSchema, TransactionSchema } from './models';
+import { BlockSchema, TransactionSchema } from './repositories';
 import { Mapper } from './mapper';
 
 bootstrap({

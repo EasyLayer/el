@@ -1,4 +1,4 @@
-import { generateModelFromSchema, EntitySchema } from '../../protocol';
+import { generateRepositoryFromSchema, EntitySchema } from '../../protocol';
 
 export interface ISystem {
   id: number;
@@ -21,4 +21,4 @@ export const SystemSchema = new EntitySchema<ISystem>({
   },
 });
 
-export const SystemModel = generateModelFromSchema(SystemSchema);
+export const SystemsRepository = generateRepositoryFromSchema(SystemSchema);

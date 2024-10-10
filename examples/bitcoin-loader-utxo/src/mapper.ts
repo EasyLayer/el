@@ -1,7 +1,7 @@
 import { ILoaderMapper } from '@easylayer/bitcoin-loader';
 import { ScriptUtilService } from '@easylayer/components/bitcoin-network-provider';
 import { Currency, Money } from '@easylayer/common/arithmetic';
-import { OutputModel, InputModel } from './models';
+import { OutputsRepository, InputsRepository } from './repositories';
 
 export class Mapper implements ILoaderMapper {
   public async onLoad(block: any) {
@@ -12,8 +12,8 @@ export class Mapper implements ILoaderMapper {
 
     const { height, tx } = block;
 
-    const outputModels: InstanceType<typeof OutputModel>[] = [];
-    const inputModels: InstanceType<typeof InputModel>[] = [];
+    const outputRepos: InstanceType<typeof OutputsRepository>[] = [];
+    const inputRepos: InstanceType<typeof InputsRepository>[] = [];
 
     if (!tx || tx.length === 0) {
       throw new Error(`Tx length = 0`);
@@ -25,52 +25,53 @@ export class Mapper implements ILoaderMapper {
       for (const vout of t.vout) {
         const scriptHash = ScriptUtilService.getScriptHashFromScriptPubKey(vout.scriptPubKey);
         const value = Money.fromDecimal(vout.value, currency).toCents();
-        const outputModel = new OutputModel();
+        const outputRepo = new OutputsRepository();
 
-        outputModel.insert({
+        outputRepo.insert({
           txid,
           script_hash: scriptHash,
           value,
           n: Number(vout.n),
           block_height: Number(height)
         });
-        outputModels.push(outputModel);
+
+        outputRepos.push(outputRepo);
       }
 
       for (const vin of t.vin) {
         if (vin.txid && vin.vout) {
-          const inputModel = new InputModel();
+          const inputRepo = new InputsRepository();
 
-          inputModel.insert({
+          inputRepo.insert({
             txid,
             output_txid: vin.txid,
             output_n: Number(vin.vout),
           });
 
-          inputModels.push(inputModel);
+          inputRepos.push(inputRepo);
         }
       }
     }
 
-    return [...outputModels, ...inputModels];
+    return [...outputRepos, ...inputRepos];
   }
 
   public async onReorganisation(lightBlock: any) {
     const { tx } = lightBlock;
 
-    const outputModels: InstanceType<typeof OutputModel>[] = [];
+    const outputRepos: InstanceType<typeof OutputsRepository>[] = [];
 
     for (let txid of tx) {
-      const outputModel = new OutputModel();
+      const outputRepo = new OutputsRepository();
 
-      await outputModel.update(
+      outputRepo.update(
+        { txid },
         { is_suspended: true },
-        { txid }
       );
 
-      outputModels.push(outputModel);
+      outputRepos.push(outputRepo);
     }
 
-    return outputModels;
+    return outputRepos;
   }
 }
