@@ -89,6 +89,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
       const data = {
         jsonrpc: '2.0',
         method: 'getblockcount',
+        id: 1,
       };
       const response = await this._httpClient.post('/', data);
       const blockHeight = response.data.result;
@@ -118,6 +119,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
         jsonrpc: '2.0',
         method: 'getblockhash',
         params: [height],
+        id: 1,
       };
 
       const response = await this._httpClient.post('/', data);
@@ -150,6 +152,7 @@ export class SelfNodeProvider extends BaseNodeProvider<SelfNodeProviderOptions> 
         jsonrpc: '2.0',
         method: 'getblock',
         params: [hash, verbosity],
+        id: 1,
       };
 
       const response = await this._httpClient.post('/', data);
