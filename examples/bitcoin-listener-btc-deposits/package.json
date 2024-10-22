@@ -1,7 +1,7 @@
 {
   "name": "bitcoin-listener-btc-deposits",
   "private": true,
-  "version": "0.0.3-experimental.34",
+  "version": "0.0.3-experimental.35",
   "description": "This is an example app for development",
   "scripts": {
     "clear": "yarn clear cache && clear:node_modules",
@@ -9,9 +9,9 @@
     "start": "node --inspect -r ts-node/register src/main.ts"
   },
   "dependencies": {
-    "@easylayer/bitcoin-listener": "0.0.3-experimental.34",
-    "@easylayer/common": "0.0.3-experimental.34",
-    "@easylayer/components": "0.0.3-experimental.34",
+    "@easylayer/bitcoin-listener": "0.0.3-experimental.35",
+    "@easylayer/common": "0.0.3-experimental.35",
+    "@easylayer/components": "0.0.3-experimental.35",
     "socket.io-client": "4.7.5"
   },
   "devDependencies": {
