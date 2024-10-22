@@ -212,7 +212,41 @@ describe('PullNetworkProviderStrategy', () => {
       // Ensure the preloaded queue remains empty
       expect((strategy as any)._preloadedItemsQueue).toEqual([]);
     });
+
+    it('should preload blocks correctly when all block stats params are present', async () => {
+      const currentNetworkHeight = 3;
+
+      (strategy as any).isTest = false;
+
+      // Mocking 'lastHeight' to return 0
+      Object.defineProperty(mockQueue, 'lastHeight', {
+        get: () => 0,
+      });
+
+      // Mocking 'isMaxHeightReached' to return false
+      Object.defineProperty(mockQueue, 'isMaxHeightReached', {
+        get: () => false,
+      });
+
+      // Mock blocks stats response with missing parameters
+      mockNetworkProvider.getManyBlocksStatsByHeights.mockResolvedValue([
+        { blockhash: 'hash1', total_size: 500, height: 1 },
+        { blockhash: 'hash2', total_size: 600, height: 2 },
+        { blockhash: 'hash3', total_size: 700, height: 3 },
+      ]);
+
+      // Call the private method using type casting
+      await (strategy as any).preloadBlocksInfo(currentNetworkHeight);
+
+      // Verify that the items are added to the preloaded queue
+      expect((strategy as any)._preloadedItemsQueue).toEqual([
+        { hash: 'hash1', size: 500, height: 1 },
+        { hash: 'hash2', size: 600, height: 2 },
+        { hash: 'hash3', size: 700, height: 3 },
+      ]);
+    });
   });
+
   describe('loadAndEnqueueBlocks', () => {
     it('should load blocks and enqueue them successfully', async () => {
       // Set concurrency to 1 for simplicity
