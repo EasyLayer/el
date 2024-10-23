@@ -31,7 +31,7 @@ export class BlocksQueueLoaderService implements OnModuleDestroy {
   }
 
   public async startBlocksLoading(queue: BlocksQueue<Block>): Promise<void> {
-    this.log.info('Setup blocks loading from height', { indexedHeight: queue.lastHeight }, this.constructor.name);
+    this.log.info('Setup blocks loading from height', {}, this.constructor.name);
 
     // NOTE: We use this to make sure that
     // method startBlocksLoading() is executed only once in its entire life.

@@ -11,6 +11,7 @@ type ReadDatabaseModuleConfig = TypeOrmModuleOptions & {
   // eslint-disable-next-line @typescript-eslint/ban-types
   entities: (Function | EntitySchema<any>)[];
   database: string;
+  unlogged?: boolean;
 };
 
 @Module({})
@@ -42,9 +43,9 @@ export class ReadDatabaseModule {
         // If any table is missing, enable synchronization
         dataSourceOptions.synchronize = true;
 
-        // IMPORTANT: In case of Postgres we use UNLOGGED tables to improve performance.
+        // IMPORTANT: In case of Postgres we can use UNLOGGED tables to improve performance.
         // To do this, we dynamically read the schemes that the developer passed on and change them.
-        if (restOptions.type === 'postgres') {
+        if (restOptions.type === 'postgres' && restOptions.unlogged) {
           const sqlQueries = await getSQLFromEntitySchema(tempDataSource);
 
           // Modifying queries to add UNLOGGED
