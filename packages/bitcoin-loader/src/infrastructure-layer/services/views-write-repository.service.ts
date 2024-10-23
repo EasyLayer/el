@@ -155,10 +155,24 @@ export class ViewsWriteRepositoryService implements OnModuleDestroy {
       await queryRunner.commitTransaction();
       this.clearOperations();
     } catch (error) {
-      await queryRunner.rollbackTransaction();
-      this.clearOperations();
+      this.log.error('Error during commit, rolling back transaction:', error, this.constructor.name);
+      try {
+        await queryRunner.rollbackTransaction();
+        this.clearOperations();
+      } catch (rollbackError) {
+        this.log.error('Error during rollback:', rollbackError, this.constructor.name);
+      }
+      throw error;
     } finally {
-      await queryRunner.release();
+      try {
+        await queryRunner.release();
+      } catch (releaseError) {
+        this.log.error('Error releasing query runner:', releaseError);
+      }
+
+      // IMPORTANT: Errors during query runner release are logged but not thrown.
+      // Since the transaction has already been committed or rolled back,
+      // it is safe to avoid throwing errors from the release process.
     }
   }
 

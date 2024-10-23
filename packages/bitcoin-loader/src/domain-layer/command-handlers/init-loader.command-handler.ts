@@ -21,8 +21,6 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
     try {
       const { requestId, indexedHeight } = payload;
 
-      this.log.info('Init Loader Aggregate...', null, this.constructor.name);
-
       const loaderModel: Loader = await this.loaderModelFactory.initModel();
 
       // if (loaderModel.status === 'reorganisation') {
@@ -40,6 +38,7 @@ export class InitLoaderCommandHandler implements ICommandHandler<InitLoaderComma
           indexedHeight < this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
             ? this.businessConfig.BITCOIN_LOADER_START_BLOCK_HEIGHT - 1
             : indexedHeight,
+        logger: this.log,
       });
 
       await this.eventStore.save(loaderModel);

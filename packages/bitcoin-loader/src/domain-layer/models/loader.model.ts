@@ -61,7 +61,15 @@ export class Loader extends AggregateRoot {
   // IMPORTANT: this method doing two things:
   // 1 - create Loader if it's first creation
   // 2 - truncate chain if chain last height bigger then startHeight
-  public async init({ requestId, indexedHeight }: { requestId: string; indexedHeight: number }) {
+  public async init({
+    requestId,
+    indexedHeight,
+    logger,
+  }: {
+    requestId: string;
+    indexedHeight: number;
+    logger: AppLogger;
+  }) {
     // IMPORTANT: We always initialize the Loader with the awaiting status,
     // if there was a reorganization status, then it will be processed at the next iteration.
     const status = LoaderStatuses.AWAITING;
@@ -72,6 +80,12 @@ export class Loader extends AggregateRoot {
           ? indexedHeight
           : this.chain.lastBlockHeight
         : indexedHeight;
+
+    logger.info(
+      'Init Loader Aggregate',
+      { writeStateLastHeight: height, readStateLastHeight: indexedHeight },
+      this.constructor.name
+    );
 
     await this.apply(
       new BitcoinLoaderInitializedEvent({

@@ -113,6 +113,9 @@ export class BitcoinLoaderModule {
           ...(readdatabaseConfig.BITCOIN_LOADER_READ_DB_PASSWORD && {
             password: readdatabaseConfig.BITCOIN_LOADER_READ_DB_PASSWORD,
           }),
+          ...(readdatabaseConfig.BITCOIN_LOADER_READ_DB_UNLOGGED_TABLES_ENABLE && {
+            unlogged: readdatabaseConfig.BITCOIN_LOADER_READ_DB_UNLOGGED_TABLES_ENABLE,
+          }),
         }),
         BlocksQueueModule.forRootAsync({
           isTransportMode: false,
