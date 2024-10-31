@@ -19,4 +19,8 @@ export class BusinessConfig {
   @Transform(({ value }) => (value !== undefined ? Number(value) : 8))
   @IsNumber()
   BITCOIN_WALLET_CURRENCY_DIGITS: number = 8;
+
+  @Transform(({ value }) => (value ? value : 'testnet'))
+  @IsString()
+  BITCOIN_WALLET_BLOCKCHAIN_NETWORK_NAME: string = 'testnet';
 }

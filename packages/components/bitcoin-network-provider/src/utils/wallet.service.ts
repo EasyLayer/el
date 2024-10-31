@@ -6,11 +6,11 @@ import { KeyManagementService } from './key-management.service';
 export class WalletService {
   constructor(private readonly keyManagementService: KeyManagementService) {}
 
-  public async generateHDKeysPair() {
+  public async generateHDKeysPair(networkName: string) {
     // TODO: add mnemonic type, add network
     const mnemonic = this.generateMnemonic();
     const seed = this.seedFromMnemonic(mnemonic);
-    const keypair = await this.masterKeyFromSeed(seed, bitcoin.networks.testnet);
+    const keypair = await this.masterKeyFromSeed(seed, networkName);
 
     const formattedKeypair = {
       privateKey: keypair.privateKey.toString('hex'),
@@ -42,7 +42,13 @@ export class WalletService {
     return seed;
   }
 
-  public async masterKeyFromSeed(seed: Buffer, network: bitcoin.Network = bitcoin.networks.testnet): Promise<any> {
+  public async masterKeyFromSeed(seed: Buffer, networkName: string): Promise<any> {
+    let network: bitcoin.Network = bitcoin.networks.testnet;
+
+    if (networkName === 'mainnet') {
+      network = bitcoin.networks.bitcoin;
+    }
+
     return this.keyManagementService.masterKeyFromSeed(seed, network);
   }
 

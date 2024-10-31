@@ -72,14 +72,11 @@ export class ReadDatabaseConfig {
   })
   BITCOIN_LOADER_READ_DB_NAME: string = resolve(process.cwd(), 'data/loader-views.db');
 
-  @IsBoolean()
-  @JSONSchema({
-    description: 'TODO',
-    default: false,
-  })
-  BITCOIN_LOADER_READ_DB_UNLOGGED_TABLES_ENABLE: boolean = false;
-
   isLogging(): boolean {
     return process.env.DB_DEBUG === '1';
+  }
+
+  isUnlogged(): boolean {
+    return process.env.BITCOIN_LOADER_READ_DB_UNLOGGED_TABLES_ENABLE === '1';
   }
 }

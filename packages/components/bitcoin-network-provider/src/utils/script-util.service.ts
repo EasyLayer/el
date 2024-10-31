@@ -3,9 +3,14 @@ import * as bitcoin from 'bitcoinjs-lib';
 
 @Injectable()
 export class ScriptUtilService {
-  static getScriptHashFromScriptPubKey(scriptPubKey: any): string | null {
+  static getScriptHashFromScriptPubKey(scriptPubKey: any, networkName: string): string | null {
     const { hex, type } = scriptPubKey;
-    const network: bitcoin.Network = bitcoin.networks.testnet;
+
+    let network: bitcoin.Network = bitcoin.networks.testnet;
+
+    if (networkName === 'mainnet') {
+      network = bitcoin.networks.bitcoin;
+    }
 
     let scriptHash: string | null = null;
 

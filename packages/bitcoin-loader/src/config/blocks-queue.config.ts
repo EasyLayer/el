@@ -17,7 +17,7 @@ export class BlocksQueueConfig {
     description: 'Maximum size in bytes of the rpc blocks batch request',
     default: 5242880,
   })
-  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE: number = 5242881; // 5.01 MB;
+  BITCOIN_LOADER_BLOCKS_QUEUE_LOADER_REQUEST_BLOCKS_BATCH_SIZE: number = 2097151; // 2.01 MB;
 
   @Transform(({ value }) => (value !== undefined ? parseInt(value, 10) : 119430400))
   @IsNumber()

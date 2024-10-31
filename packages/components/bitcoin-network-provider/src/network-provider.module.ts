@@ -14,6 +14,7 @@ export interface NetworkProviderModuleOptions {
   selfNodesUrl?: string;
   maxRequestContentLength?: number;
   responseTimeout?: number;
+  network?: string;
 }
 
 @Module({})
