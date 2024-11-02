@@ -3818,6 +3818,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"bitcoin-loader-scripts@workspace:examples/bitcoin-loader-scripts":
+  version: 0.0.0-use.local
+  resolution: "bitcoin-loader-scripts@workspace:examples/bitcoin-loader-scripts"
+  dependencies:
+    "@easylayer/bitcoin-loader": 0.0.3-experimental.0
+    "@easylayer/components": 0.0.3-experimental.0
+    "@types/node": 20.10.4
+    rimraf: 5.0.5
+    ts-node: 10.9.2
+    typescript: 5.3.3
+  languageName: unknown
+  linkType: soft
+
 "bitcoin-loader-utxo@workspace:examples/bitcoin-loader-utxo":
   version: 0.0.0-use.local
   resolution: "bitcoin-loader-utxo@workspace:examples/bitcoin-loader-utxo"

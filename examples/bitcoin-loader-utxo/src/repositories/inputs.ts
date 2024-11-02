@@ -22,7 +22,7 @@ export const InputSchema = new EntitySchema<IInput>({
       nullable: false,
     },
     output_n: {
-      type: 'int',
+      type: 'integer',
       primary: true,
       nullable: false,
     },

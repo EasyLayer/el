@@ -91,11 +91,12 @@ export class ScriptUtilService {
     return { symbol: 'BRC', quantity: 100 };
   }
 
-  static isOPReturn(scriptPubKey: any): boolean {
+  static isOPReturn(scriptPubKey: any): boolean | undefined {
     const { hex } = scriptPubKey;
 
     if (!hex) {
-      // TODO: throw an error
+      // TODO: think about this
+      return;
     }
 
     const scriptPubKeyBuffer = Buffer.from(hex, 'hex');
@@ -103,8 +104,6 @@ export class ScriptUtilService {
 
     if (decompiledScript && decompiledScript[0] === bitcoin.opcodes.OP_RETURN) {
       return true;
-    } else {
-      return false;
     }
   }
 }
