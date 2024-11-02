@@ -25,6 +25,7 @@ export class Wallet extends AggregateRoot {
 
   public async addOneKeysPair({
     requestId,
+    networkName,
     mnemonic,
     seed,
     privateKey,
@@ -33,6 +34,7 @@ export class Wallet extends AggregateRoot {
     logger,
   }: {
     requestId: string;
+    networkName: string;
     mnemonic?: string;
     seed?: string | Buffer;
     privateKey?: string | Buffer;
@@ -57,12 +59,12 @@ export class Wallet extends AggregateRoot {
 
     if (mnemonic) {
       keypair.seed = walletService.seedFromMnemonic(mnemonic);
-      const masterKeys = await walletService.masterKeyFromSeed(keypair.seed); // TODO: add network
+      const masterKeys = await walletService.masterKeyFromSeed(keypair.seed, networkName);
       keypair.privateKey = masterKeys.privateKey;
       keypair.publicKey = masterKeys.publicKey;
     } else if (seed) {
       const seedBuffer = seed instanceof Buffer ? seed : Buffer.from(seed, 'hex');
-      const masterKeys = await walletService.masterKeyFromSeed(seedBuffer); // TODO: add network
+      const masterKeys = await walletService.masterKeyFromSeed(seedBuffer, networkName);
       keypair.privateKey = masterKeys.privateKey;
       keypair.publicKey = masterKeys.publicKey;
     } else {

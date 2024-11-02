@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Transform } from 'class-transformer';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsString } from 'class-validator';
 import { JSONSchema } from 'class-validator-jsonschema';
 
 @Injectable()
@@ -24,4 +24,8 @@ export class BusinessConfig {
   @Transform(({ value }) => (value ? parseInt(value, 10) : 1000))
   @IsNumber()
   BITCOIN_LOADER_MODEL_MAX_SIZE: number = 1000;
+
+  @Transform(({ value }) => (value ? value : 'testnet'))
+  @IsString()
+  BITCOIN_LOADER_BLOCKCHAIN_NETWORK_NAME: string = 'testnet';
 }

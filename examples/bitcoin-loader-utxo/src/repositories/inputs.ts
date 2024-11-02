@@ -27,22 +27,16 @@ export const InputSchema = new EntitySchema<IInput>({
       nullable: false,
     },
   },
-  uniques: [
-    {
-      name: 'UQ__inputs__output_txid__output_n',
-      columns: ['output_txid', 'output_n'],
-    },
-  ],
-  relations: {
-    output: {
-      type: 'many-to-one',
-      target: 'outputs',
-      joinColumn: [
-        { name: 'output_txid', referencedColumnName: 'txid' },
-        { name: 'output_n', referencedColumnName: 'n' },
-      ],
-    },
-  },
+  // relations: {
+  //   output: {
+  //     type: 'many-to-one',
+  //     target: 'outputs',
+  //     joinColumn: [
+  //       { name: 'output_txid', referencedColumnName: 'txid' },
+  //       { name: 'output_n', referencedColumnName: 'n' },
+  //     ],
+  //   },
+  // },
 });
 
 export const InputsRepository = generateRepositoryFromSchema(InputSchema);

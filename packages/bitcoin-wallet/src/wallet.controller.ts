@@ -3,6 +3,7 @@ import { WalletService } from '@easylayer/components/bitcoin-network-provider';
 import { IsEnum, IsOptional, IsString, IsNumber } from 'class-validator';
 import { WalletCommandFactoryService } from './application-layer/services';
 import { ViewsEventsResponseService } from './infrastructure-layer/services';
+import { BusinessConfig } from './config';
 
 enum SortingDirectionEnum {
   ASC = 'ASC',
@@ -31,6 +32,7 @@ export class PaginationDto {
 @Controller()
 export class WalletController {
   constructor(
+    private readonly businessConfig: BusinessConfig,
     private readonly walletService: WalletService,
     private readonly walletCommandFactory: WalletCommandFactoryService,
     private readonly viewsEventsResponseService: ViewsEventsResponseService
@@ -73,8 +75,10 @@ export class WalletController {
 
       const wallets: any = [];
 
+      const networkName: string = this.businessConfig.BITCOIN_WALLET_BLOCKCHAIN_NETWORK_NAME;
+
       for (let i = 0; i < count; i++) {
-        const keypair = await this.walletService.generateHDKeysPair();
+        const keypair = await this.walletService.generateHDKeysPair(networkName);
         wallets.push(keypair);
       }
 

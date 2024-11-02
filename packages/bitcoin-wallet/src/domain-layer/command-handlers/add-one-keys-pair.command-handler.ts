@@ -6,11 +6,13 @@ import { AppLogger, RuntimeTracker } from '@easylayer/components/logger';
 import { Wallet } from '../models/wallet.model';
 import { WalletModelFactoryService } from '../services';
 import { KeysStorageRepositoryService } from '../../infrastructure-layer/services';
+import { BusinessConfig } from '../../config';
 
 @CommandHandler(AddKeysPairCommand)
 export class AddKeysPairCommandHandler implements ICommandHandler<AddKeysPairCommand> {
   constructor(
     private readonly log: AppLogger,
+    private readonly businessConfig: BusinessConfig,
     private readonly eventStore: EventStoreRepository,
     private readonly walletModelFactory: WalletModelFactoryService,
     // private readonly networkProvider: NetworkProviderService,
@@ -34,6 +36,7 @@ export class AddKeysPairCommandHandler implements ICommandHandler<AddKeysPairCom
         walletService: this.walletService,
         keysStorageRepository: this.keysStorageRepository,
         logger: this.log,
+        networkName: this.businessConfig.BITCOIN_WALLET_BLOCKCHAIN_NETWORK_NAME,
       });
 
       await this.eventStore.save(walletModel);
